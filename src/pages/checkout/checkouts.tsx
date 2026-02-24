@@ -67,7 +67,7 @@ const checkinsList: CheckinData[] = [
   },
 ];
 
-const Checkins: React.FC = () => {
+const Checkout: React.FC = () => {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -104,7 +104,7 @@ const Checkins: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
         <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Checkins</h3>
+          <h3 className="text-lg font-bold text-gray-900">Checkouts</h3>
           <p className="mt-1 text-gray-600">
             Please review the data in the table below
           </p>
@@ -188,11 +188,11 @@ const Checkins: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigate("/checkins/create")}
+            onClick={() => navigate("create")}
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            Create New Checkin
+            Create New Checkout
           </button>
         </div>
 
@@ -332,4 +332,4 @@ const Checkins: React.FC = () => {
   );
 };
 
-export default Checkins;
+export default Checkout;

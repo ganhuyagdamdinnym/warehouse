@@ -37,8 +37,8 @@ const navigation: NavItem[] = [
     href: "/checkins",
     icon: AiOutlineArrowLeft,
     children: [
-      { name: "List All Checkins", href: "/checkins" },
-      { name: "Create New Checkin", href: "/checkins/create" },
+      { name: "List All Checkins", href: "/checkin" },
+      { name: "Create New Checkin", href: "/checkin/create" },
     ],
   },
   {
@@ -46,8 +46,8 @@ const navigation: NavItem[] = [
     href: "/checkouts",
     icon: AiOutlineArrowRight,
     children: [
-      { name: "List All Checkouts", href: "/checkouts" },
-      { name: "Create New Checkout", href: "/checkouts/new" },
+      { name: "List All Checkouts", href: "/checkout" },
+      { name: "Create New Checkout", href: "/checkout/create" },
     ],
   },
   {
@@ -55,8 +55,8 @@ const navigation: NavItem[] = [
     href: "/adjustments",
     icon: AiOutlineControl,
     children: [
-      { name: "Adjustments", href: "/adjustments" },
-      { name: "Create New Adjustment", href: "/adjustments/create" },
+      { name: "Adjustments", href: "/adjustment" },
+      { name: "Create New Adjustment", href: "/adjustment/create" },
     ],
   },
   {
@@ -64,8 +64,8 @@ const navigation: NavItem[] = [
     href: "/transfers",
     icon: AiOutlineTruck,
     children: [
-      { name: "Transfers", href: "/transfers" },
-      { name: "Create New Transfer", href: "/transfers/create" },
+      { name: "Transfers", href: "/transfer" },
+      { name: "Create New Transfer", href: "/transfer/create" },
     ],
   },
   {

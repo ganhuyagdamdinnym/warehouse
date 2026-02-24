@@ -4,6 +4,8 @@ import { Sidebar } from "./components/Sidebar";
 import Dashboard from "./pages/dashboard";
 import Checkins from "./pages/checkin/checkins";
 import CreateCheckIn from "./pages/checkin/create";
+import Checkout from "./pages/checkout/checkouts";
+import CreateCheckOut from "./pages/checkout/create";
 // Бусад хуудсуудаа энд импортлоорой (Checkouts, Items г.м)
 
 function App() {
@@ -19,8 +21,10 @@ function App() {
               <main className="flex-1 overflow-y-auto">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
-                  <Route path="/checkins" element={<Checkins />} />
-                  <Route path="/checkins/create" element={<CreateCheckIn />} />
+                  <Route path="/checkin" element={<Checkins />} />
+                  <Route path="/checkin/create" element={<CreateCheckIn />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/checkout/create" element={<CreateCheckOut />} />
                 </Routes>
               </main>
             </div>
