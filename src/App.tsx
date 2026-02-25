@@ -6,6 +6,10 @@ import Checkins from "./pages/checkin/checkins";
 import CreateCheckIn from "./pages/checkin/create";
 import Checkout from "./pages/checkout/checkouts";
 import CreateCheckOut from "./pages/checkout/create";
+import Adjustment from "./pages/adjustment/adjustment";
+import CreateAdjustment from "./pages/adjustment/create";
+import Transfer from "./pages/transfer/transfer";
+import CreateTransfer from "./pages/transfer/create";
 // Бусад хуудсуудаа энд импортлоорой (Checkouts, Items г.м)
 
 function App() {
@@ -25,6 +29,13 @@ function App() {
                   <Route path="/checkin/create" element={<CreateCheckIn />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/checkout/create" element={<CreateCheckOut />} />
+                  <Route path="/adjustment" element={<Adjustment />} />
+                  <Route
+                    path="/adjustment/create"
+                    element={<CreateAdjustment />}
+                  />
+                  <Route path="/transfer" element={<Transfer />} />
+                  <Route path="/transfer/create" element={<CreateTransfer />} />
                 </Routes>
               </main>
             </div>

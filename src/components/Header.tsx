@@ -3,7 +3,7 @@ import { HiMenuAlt3, HiOutlineBell, HiOutlineCog } from "react-icons/hi";
 export const Header = () => {
   return (
     <div className="md:flex md:shrink-0 print:hidden">
-      <div className="bg-gray-900 md:shrink-0 md:w-64 px-6 py-3 flex items-center justify-between md:justify-center">
+      <div className="bg-gray-900 md:shrink-0 md:w-80 px-6 py-3 flex items-center justify-between md:justify-center">
         <h1 className="text-gray-900">
           <div className="flex items-start max-h-8 overflow-hidden block w-56">
             <div className="flex items-center">

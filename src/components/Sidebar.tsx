@@ -13,11 +13,9 @@ import {
   AiOutlineBank,
   AiOutlineUsergroupAdd,
   AiOutlineLineChart,
-  AiOutlineDown,
-  AiOutlineUp,
   AiOutlineLink,
 } from "react-icons/ai";
-
+import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 // 1. Дата бүтцийг тодорхойлох Interface
 interface SubMenuItem {
   name: string;
@@ -108,13 +106,12 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800 text-gray-300 w-full md:w-64 flex flex-col h-screen overflow-y-auto hidden md:flex print:hidden">
+    <div className="bg-gray-800 text-gray-300 w-full md:w-80 grid grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto hidden md:grid print:hidden ondark">
       <div className="py-2">
         <div className="mt-1 font-bold text-xs text-gray-600 px-4 py-2 uppercase tracking-wider">
           Main
         </div>
 
-        {/* Dashboard Item */}
         <Link
           to="/"
           className={`md:py-3 flex items-center border-b border-[#0000004d] px-4 md:px-2 py-4 lg:px-4 transition-all duration-200 ${
@@ -124,7 +121,7 @@ export const Sidebar: React.FC = () => {
           }`}
         >
           <AiFillHome className="w-4 h-4 mr-3" />
-          <span className="grow font-medium">Dashboard</span>
+          <span className="grow font-medium text-lg">Dashboard</span>
         </Link>
 
         {/* Navigation Mapping */}
@@ -138,7 +135,7 @@ export const Sidebar: React.FC = () => {
               {/* Parent Menu Item */}
               <div
                 onClick={() => toggleMenu(item.name)}
-                className={`cursor-pointer border-b border-[#0000004d] flex items-center px-4 py-4 md:py-3 transition-all duration-200 ${
+                className={`cursor-pointer border-b text-lg border-[#0000004d] flex items-center px-4 py-4 md:py-3 transition-all duration-200 ${
                   isActive
                     ? "bg-blue-600 text-white"
                     : "hover:bg-blue-700 hover:text-white"
@@ -151,12 +148,12 @@ export const Sidebar: React.FC = () => {
 
                 {item.children ? (
                   isMenuOpen ? (
-                    <AiOutlineUp className="w-3 h-3" />
+                    <IoIosArrowUp className="w-4 h-4" />
                   ) : (
-                    <AiOutlineDown className="w-3 h-3" />
+                    <IoIosArrowDown className="w-4 h-4" />
                   )
                 ) : (
-                  <AiOutlineDown className="w-3 h-3 text-gray-500/50" />
+                  <IoIosArrowDown className="w-4 h-4 text-gray-500/50" />
                 )}
               </div>
 
