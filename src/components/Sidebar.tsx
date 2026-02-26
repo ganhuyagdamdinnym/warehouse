@@ -86,7 +86,26 @@ const navigation: NavItem[] = [
       { name: "Import Contacts", href: "/contacts/import" },
     ],
   },
-  { name: "Categories", href: "/categories", icon: AiOutlineDatabase },
+  {
+    name: "Categories",
+    href: "/categories",
+    icon: AiOutlineDatabase,
+    children: [
+      { name: "List All Categories", href: "/categories" },
+      { name: "Create New Category", href: "/categories/create" },
+      { name: "Import Categories", href: "/categories/import" },
+    ],
+  },
+  {
+    name: "Units",
+    href: "/units",
+    icon: AiOutlineCi,
+    children: [
+      { name: "List All Units", href: "/units" },
+      { name: "Create New Unit", href: "/units/create" },
+      { name: "Import Units", href: "/units/import" },
+    ],
+  },
   { name: "Units", href: "/units", icon: AiOutlineCi },
   { name: "Warehouses", href: "/warehouses", icon: AiOutlineBank },
   { name: "Users", href: "/users", icon: AiOutlineUsergroupAdd },
@@ -106,7 +125,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <div
-      className="bg-gray-800 text-gray-300 w-full md:w-80 grid grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto hidden md:grid print:hidden ondark"
+      className="bg-gray-800 text-gray-300 w-full md:w-64 grid grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto hidden md:grid print:hidden ondark"
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
     >
       <style>{`div.ondark::-webkit-scrollbar { display: none; }`}</style>
@@ -124,7 +143,7 @@ export const Sidebar: React.FC = () => {
           }`}
         >
           <AiFillHome className="w-4 h-4 mr-3" />
-          <span className="grow font-medium text-lg">Dashboard</span>
+          <span className="grow font-medium">Dashboard</span>
         </Link>
 
         {navigation.map((item) => {
@@ -135,7 +154,7 @@ export const Sidebar: React.FC = () => {
             <div key={item.name} className="flex flex-col">
               <div
                 onClick={() => toggleMenu(item.name)}
-                className={`cursor-pointer border-b text-lg border-[#0000004d] flex items-center px-4 py-4 md:py-3 transition-all duration-200 ${
+                className={`cursor-pointer border-b border-[#0000004d] flex items-center px-4 py-4 md:py-3 transition-all duration-200 ${
                   isActive
                     ? "bg-blue-600 text-white"
                     : "hover:bg-blue-700 hover:text-white"
