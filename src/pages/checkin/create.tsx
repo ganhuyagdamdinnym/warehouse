@@ -1,11 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { HiChevronDown } from "react-icons/hi";
+import { SelectVariants } from "../../components/SelectVariants";
 
 const CreateCheckIn = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
-  // Dummy data for select options
+  const [isOpenSelectVariant, setIsOpenSelectVariant] =
+    useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+
   const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
   const warehouses = [
     "Warehouse 1",
@@ -20,13 +24,13 @@ const CreateCheckIn = () => {
     "Spare Part 4",
     "Electronic Device 5",
   ];
+
   const filteredItems = items.filter((item) =>
     item.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Гадна дарахад хаах
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -39,8 +43,25 @@ const CreateCheckIn = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleSelectItem = (item: string) => {
+    setSelectedValue(item);
+    setSearchTerm(item);
+    setIsOpen(false);
+    setSelectedItem(item);
+    setIsOpenSelectVariant(true); // 👈 Open SelectVariants modal/panel
+  };
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
+      {/* Pass selected item and open state to SelectVariants */}
+      {isOpenSelectVariant && (
+        <SelectVariants
+          isOpen={isOpenSelectVariant}
+          onClose={() => setIsOpenSelectVariant(false)}
+        />
+      )}
+
       <div>
         <div className="px-4 md:px-0 md:col-span-1">
           <h3 className="text-lg font-bold text-gray-900">
@@ -50,6 +71,7 @@ const CreateCheckIn = () => {
             Please fill the form below to add new record.
           </p>
         </div>
+
         <div className="mt-6">
           <form>
             <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
@@ -109,13 +131,14 @@ const CreateCheckIn = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Item Search */}
                   <div className="p-4 md:px-6 bg-gray-50 -mx-4 md:-mx-6">
                     <div
                       className="col-span-6 sm:col-span-4 relative mb-2"
                       ref={containerRef}
                     >
                       <div className="relative flex items-center">
-                        {/* Баруун талын Icon */}
                         <label className="inline-block cursor-pointer absolute top-1/2 -translate-y-1/2 right-2 border border-transparent p-1 text-gray-400">
                           <div className="h-4 w-4">
                             <HiChevronDown
@@ -123,7 +146,6 @@ const CreateCheckIn = () => {
                             />
                           </div>
                         </label>
-
                         <input
                           type="text"
                           value={
@@ -139,7 +161,7 @@ const CreateCheckIn = () => {
                         />
                       </div>
 
-                      {/* Dropdown жагсаалт */}
+                      {/* Dropdown */}
                       {isOpen && (
                         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
                           {filteredItems.length > 0 ? (
@@ -147,11 +169,7 @@ const CreateCheckIn = () => {
                               <div
                                 key={index}
                                 className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-gray-700 border-b border-gray-50 last:border-none"
-                                onClick={() => {
-                                  setSelectedValue(item);
-                                  setSearchTerm(item);
-                                  setIsOpen(false);
-                                }}
+                                onClick={() => handleSelectItem(item)} // 👈 Use handler
                               >
                                 {item}
                               </div>
@@ -164,6 +182,7 @@ const CreateCheckIn = () => {
                         </div>
                       )}
                     </div>
+
                     <div className="bg-white mt-4 rounded-md shadow-sm overflow-x-auto">
                       <table className="w-full">
                         <thead>
@@ -171,13 +190,13 @@ const CreateCheckIn = () => {
                             <th className="px-2 lg:pl-6 py-4 w-4"></th>
                             <th className="px-2 lg:px-6 py-4">Item</th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Weight</span>
+                              Weight
                             </th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Quantity</span>
+                              Quantity
                             </th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Unit</span>
+                              Unit
                             </th>
                           </tr>
                         </thead>
@@ -193,10 +212,9 @@ const CreateCheckIn = () => {
                         </tbody>
                       </table>
                     </div>
-                    {/* <div className="pt-4">
-                      <div>Add item to the list by search or scan barcode </div>
-                    </div> */}
                   </div>
+
+                  {/* Attachments */}
                   <div>
                     <label className="font-medium text-gray-700">
                       Attachments
@@ -207,14 +225,14 @@ const CreateCheckIn = () => {
                           <p className="pl-1">or drag and drop</p>
                         </div>
                         <div className="text-sm text-gray-700">
-                          <div>
-                            You can select .png, .jpg, .pdf, .docx, .xlsx & .zip
-                            files.
-                          </div>
+                          You can select .png, .jpg, .pdf, .docx, .xlsx & .zip
+                          files.
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Details */}
                   <div className="col-span-6 sm:col-span-4">
                     <label className="font-medium text-gray-700">
                       <span>Details</span>
@@ -225,6 +243,8 @@ const CreateCheckIn = () => {
                       placeholder="Enter details here..."
                     ></textarea>
                   </div>
+
+                  {/* Draft checkbox */}
                   <div className="flex mb-2">
                     <label className="flex items-center">
                       <input
@@ -240,6 +260,8 @@ const CreateCheckIn = () => {
                 </div>
               </div>
             </div>
+
+            {/* Footer */}
             <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
               <div className="w-full flex items-center justify-between">
                 <div></div>

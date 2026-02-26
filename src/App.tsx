@@ -10,7 +10,6 @@ import Adjustment from "./pages/adjustment/adjustment";
 import CreateAdjustment from "./pages/adjustment/create";
 import Transfer from "./pages/transfer/transfer";
 import CreateTransfer from "./pages/transfer/create";
-// Бусад хуудсуудаа энд импортлоорой (Checkouts, Items г.м)
 
 function App() {
   return (
