@@ -10,6 +10,9 @@ import Adjustment from "./pages/adjustment/adjustment";
 import CreateAdjustment from "./pages/adjustment/create";
 import Transfer from "./pages/transfer/transfer";
 import CreateTransfer from "./pages/transfer/create";
+import Items from "./pages/items/items";
+// import Items from "./pages/items/create";
+import CreateItem from "./pages/items/create";
 
 function App() {
   return (
@@ -35,6 +38,8 @@ function App() {
                   />
                   <Route path="/transfer" element={<Transfer />} />
                   <Route path="/transfer/create" element={<CreateTransfer />} />
+                  <Route path="/items/create" element={<CreateItem />} />
+                  <Route path="/items" element={<Items />} />
                 </Routes>
               </main>
             </div>

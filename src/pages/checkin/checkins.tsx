@@ -10,6 +10,7 @@ import {
   HiChevronDown,
 } from "react-icons/hi";
 import { AiOutlineFileText } from "react-icons/ai";
+import { CheckInDetails } from "../../components/details/checkInDetails";
 
 // 1. Өгөгдлийн бүтцийг тодорхойлох Interface
 interface CheckinData {
@@ -21,8 +22,16 @@ interface CheckinData {
   warehouse: string;
   user: string;
   details: string;
+  items: Item[]; // Added this
 }
 
+type Item = {
+  id: string | number;
+  name: string;
+  code: string;
+  weight: string;
+  quantity: string;
+};
 const checkinsList: CheckinData[] = [
   {
     id: "1",
@@ -32,8 +41,23 @@ const checkinsList: CheckinData[] = [
     contact: "Marianna Upton",
     warehouse: "Warehouse 3",
     user: "Damdinnyam",
-    details:
-      "Rerum mollitia doloribus necessitatibus rerum cumque blanditiis aut est.",
+    details: "Rerum mollitia doloribus necessitatibus rerum cumque.",
+    items: [
+      {
+        id: 1,
+        name: "Test Item 01",
+        code: "TI01",
+        weight: "10kg",
+        quantity: "5pc",
+      },
+      {
+        id: 2,
+        name: "Test Item 02",
+        code: "TI02",
+        weight: "2kg",
+        quantity: "10pc",
+      },
+    ],
   },
   {
     id: "2",
@@ -44,26 +68,15 @@ const checkinsList: CheckinData[] = [
     warehouse: "Main Warehouse",
     user: "Suren",
     details: "Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
-  },
-  {
-    id: "3",
-    code: "TCI30",
-    date: "Feb 25, 2026",
-    status: "Pending",
-    contact: "Alice Smith",
-    warehouse: "East Wing",
-    user: "Bat",
-    details: "Repellendus cumque repellat fuga minima odio voluptatem.",
-  },
-  {
-    id: "4",
-    code: "TCI31",
-    date: "Feb 26, 2026",
-    status: "Draft",
-    contact: "Bob Brown",
-    warehouse: "North Storage",
-    user: "Bold",
-    details: "Blanditiis aut est labore totam et aut et eos molestias.",
+    items: [
+      {
+        id: 3,
+        name: "Bulk Cargo",
+        code: "BC01",
+        weight: "500kg",
+        quantity: "1pc",
+      },
+    ],
   },
 ];
 
@@ -75,8 +88,13 @@ const Checkins: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isOpenDetails, setIsOpenDetails] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  // 1. Шүүх логик (Search + Status Filter)
+  const handleSelectItem = (item: CheckinData) => {
+    setSelectedItem(item);
+    setIsOpenDetails(true); // Now correctly opens the modal
+  };
   const filteredList = checkinsList.filter((item) => {
     const matchesSearch =
       item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,6 +127,12 @@ const Checkins: React.FC = () => {
             Please review the data in the table below
           </p>
         </div>
+        {isOpenDetails && selectedItem && (
+          <CheckInDetails
+            onClose={() => setIsOpenDetails(false)}
+            items={selectedItem.items}
+          />
+        )}
 
         <div className="mb-6 flex flex-wrap gap-4 justify-between items-center print:hidden">
           <div className="flex items-center gap-2 w-full max-w-2xl">
@@ -188,7 +212,7 @@ const Checkins: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigate("/checkins/create")}
+            onClick={() => navigate("create")}
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
@@ -212,7 +236,8 @@ const Checkins: React.FC = () => {
               {currentItems.map((item) => (
                 <tr
                   key={item.id}
-                  className="hover:bg-gray-50 transition-colors group"
+                  className="hover:bg-gray-50 transition-colors group cursor-pointer"
+                  onClick={() => handleSelectItem(item)}
                 >
                   <td className="px-6 py-4">
                     <div className="font-bold text-blue-600">{item.code}</div>

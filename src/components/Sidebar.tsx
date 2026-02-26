@@ -16,7 +16,7 @@ import {
   AiOutlineLink,
 } from "react-icons/ai";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-// 1. Дата бүтцийг тодорхойлох Interface
+
 interface SubMenuItem {
   name: string;
   href: string;
@@ -26,7 +26,7 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ElementType;
-  children?: SubMenuItem[]; // Нэмэлт (optional) дэд цэс
+  children?: SubMenuItem[];
 }
 
 const navigation: NavItem[] = [
@@ -94,7 +94,6 @@ const navigation: NavItem[] = [
 ];
 
 export const Sidebar: React.FC = () => {
-  // 2. Аль цэс нээлттэй байгааг хянах State
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const location = useLocation();
 
@@ -106,7 +105,11 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800 text-gray-300 w-full md:w-80 grid grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto hidden md:grid print:hidden ondark">
+    <div
+      className="bg-gray-800 text-gray-300 w-full md:w-80 grid grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto hidden md:grid print:hidden ondark"
+      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+    >
+      <style>{`div.ondark::-webkit-scrollbar { display: none; }`}</style>
       <div className="py-2">
         <div className="mt-1 font-bold text-xs text-gray-600 px-4 py-2 uppercase tracking-wider">
           Main
@@ -124,15 +127,12 @@ export const Sidebar: React.FC = () => {
           <span className="grow font-medium text-lg">Dashboard</span>
         </Link>
 
-        {/* Navigation Mapping */}
         {navigation.map((item) => {
           const isMenuOpen = !!openMenus[item.name];
-          // Одоогийн URL энэ цэсний href-ээр эхэлж байгаа эсэхийг шалгах
           const isActive = location.pathname.startsWith(item.href);
 
           return (
             <div key={item.name} className="flex flex-col">
-              {/* Parent Menu Item */}
               <div
                 onClick={() => toggleMenu(item.name)}
                 className={`cursor-pointer border-b text-lg border-[#0000004d] flex items-center px-4 py-4 md:py-3 transition-all duration-200 ${
@@ -157,7 +157,6 @@ export const Sidebar: React.FC = () => {
                 )}
               </div>
 
-              {/* Submenu (Collapsible) */}
               {item.children && isMenuOpen && (
                 <div className="bg-gray-900/50 overflow-hidden transition-all">
                   {item.children.map((child) => (

@@ -3,17 +3,26 @@ import { IoIosArrowDown } from "react-icons/io";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  setSelectedItem: React.Dispatch<React.SetStateAction<string | null>>;
+  setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedValue?: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export const SelectVariants = (props: Props) => {
-  const { isOpen, onClose } = props;
-
+  const { isOpen, onClose, setSelectedItem, setSearchTerm, setSelectedValue } =
+    props;
+  const handleOnclose = () => {
+    onClose();
+    setSelectedItem(null);
+    setSearchTerm && setSearchTerm("");
+    setSelectedValue && setSelectedValue("");
+  };
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed z-10 inset-0 bg-gray-500/75 transition-opacity flex justify-center items-center"
-      onClick={onClose} // 👈 Click backdrop → close
+      onClick={handleOnclose} // 👈 Click backdrop → close
     >
       <div
         className="sm:max-w-2xl bg-white shadow-xl inline-block align-bottom md:rounded-md text-left transform transition-all lg:my-4 md:align-middle w-full relative z-999"
@@ -24,7 +33,7 @@ export const SelectVariants = (props: Props) => {
 
           {/* X Button */}
           <button
-            onClick={onClose} // 👈 X button → close
+            onClick={handleOnclose} // 👈 X button → close
             className="absolute top-3 right-3 flex items-center justify-center h-8 w-8 rounded-full text-gray-600 hover:text-gray-800 hover:bg-gray-200 focus:outline-none transition-colors"
           >
             ✕
