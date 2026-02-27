@@ -106,10 +106,39 @@ const navigation: NavItem[] = [
       { name: "Import Units", href: "/units/import" },
     ],
   },
-  { name: "Units", href: "/units", icon: AiOutlineCi },
-  { name: "Warehouses", href: "/warehouses", icon: AiOutlineBank },
-  { name: "Users", href: "/users", icon: AiOutlineUsergroupAdd },
-  { name: "Reports", href: "/reports", icon: AiOutlineLineChart },
+  {
+    name: "Warehouses",
+    href: "/warehouses",
+    icon: AiOutlineBank,
+    children: [
+      { name: "List All Warehouses", href: "/warehouses" },
+      { name: "Create New Warehouse", href: "/warehouses/create" },
+      { name: "Import Warehouses", href: "/warehouses/import" },
+    ],
+  },
+  {
+    name: "Users",
+    href: "/users",
+    icon: AiOutlineUsergroupAdd,
+    children: [
+      { name: "List All Users", href: "/users" },
+      { name: "Create New User", href: "/users/create" },
+      { name: "Import Users", href: "/users/import" },
+    ],
+  },
+
+  {
+    name: "Reports",
+    href: "/reports",
+    icon: AiOutlineLineChart,
+    children: [
+      { name: "Total Records", href: "/reports/total-records" },
+      { name: "Checkin Report", href: "/reports/checkin" },
+      { name: "Checkout Report", href: "/reports/checkout" },
+      { name: "Transfer Report", href: "/reports/transfer" },
+      { name: "Adjustment Report", href: "/reports/adjustment" },
+    ],
+  },
 ];
 
 export const Sidebar: React.FC = () => {

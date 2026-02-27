@@ -321,7 +321,6 @@ const CreateCheckIn = () => {
                       </div>
                     </div>
 
-                    {/* Preview of uploaded files */}
                     {uploadedFiles.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {uploadedFiles.map((file, idx) => (

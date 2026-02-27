@@ -11,8 +11,15 @@ import CreateAdjustment from "./pages/adjustment/create";
 import Transfer from "./pages/transfer/transfer";
 import CreateTransfer from "./pages/transfer/create";
 import Items from "./pages/items/items";
+import Contacts from "./pages/contacts/contacts";
 // import Items from "./pages/items/create";
 import CreateItem from "./pages/items/create";
+import ContactPage from "./pages/contacts/contact";
+import CreateContact from "./pages/contacts/create";
+import Categories from "./pages/categorie/categories";
+import CreateCategorie from "./pages/categorie/create";
+import Category from "./pages/categorie/category";
+import Units from "./pages/unit/units";
 
 function App() {
   return (
@@ -40,6 +47,16 @@ function App() {
                   <Route path="/transfer/create" element={<CreateTransfer />} />
                   <Route path="/items/create" element={<CreateItem />} />
                   <Route path="/items" element={<Items />} />
+                  <Route path="/contacts" element={<Contacts />} />
+                  <Route path="/contacts/:id/edit" element={<ContactPage />} />
+                  <Route path="/contacts/create" element={<CreateContact />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/categories/:id/edit" element={<Category />} />
+                  <Route
+                    path="/categories/create"
+                    element={<CreateCategorie />}
+                  />
+                  <Route path="/units" element={<Units />} />
                 </Routes>
               </main>
             </div>
