@@ -19,7 +19,7 @@ export const Header = () => {
           </button>
         </span>
       </div>
-      <div className="bg-white border-b border-gray-400 w-full py-2 px-4 md:py-0 md:text-md flex justify-between items-center">
+      <div className="bg-white border-b border-gray-200 w-full py-2 px-4 md:py-0 md:text-md flex justify-between items-center">
         <div className="mt-1 mr-4 flex items-center">
           <div className="relative">us</div>
           <div className="relative"></div>

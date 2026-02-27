@@ -1,63 +1,66 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HiOutlineSearch, HiChevronDown } from "react-icons/hi";
+import { HiChevronDown } from "react-icons/hi";
 import { TfiMenuAlt } from "react-icons/tfi";
+import { IoCheckmark } from "react-icons/io5"; // For the green checkmark
 
-// 1. Updated Interface for Units
-interface UnitData {
+// 1. Updated Interface for Warehouses
+interface WarehouseData {
   id: string;
   name: string;
   code: string;
-  baseUnit: string;
-  formula: string;
+  phone: string;
+  email: string;
+  address: string;
+  active: boolean;
   status: "Draft" | "Completed" | "Pending";
 }
 
-// 2. Updated Dummy Data to match the "Units" image
-const unitsList: UnitData[] = [
+// 2. Updated Dummy Data to match the "Warehouses" image sequence
+const warehousesList: WarehouseData[] = [
   {
-    id: "1",
-    name: "Dozen",
-    code: "dz",
-    baseUnit: "Piece (pc)",
-    formula: "Piece (pc) * 12 = Dozen (dz)",
-    status: "Completed",
-  },
-  {
-    id: "2",
-    name: "Centimeter",
-    code: "cm",
-    baseUnit: "Meter (m)",
-    formula: "Meter (m) * 100 = Centimeter (cm)",
+    id: "4",
+    name: "Warehouse 4",
+    code: "WH4",
+    phone: "+17695541027",
+    email: "robel.maverick@example.com",
+    address: "931 Wolf Points Apt. 967 Lake Kylieberg, TN 19639-8157",
+    active: true,
     status: "Completed",
   },
   {
     id: "3",
-    name: "Kilogram",
-    code: "kg",
-    baseUnit: "",
-    formula: "",
+    name: "Warehouse 3",
+    code: "WH3",
+    phone: "+18316426841",
+    email: "enos72@example.net",
+    address: "935 Kyleigh Squares Apt. 875 South Princess, KY 87534",
+    active: true,
     status: "Completed",
   },
   {
-    id: "4",
-    name: "Piece",
-    code: "pc",
-    baseUnit: "",
-    formula: "",
+    id: "2",
+    name: "Warehouse 2",
+    code: "WH2",
+    phone: "+19402172168",
+    email: "arne83@example.com",
+    address: "538 Philip Curve Suite 171 Madisynville, CA 25986-3889",
+    active: true,
     status: "Completed",
   },
   {
-    id: "5",
-    name: "Meter",
-    code: "m",
-    baseUnit: "",
-    formula: "",
+    id: "1",
+    name: "Warehouse 1",
+    code: "WH1",
+    phone: "+15408847209",
+    email: "rath.waino@example.org",
+    address: "6897 Barrows Meadows Lake Elizaport, MO 07353-7812",
+    active: true,
     status: "Completed",
   },
 ];
 
-const Units: React.FC = () => {
+const Warehouses: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
@@ -65,14 +68,14 @@ const Units: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const handleSelectItem = (item: UnitData) => {
-    navigate(`/units/${item.id}/edit`);
+  const handleSelectItem = (item: WarehouseData) => {
+    navigate(`/warehouses/${item.id}/edit`);
   };
 
-  const filteredList = unitsList.filter((item) => {
+  const filteredList = warehousesList.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.code.toLowerCase().includes(searchTerm.toLowerCase());
+      item.email.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "All"
@@ -96,7 +99,7 @@ const Units: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Units</h3>
+          <h3 className="text-lg font-bold text-gray-900">Warehouses</h3>
           <p className="mt-1 text-gray-600">
             Please review the data in the table below
           </p>
@@ -157,7 +160,7 @@ const Units: React.FC = () => {
           </button>
         </div>
 
-        {/* --- TABLE STYLED FOR UNITS --- */}
+        {/* --- TABLE STYLED FOR WAREHOUSES --- */}
         <div className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -166,13 +169,13 @@ const Units: React.FC = () => {
                   Name
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Code
+                  Contact
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Base Unit
+                  Address
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Formula
+                  Active
                 </th>
                 <th className="px-6 py-4"></th>
               </tr>
@@ -185,19 +188,25 @@ const Units: React.FC = () => {
                   onClick={() => handleSelectItem(item)}
                 >
                   <td className="px-6 py-5 text-sm text-gray-800 font-medium">
-                    {item.name}
+                    {item.name} ({item.code})
                   </td>
                   <td className="px-6 py-5 text-sm text-gray-800">
-                    {item.code}
+                    <div className="flex flex-col">
+                      <span>{item.phone}</span>
+                      <span className="text-gray-500 text-xs">
+                        {item.email}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-6 py-5 text-sm text-gray-500">
-                    {item.baseUnit}
+                  <td className="px-6 py-5 text-sm text-gray-600 max-w-xs">
+                    {item.address}
                   </td>
                   <td className="px-6 py-5 text-sm">
-                    {item.formula && (
-                      <span className="bg-slate-700 text-white px-3 py-1 rounded text-xs font-mono">
-                        {item.formula}
-                      </span>
+                    {item.active && (
+                      <div className="flex items-center text-gray-800">
+                        <IoCheckmark className="text-green-500 mr-1 w-4 h-4" />
+                        <span>Yes</span>
+                      </div>
                     )}
                   </td>
                   <td className="px-6 py-5 text-right text-gray-400">
@@ -269,4 +278,4 @@ const Units: React.FC = () => {
   );
 };
 
-export default Units;
+export default Warehouses;

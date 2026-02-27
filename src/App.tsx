@@ -20,6 +20,9 @@ import Categories from "./pages/categorie/categories";
 import CreateCategorie from "./pages/categorie/create";
 import Category from "./pages/categorie/category";
 import Units from "./pages/unit/units";
+import Warehouses from "./pages/warehouse/warehouses";
+import Warehouse from "./pages/warehouse/warehouse";
+import CreateWarehouse from "./pages/warehouse/create";
 
 function App() {
   return (
@@ -57,6 +60,12 @@ function App() {
                     element={<CreateCategorie />}
                   />
                   <Route path="/units" element={<Units />} />
+                  <Route path="/warehouses" element={<Warehouses />} />
+                  <Route path="/warehouses/:id/edit" element={<Warehouse />} />
+                  <Route
+                    path="/warehouses/create"
+                    element={<CreateWarehouse />}
+                  />
                 </Routes>
               </main>
             </div>
