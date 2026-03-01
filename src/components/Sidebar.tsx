@@ -154,7 +154,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <div
-      className="bg-gray-800 text-gray-300 w-full md:w-64 grid grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto hidden md:grid print:hidden ondark"
+      className="bg-gray-800 text-gray-300  md:w-64 grid grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto hidden md:grid print:hidden ondark"
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
     >
       <style>{`div.ondark::-webkit-scrollbar { display: none; }`}</style>

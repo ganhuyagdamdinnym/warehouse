@@ -40,7 +40,7 @@ const Warehouse = () => {
               {/* Top Row: Code and Name */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1">
+                  <label className="block text-md font-bold text-gray-900 mb-1">
                     Code
                   </label>
                   <input

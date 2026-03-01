@@ -43,7 +43,7 @@ const CreateCheckIn = () => {
     item.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Close dropdown on outside click
+  //  chamaig harah nud min unaga shig
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -57,7 +57,6 @@ const CreateCheckIn = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle selecting item from search -> Add to table
   const handleSelectItem = (item: string) => {
     const newItem = {
       id: Date.now(),

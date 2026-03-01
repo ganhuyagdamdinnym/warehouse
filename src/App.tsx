@@ -23,6 +23,8 @@ import Units from "./pages/unit/units";
 import Warehouses from "./pages/warehouse/warehouses";
 import Warehouse from "./pages/warehouse/warehouse";
 import CreateWarehouse from "./pages/warehouse/create";
+import Users from "./pages/user/users";
+import User from "./pages/user/user";
 
 function App() {
   return (
@@ -66,6 +68,8 @@ function App() {
                     path="/warehouses/create"
                     element={<CreateWarehouse />}
                   />
+                  <Route path="/users" element={<Users />} />
+                  <Route path="/users/:id/edit" element={<User />} />
                 </Routes>
               </main>
             </div>

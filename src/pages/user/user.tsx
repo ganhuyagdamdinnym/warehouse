@@ -1,20 +1,14 @@
-const CreateUser = () => {
+const User = () => {
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div>
         {/* Breadcrumb Header */}
         <div className="px-4 md:px-0">
           <h3 className="text-lg font-semibold text-gray-900">
-            <div className="flex items-center">
-              <span className="text-blue-600 hover:text-blue-700 cursor-pointer">
-                Users
-              </span>
-              <span className="text-gray-400 font-medium mx-2">/</span>
-              Users Name
-            </div>
+            <div className="flex items-center">Create New User</div>
           </h3>
           <p className="mt-1 text-gray-600 text-sm">
-            Update the record by modifying the details in the form below
+            Please fill the form below to add new record.
           </p>
         </div>
 
@@ -151,7 +145,12 @@ const CreateUser = () => {
             </div>
             {/* Form Actions Footer */}
             <div className="px-4 py-4 mt-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-              <div></div>
+              <button
+                type="button"
+                className="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-2 rounded-md transition-colors"
+              >
+                Delete User
+              </button>
               <button
                 type="submit"
                 className="px-6 py-2 bg-slate-800 text-white text-sm font-bold rounded-md hover:bg-slate-700 shadow-sm transition-colors uppercase tracking-wider"
@@ -166,4 +165,4 @@ const CreateUser = () => {
   );
 };
 
-export default CreateUser;
+export default User;
