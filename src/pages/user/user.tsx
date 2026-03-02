@@ -5,7 +5,13 @@ const User = () => {
         {/* Breadcrumb Header */}
         <div className="px-4 md:px-0">
           <h3 className="text-lg font-semibold text-gray-900">
-            <div className="flex items-center">Create New User</div>
+            <div className="flex items-center">
+              <span className="text-blue-600 hover:text-blue-700 cursor-pointer">
+                Users
+              </span>
+              <span className="text-gray-400 font-medium mx-2">/</span>
+              User Name
+            </div>
           </h3>
           <p className="mt-1 text-gray-600 text-sm">
             Please fill the form below to add new record.

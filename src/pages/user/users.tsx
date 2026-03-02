@@ -152,15 +152,9 @@ const Users: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-200 bg-white">
-                <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Name
-                </th>
-                <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Email
-                </th>
-                <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Role
-                </th>
+                <th className="px-6 py-4 font-bold text-gray-900">Name</th>
+                <th className="px-6 py-4  font-bold text-gray-900">Email</th>
+                <th className="px-6 py-4  font-bold text-gray-900">Role</th>
 
                 <th className="px-6 py-4"></th>
               </tr>

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from "react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import Dashboard from "./pages/dashboard";
@@ -25,16 +26,35 @@ import Warehouse from "./pages/warehouse/warehouse";
 import CreateWarehouse from "./pages/warehouse/create";
 import Users from "./pages/user/users";
 import User from "./pages/user/user";
+import CreateRole from "./pages/user/createRole";
+import CreateUser from "./pages/user/create";
+import Roles from "./pages/user/roles";
+import Role from "./pages/user/role";
+import TotalRecords from "./pages/records/records";
+import CheckinReport from "./pages/records/checkInReport";
+import { MobileSidebar } from "./components/mobileSidebar";
+import Profile from "./pages/settings/profile";
+import Activities from "./pages/settings/activity";
 
 function App() {
+  const [isOpenSidebar, setIsOpenSideBar] = useState<boolean>(false);
   return (
     <Router>
       <div className="bg-gray-100 min-h-screen print:bg-white">
         <div className="md:flex md:flex-col">
           <div className="md:h-screen md:flex md:flex-col">
-            <Header />
+            <Header
+              isOpenSidebar={isOpenSidebar}
+              setIsOpenSidebar={setIsOpenSideBar}
+            />
             <div className="md:flex md:grow md:items-stretch overflow-hidden">
               <Sidebar />
+              {isOpenSidebar && (
+                <MobileSidebar
+                  setIsOpenSidebar={setIsOpenSideBar}
+                  isOpenSidebar={isOpenSidebar}
+                />
+              )}
 
               <main className="flex-1 overflow-y-auto">
                 <Routes>
@@ -69,7 +89,16 @@ function App() {
                     element={<CreateWarehouse />}
                   />
                   <Route path="/users" element={<Users />} />
+                  <Route path="/users/create" element={<CreateUser />} />
+                  <Route path="/roles" element={<Roles />} />
+                  <Route path="/roles/create" element={<CreateRole />} />
+                  <Route path="/roles/:id/edit" element={<Role />} />
                   <Route path="/users/:id/edit" element={<User />} />
+                  <Route path="/reports" element={<TotalRecords />} />
+                  <Route path="/reports/checkin" element={<CheckinReport />} />
+
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/activity" element={<Activities />} />
                 </Routes>
               </main>
             </div>

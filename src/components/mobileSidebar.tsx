@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   AiFillHome,
@@ -16,7 +16,6 @@ import {
   AiOutlineLink,
 } from "react-icons/ai";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-import { RxActivityLog } from "react-icons/rx";
 
 interface SubMenuItem {
   name: string;
@@ -142,10 +141,13 @@ const navigation: NavItem[] = [
     ],
   },
 ];
-
-export const Sidebar: React.FC = () => {
+type Props = {
+  setIsOpenSidebar: Dispatch<SetStateAction<boolean>>;
+  isOpenSidebar: boolean;
+};
+export const MobileSidebar = (props: Props) => {
+  const { setIsOpenSidebar } = props;
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
-  const [isActivity, setIsActivity] = useState<string>("");
   const location = useLocation();
 
   const toggleMenu = (name: string) => {
@@ -157,7 +159,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <div
-      className="bg-gray-800 text-gray-300 md:w-64 grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto hidden md:grid print:hidden ondark"
+      className="bg-gray-800 text-gray-300 w-full grid-cols-1 place-content-between overflow-x-hidden overflow-y-auto ondark"
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
     >
       <style>{`div.ondark::-webkit-scrollbar { display: none; }`}</style>
@@ -167,6 +169,7 @@ export const Sidebar: React.FC = () => {
         </div>
 
         <Link
+          onClick={() => setIsOpenSidebar(false)}
           to="/"
           className={`md:py-3 flex items-center border-b border-[#0000004d] px-4 md:px-2 py-4 lg:px-4 transition-all duration-200 ${
             location.pathname === "/"
@@ -212,6 +215,7 @@ export const Sidebar: React.FC = () => {
                 <div className="bg-gray-900/50 overflow-hidden transition-all">
                   {item.children.map((child) => (
                     <Link
+                      onClick={() => setIsOpenSidebar(false)}
                       key={child.name}
                       to={child.href}
                       className={`flex items-center py-3 pl-11 pr-4 text-sm border-b border-[#0000002d] transition-colors ${
@@ -229,21 +233,6 @@ export const Sidebar: React.FC = () => {
             </div>
           );
         })}
-        <div className="hidden md:block mt-1 font-bold text-xs text-gray-600 px-4 py-2">
-          Misc
-        </div>
-        <a
-          onClick={() => setIsActivity("activity")}
-          href="/activity"
-          className={`cursor-pointer border-b border-white/10 flex items-center px-4 py-4 md:py-3 text-sm font-medium transition-all duration-200 ${
-            isActivity === "activity"
-              ? "bg-blue-600 text-white"
-              : "text-gray-300 hover:bg-blue-700 hover:text-white"
-          }`}
-        >
-          <RxActivityLog className="w-4 h-4 mr-3" />
-          Activity
-        </a>
       </div>
     </div>
   );

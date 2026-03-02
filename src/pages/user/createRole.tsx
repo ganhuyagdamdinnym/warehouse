@@ -1,0 +1,48 @@
+const CreateRole = () => {
+  return (
+    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
+      <div>
+        {/* Breadcrumb Header */}
+        <div className="px-4 md:px-0">
+          <h3 className="text-lg font-semibold text-gray-900">
+            <div className="flex items-center">Create New Role</div>
+          </h3>
+          <p className="mt-1 text-gray-600 text-sm">
+            Please fill the form below to add new record.
+          </p>
+        </div>
+
+        <div className="mt-6">
+          <form className="px-4 py-5 bg-white shadow-sm border border-gray-200 rounded-md overflow-hidden">
+            <div className="grid gap-6">
+              <div>
+                <div className="col-span-6 sm:col-span-4 relative mb-2">
+                  <label className="block text-md font-medium text-gray-900 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="WH4"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+            {/* Form Actions Footer */}
+            <div className="px-4 py-4 mt-4 bg-gray-50 flex items-center justify-between">
+              <div></div>
+              <button
+                type="submit"
+                className="px-6 py-2 bg-slate-800 text-white text-sm font-bold rounded-md hover:bg-slate-700 shadow-sm transition-colors uppercase tracking-wider"
+              >
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CreateRole;

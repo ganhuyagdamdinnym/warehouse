@@ -1,18 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  HiOutlineSearch,
-  HiOutlinePencilAlt,
-  HiOutlineChatAlt2,
-  HiOutlineTrash,
-  HiOutlinePlus,
-  HiOutlineClipboardList,
-  HiChevronDown,
-} from "react-icons/hi";
+import { HiOutlinePlus } from "react-icons/hi";
 import { AiOutlineFileText } from "react-icons/ai";
 import { CheckInDetails } from "../../components/details/checkInDetails";
 
-// 1. Өгөгдлийн бүтцийг тодорхойлох Interface
 interface CheckinData {
   id: string;
   code: string;
@@ -67,7 +58,8 @@ const checkinsList: CheckinData[] = [
     contact: "John Doe",
     warehouse: "Main Warehouse",
     user: "Kevin",
-    details: "Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
+    details:
+      "Labore totam et aut et. Eos molestias qui cumque rerum veniam. Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
     items: [
       {
         id: 3,
@@ -80,12 +72,12 @@ const checkinsList: CheckinData[] = [
   },
 ];
 
-const Checkins: React.FC = () => {
+const CheckinReport: React.FC = () => {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All"); // "All", "Draft", "Non-Draft"
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isOpenDetails, setIsOpenDetails] = useState(false);
@@ -121,103 +113,30 @@ const Checkins: React.FC = () => {
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
-        <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Checkins</h3>
-          <p className="mt-1 text-gray-600">
-            Please review the data in the table below
-          </p>
+        <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6 w-full flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Checkins</h3>
+            <p className="mt-1 text-gray-600">
+              Please review the data in the table below
+            </p>
+          </div>
+          <div className="mb-6 flex flex-wrap gap-4 justify-between items-center print:hidden">
+            <button
+              onClick={() => navigate("create")}
+              className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
+            >
+              <HiOutlinePlus className="w-4 h-4 mr-2" />
+              TOGGLE FORM
+            </button>
+          </div>
         </div>
+
         {isOpenDetails && selectedItem && (
           <CheckInDetails
             onClose={() => setIsOpenDetails(false)}
             items={selectedItem.items}
           />
         )}
-
-        <div className="mb-6 flex  gap-4 justify-between items-center print:hidden">
-          <div className="flex items-center gap-2 w-full max-w-2xl">
-            {/* Filter Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
-              >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
-              </button>
-
-              {isFilterOpen && (
-                <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
-                  <p className="text-xs font-semibold text-gray-400 px-2 py-1 uppercase">
-                    Status
-                  </p>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("All");
-                      setIsFilterOpen(false);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === "All" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
-                  >
-                    All Checkins
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("Draft");
-                      setIsFilterOpen(false);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === "Draft" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
-                  >
-                    Draft Only
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("Non-Draft");
-                      setIsFilterOpen(false);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === "Non-Draft" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
-                  >
-                    Non-Drafted (Completed/Pending)
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Search Input */}
-            <div className="flex max-w-100 items-center flex-1 bg-white shadow-sm rounded-md border border-gray-300 px-3">
-              <HiOutlineSearch className="text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search..."
-              />
-              {(searchTerm || statusFilter !== "All") && (
-                <button
-                  onClick={() => {
-                    setSearchTerm("");
-                    setStatusFilter("All");
-                  }}
-                  className="text-sm text-gray-400 hover:text-blue-600"
-                >
-                  Reset
-                </button>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={() => navigate("create")}
-            className="inline-flex items-center px-4 py-3 max-h-10 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
-          >
-            <HiOutlinePlus className="w-4 h-4 mr-2" />
-            <p className="hidden lg:block"> Create New Checkin</p>
-          </button>
-        </div>
 
         {/* Table Section */}
         <div className="bg-white -mx-4 md:mx-0 md:rounded-md shadow-sm overflow-x-auto">
@@ -227,7 +146,6 @@ const Checkins: React.FC = () => {
                 <th className="px-6 py-4">Checkin</th>
                 <th className="px-6 py-4">Relations</th>
                 <th className="px-6 py-4">Details</th>
-                <th className="px-6 py-4 text-right pr-10">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -266,24 +184,8 @@ const Checkins: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="max-w-xs whitespace-normal line-clamp-2 text-sm text-gray-600 italic">
+                    <div className="max-w-xs whitespace-normal line-clamp-5 text-sm text-gray-600 italic">
                       {item.details}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="inline-flex rounded-md shadow-sm border border-gray-200 overflow-hidden">
-                      <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
-                        <HiOutlinePencilAlt className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
-                        <HiOutlineChatAlt2 className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200">
-                        <HiOutlineClipboardList className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-white text-red-600 hover:bg-red-50">
-                        <HiOutlineTrash className="w-5 h-5" />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -356,4 +258,4 @@ const Checkins: React.FC = () => {
   );
 };
 
-export default Checkins;
+export default CheckinReport;
