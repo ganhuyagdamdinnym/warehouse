@@ -7,6 +7,7 @@ import {
   type SetStateAction,
   type Dispatch,
 } from "react"; // Added useEffect and useRef
+import { LuWarehouse } from "react-icons/lu";
 
 type Props = {
   setIsOpenSidebar: Dispatch<SetStateAction<boolean>>;
@@ -45,6 +46,7 @@ export const Header = (props: Props) => {
         <h1 className="text-gray-900">
           <div className="flex items-start max-h-8 overflow-hidden w-56">
             <div className="flex items-center">
+              <LuWarehouse className="h-10 w-10 mr-3 text-indigo-600" />
               <h1 className="text-2xl font-bold text-white">Warehouse</h1>
             </div>
           </div>

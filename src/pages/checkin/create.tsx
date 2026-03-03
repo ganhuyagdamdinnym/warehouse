@@ -120,7 +120,7 @@ const CreateCheckIn = () => {
                         </label>
                         <input
                           type="date"
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
                         />
                       </div>
                       <div className="col-span-6 sm:col-span-4 relative mb-2">
@@ -130,7 +130,7 @@ const CreateCheckIn = () => {
                         <input
                           placeholder="Reference"
                           type="text"
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
                         />
                       </div>
                     </div>
@@ -139,7 +139,7 @@ const CreateCheckIn = () => {
                         <label className="font-medium text-gray-700">
                           <span>Contact</span>
                         </label>
-                        <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm">
+                        <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm">
                           <option value="">Select Contact</option>
                           {contacts.map((c) => (
                             <option key={c} value={c}>
@@ -152,7 +152,7 @@ const CreateCheckIn = () => {
                         <label className="font-medium text-gray-700">
                           <span>Warehouse</span>
                         </label>
-                        <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm">
+                        <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm">
                           <option value="">Select Warehouse</option>
                           {warehouses.map((wh) => (
                             <option key={wh} value={wh}>

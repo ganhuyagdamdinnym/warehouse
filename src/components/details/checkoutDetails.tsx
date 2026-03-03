@@ -12,6 +12,7 @@ type Props = {
 };
 
 export const CheckoutDetails = ({ onClose, items }: Props) => {
+  console.log("checkout check", items);
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 p-4 transition-opacity"
@@ -70,7 +71,7 @@ export const CheckoutDetails = ({ onClose, items }: Props) => {
 
             <div className="py-2 text-center">
               <h1 className="text-lg font-bold uppercase tracking-wide">
-                Checkin
+                Checkout
               </h1>
             </div>
 

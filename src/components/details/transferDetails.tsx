@@ -1,5 +1,3 @@
-import React from "react";
-
 type Item = {
   id: string | number;
   name: string;
@@ -13,8 +11,7 @@ type Props = {
   items: Item[];
 };
 
-export const CheckInDetails = ({ onClose, items }: Props) => {
-  console.log("check", items);
+export const transferDetails = ({ onClose, items }: Props) => {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 p-4 transition-opacity"

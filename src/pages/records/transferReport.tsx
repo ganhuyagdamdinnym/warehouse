@@ -40,7 +40,7 @@ const transferList: TransferData[] = [
 
 const TransferReport: React.FC = () => {
   const navigate = useNavigate();
-  const [showForm, setShowForm] = useState(true);
+  const [showForm, setShowForm] = useState(false);
 
   // Оролтын утгууд
   const [inputs, setInputs] = useState({

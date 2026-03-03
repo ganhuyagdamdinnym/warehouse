@@ -32,7 +32,7 @@ const checkinsList: CheckinData[] = [
 
 const CheckoutReport: React.FC = () => {
   const navigate = useNavigate();
-  const [showForm, setShowForm] = useState(true);
+  const [showForm, setShowForm] = useState(false);
 
   // 1. Бүх оролтын утгууд
   const [inputs, setInputs] = useState({
