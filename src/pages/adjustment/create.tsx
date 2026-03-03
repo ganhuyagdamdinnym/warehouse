@@ -1,260 +1,385 @@
-import { useState, useRef, useEffect } from "react";
-import { HiChevronDown } from "react-icons/hi";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const CreateAdjustment = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState("");
-  // Dummy data for select options
-  const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
-  const warehouses = [
-    "Warehouse 1",
-    "Warehouse 2",
-    "Warehouse 3",
-    "Main Storage",
-  ];
-  const items = [
-    "Product 1 - Warehouse A",
-    "Product 2 - Warehouse B",
-    "Item 3 - Storage C",
-    "Spare Part 4",
-    "Electronic Device 5",
-  ];
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchTerm.toLowerCase()),
+// 1. Интерфэйс - Дата бүтэцтэй ижил байх ёстой
+interface TransferData {
+  id: string;
+  code: string;
+  date: string;
+  status: "Draft" | "Completed" | "Pending";
+  user: string;
+  to: string;
+  from: string;
+  details: string;
+}
+
+// Dummy Data
+const transferList: TransferData[] = [
+  {
+    id: "1",
+    code: "TCI28",
+    date: "2026-02-23", // Date format-ийг ISO болгох нь шүүлт хийхэд хялбар
+    status: "Draft",
+    to: "warehouse1 center",
+    from: "warehouse4 jj",
+    user: "Damdinnyam",
+    details:
+      "Rerum mollitia doloribus necessitatibus rerum cumque blanditiis aut est.",
+  },
+  {
+    id: "2",
+    code: "TCI29",
+    date: "2026-03-01",
+    status: "Completed",
+    to: "warehouse2 center",
+    from: "warehouse1 center",
+    user: "Prof. Merle Bergstrom",
+    details: "Example detail description.",
+  },
+];
+
+const TransferReport: React.FC = () => {
+  const navigate = useNavigate();
+  const [showForm, setShowForm] = useState(true);
+
+  // Оролтын утгууд
+  const [inputs, setInputs] = useState({
+    startDate: "",
+    endDate: "",
+    reference: "",
+    toWarehouse: "",
+    fromWarehouse: "",
+    user: "",
+    status: "",
+  });
+
+  // Submit дарахад шүүлт хийх утгууд
+  const [appliedFilters, setAppliedFilters] = useState({ ...inputs });
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAppliedFilters({ ...inputs });
+    setCurrentPage(1);
+  };
+
+  const handleReset = () => {
+    const cleared = {
+      startDate: "",
+      endDate: "",
+      reference: "",
+      toWarehouse: "",
+      fromWarehouse: "",
+      user: "",
+      status: "",
+    };
+    setInputs(cleared);
+    setAppliedFilters(cleared);
+    setCurrentPage(1);
+  };
+
+  // Шүүх логик
+  const filteredList = transferList.filter((item) => {
+    const matchesRef = item.code
+      .toLowerCase()
+      .includes(appliedFilters.reference.toLowerCase());
+    const matchesTo =
+      !appliedFilters.toWarehouse || item.to === appliedFilters.toWarehouse;
+    const matchesFrom =
+      !appliedFilters.fromWarehouse ||
+      item.from === appliedFilters.fromWarehouse;
+    const matchesUser =
+      !appliedFilters.user || item.user === appliedFilters.user;
+    const matchesStatus =
+      !appliedFilters.status || item.status === appliedFilters.status;
+
+    // Date шүүлтүүр
+    const itemDate = new Date(item.date).getTime();
+    const start = appliedFilters.startDate
+      ? new Date(appliedFilters.startDate).getTime()
+      : -Infinity;
+    const end = appliedFilters.endDate
+      ? new Date(appliedFilters.endDate).getTime()
+      : Infinity;
+    const matchesDate = itemDate >= start && itemDate <= end;
+
+    return (
+      matchesRef &&
+      matchesTo &&
+      matchesFrom &&
+      matchesUser &&
+      matchesStatus &&
+      matchesDate
+    );
+  });
+
+  // Хуудаслалт
+  const totalItems = filteredList.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const currentItems = filteredList.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Гадна дарахад хаах
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
-      <div>
-        <div className="px-4 md:px-0 md:col-span-1">
-          <h3 className="text-lg font-bold text-gray-900">
-            Create New Adjustment
-          </h3>
-          <p className="mt-1 text-gray-600">
-            Please fill the form below to add new record.
-          </p>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">Transfer Report</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Please review the transfer records below
+            </p>
+          </div>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#2D3748] text-white text-xs font-bold rounded shadow-sm hover:bg-slate-700 transition-all uppercase"
+          >
+            ⇅ TOGGLE FORM
+          </button>
         </div>
-        <div className="mt-6">
-          <form>
-            <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
-              <div className="grid gap-6">
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Left Side */}
-                    <div className="flex flex-col gap-6 w-full lg:w-1/2">
-                      <div className="col-span-6 sm:col-span-4 relative mb-2">
-                        <label className="font-medium text-gray-700">
-                          <span>Date</span>
-                        </label>
-                        <input
-                          type="date"
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 text-xl"
-                        />
-                      </div>
-                      <div className="col-span-6 sm:col-span-4 relative mb-2">
-                        <label className="font-medium text-gray-700">
-                          <span>Reference</span>
-                        </label>
-                        <input
-                          placeholder="Reference"
-                          type="text"
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 text-xl"
-                        />
-                      </div>
-                    </div>
 
-                    {/* Right Side */}
-                    <div className="flex flex-col gap-6 w-full lg:w-1/2">
-                      <div className="col-span-6 sm:col-span-4 relative mb-2">
-                        <label className="font-medium text-gray-700">
-                          <span>Contact</span>
-                        </label>
-                        <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 text-xl">
-                          <option value="">Select Contact</option>
-                          {contacts.map((contact) => (
-                            <option key={contact} value={contact}>
-                              {contact}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-span-6 sm:col-span-4 relative mb-2">
-                        <label className="font-medium text-gray-700">
-                          <span>Warehouse</span>
-                        </label>
-                        <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 text-xl">
-                          <option value="">Select Warehouse</option>
-                          {warehouses.map((wh) => (
-                            <option key={wh} value={wh}>
-                              {wh}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 md:px-6 bg-gray-50 -mx-4 md:-mx-6">
-                    <div
-                      className="col-span-6 sm:col-span-4 relative mb-2"
-                      ref={containerRef}
-                    >
-                      <div className="relative flex items-center">
-                        {/* Баруун талын Icon */}
-                        <label className="inline-block cursor-pointer absolute top-1/2 -translate-y-1/2 right-2 border border-transparent p-1 text-gray-400">
-                          <div className="h-4 w-4">
-                            <HiChevronDown
-                              className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
-                            />
-                          </div>
-                        </label>
-
-                        <input
-                          type="text"
-                          value={
-                            isOpen ? searchTerm : selectedValue || searchTerm
-                          }
-                          onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setIsOpen(true);
-                          }}
-                          onFocus={() => setIsOpen(true)}
-                          placeholder="Search and select..."
-                          className="pr-8 mt-1 border rounded-md shadow-xs py-2 pl-4 text-base border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none block w-full transition-all"
-                        />
-                      </div>
-
-                      {/* Dropdown жагсаалт */}
-                      {isOpen && (
-                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                          {filteredItems.length > 0 ? (
-                            filteredItems.map((item, index) => (
-                              <div
-                                key={index}
-                                className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-gray-700 border-b border-gray-50 last:border-none"
-                                onClick={() => {
-                                  setSelectedValue(item);
-                                  setSearchTerm(item);
-                                  setIsOpen(false);
-                                }}
-                              >
-                                {item}
-                              </div>
-                            ))
-                          ) : (
-                            <div className="px-4 py-2 text-gray-400 text-sm">
-                              No results found
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="bg-white mt-4 rounded-md shadow-sm overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="text-left font-bold">
-                            <th className="px-2 lg:pl-6 py-4 w-4"></th>
-                            <th className="px-2 lg:px-6 py-4">Item</th>
-                            <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Weight</span>
-                            </th>
-                            <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Quantity</span>
-                            </th>
-                            <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Unit</span>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td
-                              colSpan={5}
-                              className="border-t px-2 lg:px-6 py-4"
-                            >
-                              Add item to the list by search or scan barcode
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    {/* <div className="pt-4">
-                      <div>Add item to the list by search or scan barcode </div>
-                    </div> */}
-                  </div>
-                  <div>
-                    <label className="font-medium text-gray-700">
-                      Attachments
-                    </label>
-                    <div className="border-gray-300 mt-1 flex justify-center px-6 py-3 border-2 border-dashed rounded-md">
-                      <div className="space-y-1 text-center">
-                        <div className="flex items-center justify-center text-gray-600">
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <div className="text-sm text-gray-700">
-                          <div>
-                            You can select .png, .jpg, .pdf, .docx, .xlsx & .zip
-                            files.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="font-medium text-gray-700">
-                      <span>Details</span>
-                    </label>
-                    <textarea
-                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      rows={3}
-                      placeholder="Enter details here..."
-                    ></textarea>
-                  </div>
-                  <div className="flex mb-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="draft"
-                        className="rounded-sm border-gray-300 text-indigo-600 shadow-xs focus:border-indigo-300 focus:ring-3 focus:ring-indigo-200/50"
-                      />
-                      <span className="ml-2 text-gray-600">
-                        This record is draft
-                      </span>
-                    </label>
-                  </div>
-                </div>
+        {/* Filter Form */}
+        {showForm && (
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={inputs.startDate}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, startDate: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={inputs.endDate}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, endDate: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Reference (Code)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. TCI"
+                  value={inputs.reference}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, reference: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Status
+                </label>
+                <select
+                  value={inputs.status}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, status: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                >
+                  <option value="">All Status</option>
+                  <option value="Draft">Draft</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Pending">Pending</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  From Warehouse
+                </label>
+                <select
+                  value={inputs.fromWarehouse}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, fromWarehouse: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                >
+                  <option value="">Select Warehouse</option>
+                  <option value="warehouse4 jj">warehouse4 jj</option>
+                  <option value="warehouse1 center">warehouse1 center</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  To Warehouse
+                </label>
+                <select
+                  value={inputs.toWarehouse}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, toWarehouse: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                >
+                  <option value="">Select Warehouse</option>
+                  <option value="warehouse1 center">warehouse1 center</option>
+                  <option value="warehouse2 center">warehouse2 center</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  User
+                </label>
+                <select
+                  value={inputs.user}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, user: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                >
+                  <option value="">Select User</option>
+                  <option value="Damdinnyam">Damdinnyam</option>
+                  <option value="Prof. Merle Bergstrom">
+                    Prof. Merle Bergstrom
+                  </option>
+                </select>
               </div>
             </div>
-            <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
-              <div className="w-full flex items-center justify-between">
-                <div></div>
-                <div className="flex items-center">
-                  <button className="relative flex items-center justify-center px-4 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150">
-                    Save
-                  </button>
-                </div>
-              </div>
+
+            <div className="flex justify-between items-center border-t pt-6">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-6 py-2 bg-gray-200 rounded text-sm font-bold text-gray-700 hover:bg-gray-300"
+              >
+                RESET
+              </button>
+              <button
+                type="submit"
+                className="px-8 py-2 bg-[#1A202C] text-white text-xs font-bold rounded uppercase hover:bg-black"
+              >
+                SUBMIT
+              </button>
             </div>
           </form>
+        )}
+
+        {/* Table */}
+        <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50/50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
+                  Transfer Info
+                </th>
+                <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
+                  Route & User
+                </th>
+                <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
+                  Details
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {currentItems.map((item) => (
+                <tr
+                  key={item.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 align-top">
+                    <div className="font-bold text-blue-600">{item.code}</div>
+                    <div className="text-sm text-gray-500">{item.date}</div>
+                    <div className="text-xs mt-1">
+                      Status:{" "}
+                      <span
+                        className={`font-bold ${item.status === "Completed" ? "text-green-600" : "text-orange-500"}`}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm align-top leading-relaxed">
+                    <div>
+                      <span className="text-gray-400 w-20 inline-block">
+                        From:
+                      </span>{" "}
+                      {item.from}
+                    </div>
+                    <div>
+                      <span className="text-gray-400 w-20 inline-block">
+                        To:
+                      </span>{" "}
+                      {item.to}
+                    </div>
+                    <div>
+                      <span className="text-gray-400 w-20 inline-block">
+                        User:
+                      </span>{" "}
+                      {item.user}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600 align-top max-w-md">
+                    {item.details}
+                  </td>
+                </tr>
+              ))}
+              {currentItems.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-10 text-center text-gray-500"
+                  >
+                    Өгөгдөл олдсонгүй.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="p-4 flex items-center justify-between border-t text-sm text-gray-600">
+            <span>
+              Showing{" "}
+              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to{" "}
+              {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
+              entries
+            </span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Prev
+              </button>
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default CreateAdjustment;
+export default TransferReport;

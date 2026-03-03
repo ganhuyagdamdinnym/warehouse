@@ -1,5 +1,3 @@
-import React from "react";
-
 type Item = {
   id: string | number;
   name: string;
@@ -13,7 +11,7 @@ type Props = {
   items: Item[];
 };
 
-export const CheckInDetails = ({ onClose, items }: Props) => {
+export const CheckoutDetails = ({ onClose, items }: Props) => {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 p-4 transition-opacity"
@@ -26,7 +24,7 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
         {/* Modal Header - Fixed at top */}
         <div className="flex items-center justify-between border-b px-6 py-4 print:hidden">
           <div className="flex gap-1 text-xl font-semibold">
-            Checkin Details
+            Checkout Details
             <span className="hidden text-gray-500 sm:inline">(TCI28)</span>
           </div>
           <button

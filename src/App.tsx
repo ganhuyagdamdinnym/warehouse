@@ -36,6 +36,9 @@ import { MobileSidebar } from "./components/mobileSidebar";
 import Profile from "./pages/settings/profile";
 import Activities from "./pages/settings/activity";
 import Login from "./pages/login/login";
+import CheckoutReport from "./pages/records/checkoutReport";
+import AdjustmentReport from "./pages/records/adjustmentReport";
+import TransferReport from "./pages/records/transferReport";
 
 function App() {
   const [isOpenSidebar, setIsOpenSideBar] = useState<boolean>(false);
@@ -125,6 +128,18 @@ function App() {
                         <Route
                           path="/reports/checkin"
                           element={<CheckinReport />}
+                        />
+                        <Route
+                          path="/reports/checkout"
+                          element={<CheckoutReport />}
+                        />
+                        <Route
+                          path="/reports/adjustment"
+                          element={<AdjustmentReport />}
+                        />
+                        <Route
+                          path="/reports/transfer"
+                          element={<TransferReport />}
                         />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/activity" element={<Activities />} />

@@ -128,7 +128,7 @@ const CheckoutReport: React.FC = () => {
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-xl font-bold text-gray-800">Checkin Report</h1>
+            <h1 className="text-xl font-bold text-gray-800">Checkout Report</h1>
             <p className="text-sm text-gray-500 mt-1">
               Please review the report below
             </p>
