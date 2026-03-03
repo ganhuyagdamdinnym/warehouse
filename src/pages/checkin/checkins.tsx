@@ -12,7 +12,6 @@ import {
 import { AiOutlineFileText } from "react-icons/ai";
 import { CheckInDetails } from "../../components/details/checkInDetails";
 
-// 1. Өгөгдлийн бүтцийг тодорхойлох Interface
 interface CheckinData {
   id: string;
   code: string;
@@ -22,7 +21,7 @@ interface CheckinData {
   warehouse: string;
   user: string;
   details: string;
-  items: Item[]; // Added this
+  items: Item[];
 }
 
 type Item = {
@@ -32,6 +31,7 @@ type Item = {
   weight: string;
   quantity: string;
 };
+
 const checkinsList: CheckinData[] = [
   {
     id: "1",
@@ -82,9 +82,8 @@ const checkinsList: CheckinData[] = [
 
 const Checkins: React.FC = () => {
   const navigate = useNavigate();
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All"); // "All", "Draft", "Non-Draft"
+  const [statusFilter, setStatusFilter] = useState<string>("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -93,24 +92,22 @@ const Checkins: React.FC = () => {
 
   const handleSelectItem = (item: CheckinData) => {
     setSelectedItem(item);
-    setIsOpenDetails(true); // Now correctly opens the modal
+    setIsOpenDetails(true);
   };
+
   const filteredList = checkinsList.filter((item) => {
     const matchesSearch =
       item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.contact.toLowerCase().includes(searchTerm.toLowerCase());
-
     const matchesStatus =
       statusFilter === "All"
         ? true
         : statusFilter === "Draft"
           ? item.status === "Draft"
           : item.status !== "Draft";
-
     return matchesSearch && matchesStatus;
   });
 
-  // Pagination бодох
   const totalItems = filteredList.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -118,6 +115,7 @@ const Checkins: React.FC = () => {
   const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
   const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
   const displayTo = Math.min(indexOfLastItem, totalItems);
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
@@ -127,6 +125,7 @@ const Checkins: React.FC = () => {
             Please review the data in the table below
           </p>
         </div>
+
         {isOpenDetails && selectedItem && (
           <CheckInDetails
             onClose={() => setIsOpenDetails(false)}
@@ -134,9 +133,8 @@ const Checkins: React.FC = () => {
           />
         )}
 
-        <div className="mb-6 flex  gap-4 justify-between items-center print:hidden">
+        <div className="mb-6 flex gap-4 justify-between items-center print:hidden">
           <div className="flex items-center gap-2 w-full max-w-2xl">
-            {/* Filter Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -144,47 +142,32 @@ const Checkins: React.FC = () => {
               >
                 Filter <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
-
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1 uppercase">
                     Status
                   </p>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("All");
-                      setIsFilterOpen(false);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === "All" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
-                  >
-                    All Checkins
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("Draft");
-                      setIsFilterOpen(false);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === "Draft" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
-                  >
-                    Draft Only
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("Non-Draft");
-                      setIsFilterOpen(false);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === "Non-Draft" ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
-                  >
-                    Non-Drafted (Completed/Pending)
-                  </button>
+                  {["All", "Draft", "Non-Draft"].map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => {
+                        setStatusFilter(f);
+                        setIsFilterOpen(false);
+                        setCurrentPage(1);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === f ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
+                    >
+                      {f === "All"
+                        ? "All Checkins"
+                        : f === "Draft"
+                          ? "Draft Only"
+                          : "Non-Drafted (Completed/Pending)"}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Search Input */}
             <div className="flex max-w-100 items-center flex-1 bg-white shadow-sm rounded-md border border-gray-300 px-3">
               <HiOutlineSearch className="text-gray-400 w-5 h-5" />
               <input
@@ -210,17 +193,18 @@ const Checkins: React.FC = () => {
               )}
             </div>
           </div>
+
           <button
             onClick={() => navigate("create")}
             className="inline-flex items-center px-4 py-3 max-h-10 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            <p className="hidden lg:block"> Create New Checkin</p>
+            <p className="hidden lg:block">Create New Checkin</p>
           </button>
         </div>
 
-        {/* Table Section */}
-        <div className="bg-white -mx-4 md:mx-0 md:rounded-md shadow-sm overflow-x-auto">
+        {/* ── Table: hidden on mobile ── */}
+        <div className="hidden md:block bg-white rounded-md shadow-sm overflow-x-auto">
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="text-left font-bold bg-gray-50 border-b border-gray-200">
@@ -231,7 +215,6 @@ const Checkins: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {/* 3. MAP ашиглан жагсаалтыг үүсгэх */}
               {currentItems.map((item) => (
                 <tr
                   key={item.id}
@@ -242,11 +225,7 @@ const Checkins: React.FC = () => {
                     <div className="font-bold text-blue-600">{item.code}</div>
                     <div className="text-sm text-gray-500">{item.date}</div>
                     <div
-                      className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        item.status === "Completed"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
+                      className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${item.status === "Completed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
                     >
                       <AiOutlineFileText className="mr-1" /> {item.status}
                     </div>
@@ -292,18 +271,87 @@ const Checkins: React.FC = () => {
           </table>
         </div>
 
+        {/* ── Card list: visible on mobile only ── */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {currentItems.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => handleSelectItem(item)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 cursor-pointer active:bg-gray-50"
+            >
+              {/* Top row: code + actions */}
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="font-bold text-blue-600 text-base">
+                    {item.code}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-0.5">
+                    {item.date}
+                  </div>
+                </div>
+                <div
+                  className="flex rounded-lg border border-gray-200 overflow-hidden shadow-sm"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
+                    <HiOutlinePencilAlt className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
+                    <HiOutlineChatAlt2 className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200">
+                    <HiOutlineClipboardList className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 bg-white text-red-600 hover:bg-red-50">
+                    <HiOutlineTrash className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Relations */}
+              <div className="text-sm text-gray-700 space-y-1 mb-3">
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-xs w-16 shrink-0">
+                    Contact
+                  </span>
+                  <span>{item.contact}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-xs w-16 shrink-0">
+                    Warehouse
+                  </span>
+                  <span>{item.warehouse}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-xs w-16 shrink-0">
+                    User
+                  </span>
+                  <span>{item.user}</span>
+                </div>
+              </div>
+
+              {/* Status badge */}
+              <div
+                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${item.status === "Completed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
+              >
+                <AiOutlineFileText className="mr-1" /> {item.status}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
         <div className="mt-6">
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            {/* Динамик мэдээлэл: Өгөгдлөөс хамаарч тоо нь өөрчлөгдөнө */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
               <span className="mr-2">Show</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1); // Хэмжээ өөрчлөгдөхөд 1-р хуудас руу буцна
+                  setCurrentPage(1);
                 }}
-                className="border-gray-300 rounded-md text-sm p-1 outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-md text-sm p-1 outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -314,34 +362,26 @@ const Checkins: React.FC = () => {
               </span>
             </div>
 
-            {/* Хуудас солих товчлуурууд */}
             <div className="flex space-x-1">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
                 Previous
               </button>
-
-              {/* Хуудасны тоогоор товчлуур үүсгэх */}
-              {[...Array(totalPages)].map((_, index) => (
+              {[...Array(totalPages)].map((_, i) => (
                 <button
-                  key={index + 1}
-                  onClick={() => setCurrentPage(index + 1)}
-                  className={`px-3 py-2 border rounded-md transition-colors ${
-                    currentPage === index + 1
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-2 border rounded-md transition-colors ${currentPage === i + 1 ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 hover:bg-gray-50"}`}
                 >
-                  {index + 1}
+                  {i + 1}
                 </button>
               ))}
-
               <button
                 onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"

@@ -1,8 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HiOutlinePlus } from "react-icons/hi";
-import { AiOutlineFileText } from "react-icons/ai";
-import { CheckInDetails } from "../../components/details/checkInDetails";
 
 interface CheckinData {
   id: string;
@@ -12,241 +9,375 @@ interface CheckinData {
   contact: string;
   warehouse: string;
   user: string;
+  category: string;
   details: string;
-  items: Item[]; // Added this
+  items: any[];
 }
 
-type Item = {
-  id: string | number;
-  name: string;
-  code: string;
-  weight: string;
-  quantity: string;
-};
 const checkinsList: CheckinData[] = [
   {
     id: "1",
     code: "TCI28",
-    date: "Feb 23, 2026",
+    date: "2026-03-03",
     status: "Draft",
-    contact: "Marianna Upton",
-    warehouse: "Warehouse 3",
-    user: "Damdinnyam",
-    details: "Rerum mollitia doloribus necessitatibus rerum cumque.",
-    items: [
-      {
-        id: 1,
-        name: "Test Item 01",
-        code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
-      },
-      {
-        id: 2,
-        name: "Test Item 02",
-        code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
-      },
-    ],
+    contact: "Reese Reichert PhD",
+    warehouse: "Warehouse 2",
+    user: "Prof. Merle Bergstrom",
+    category: "Electronics",
+    details: "Qui harum neque vero nam necessitatibus laudantium...",
+    items: [],
   },
-  {
-    id: "2",
-    code: "TCI29",
-    date: "Feb 24, 2026",
-    status: "Completed",
-    contact: "John Doe",
-    warehouse: "Main Warehouse",
-    user: "Kevin",
-    details:
-      "Labore totam et aut et. Eos molestias qui cumque rerum veniam. Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
-    items: [
-      {
-        id: 3,
-        name: "Bulk Cargo",
-        code: "BC01",
-        weight: "500kg",
-        quantity: "1pc",
-      },
-    ],
-  },
+  // Илүү дата нэмж тестлэх боломжтой
 ];
 
 const CheckinReport: React.FC = () => {
   const navigate = useNavigate();
+  const [showForm, setShowForm] = useState(true);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All"); // "All", "Draft", "Non-Draft"
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [isOpenDetails, setIsOpenDetails] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-
-  const handleSelectItem = (item: CheckinData) => {
-    setSelectedItem(item);
-    setIsOpenDetails(true); // Now correctly opens the modal
-  };
-  const filteredList = checkinsList.filter((item) => {
-    const matchesSearch =
-      item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.contact.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "All"
-        ? true
-        : statusFilter === "Draft"
-          ? item.status === "Draft"
-          : item.status !== "Draft";
-
-    return matchesSearch && matchesStatus;
+  // 1. Бүх оролтын утгууд
+  const [inputs, setInputs] = useState({
+    startDate: "",
+    endDate: "",
+    startCreatedAt: "",
+    endCreatedAt: "",
+    reference: "",
+    contact: "",
+    warehouse: "",
+    user: "",
+    category: "",
   });
 
-  // Pagination бодох
+  // 2. Зөвхөн Submit дарахад шүүлт хийх утгууд
+  const [appliedFilters, setAppliedFilters] = useState({ ...inputs });
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAppliedFilters({ ...inputs });
+    setCurrentPage(1);
+  };
+
+  const handleReset = () => {
+    const cleared = {
+      startDate: "",
+      endDate: "",
+      startCreatedAt: "",
+      endCreatedAt: "",
+      reference: "",
+      contact: "",
+      warehouse: "",
+      user: "",
+      category: "",
+    };
+    setInputs(cleared);
+    setAppliedFilters(cleared);
+    setCurrentPage(1);
+  };
+
+  // 3. Шүүх логик
+  const filteredList = checkinsList.filter((item) => {
+    // Reference & Contact шүүлтүүр
+    const matchesRef = item.code
+      .toLowerCase()
+      .includes(appliedFilters.reference.toLowerCase());
+    const matchesContact = item.contact
+      .toLowerCase()
+      .includes(appliedFilters.contact.toLowerCase());
+
+    // Warehouse, User, Category шүүлтүүр (Хэрэв сонгосон бол)
+    const matchesWarehouse =
+      !appliedFilters.warehouse || item.warehouse === appliedFilters.warehouse;
+    const matchesUser =
+      !appliedFilters.user || item.user === appliedFilters.user;
+    const matchesCategory =
+      !appliedFilters.category || item.category === appliedFilters.category;
+
+    // Date шүүлтүүр
+    const itemDate = new Date(item.date).getTime();
+    const start = appliedFilters.startDate
+      ? new Date(appliedFilters.startDate).getTime()
+      : -Infinity;
+    const end = appliedFilters.endDate
+      ? new Date(appliedFilters.endDate).getTime()
+      : Infinity;
+    const matchesDate = itemDate >= start && itemDate <= end;
+
+    return (
+      matchesRef &&
+      matchesContact &&
+      matchesWarehouse &&
+      matchesUser &&
+      matchesCategory &&
+      matchesDate
+    );
+  });
+
   const totalItems = filteredList.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
-  const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
-  const displayTo = Math.min(indexOfLastItem, totalItems);
+  const currentItems = filteredList.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
-      <div className="px-4 md:px-0">
-        <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6 w-full flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Checkins</h3>
-            <p className="mt-1 text-gray-600">
-              Please review the data in the table below
+            <h1 className="text-xl font-bold text-gray-800">Checkin Report</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Please review the report below
             </p>
           </div>
-          <div className="mb-6 flex flex-wrap gap-4 justify-between items-center print:hidden">
-            <button
-              onClick={() => navigate("create")}
-              className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
-            >
-              <HiOutlinePlus className="w-4 h-4 mr-2" />
-              TOGGLE FORM
-            </button>
-          </div>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#2D3748] text-white text-xs font-bold rounded shadow-sm hover:bg-slate-700 transition-all uppercase"
+          >
+            <span className="text-sm font-bold">⇅</span> TOGGLE FORM
+          </button>
         </div>
 
-        {isOpenDetails && selectedItem && (
-          <CheckInDetails
-            onClose={() => setIsOpenDetails(false)}
-            items={selectedItem.items}
-          />
+        {/* Filter Form */}
+        {showForm && (
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              {/* Dates */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={inputs.startDate}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, startDate: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={inputs.endDate}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, endDate: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Start Created At
+                </label>
+                <input
+                  type="datetime-local"
+                  value={inputs.startCreatedAt}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, startCreatedAt: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  End Created At
+                </label>
+                <input
+                  type="datetime-local"
+                  value={inputs.endCreatedAt}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, endCreatedAt: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                />
+              </div>
+
+              {/* Selects & Inputs */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Reference
+                </label>
+                <input
+                  type="text"
+                  placeholder="Reference"
+                  value={inputs.reference}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, reference: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Contact
+                </label>
+                <select
+                  value={inputs.contact}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, contact: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                >
+                  <option value="">Contact</option>
+                  <option value="Reese Reichert PhD">Reese Reichert PhD</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Warehouse
+                </label>
+                <select
+                  value={inputs.warehouse}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, warehouse: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                >
+                  <option value="">Warehouse</option>
+                  <option value="Warehouse 2">Warehouse 2</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  User
+                </label>
+                <select
+                  value={inputs.user}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, user: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                >
+                  <option value="">User</option>
+                  <option value="Prof. Merle Bergstrom">
+                    Prof. Merle Bergstrom
+                  </option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-600">
+                  Category
+                </label>
+                <select
+                  value={inputs.category}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, category: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                >
+                  <option value="">Category</option>
+                  <option value="Electronics">Electronics</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t pt-6">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-6 py-2 bg-gray-200 rounded text-sm font-bold text-gray-700 hover:bg-gray-300"
+              >
+                RESET
+              </button>
+              <button
+                type="submit"
+                className="px-8 py-2 bg-[#1A202C] text-white text-xs font-bold rounded uppercase tracking-widest hover:bg-black"
+              >
+                SUBMIT
+              </button>
+            </div>
+          </form>
         )}
 
-        {/* Table Section */}
-        <div className="bg-white -mx-4 md:mx-0 md:rounded-md shadow-sm overflow-x-auto">
-          <table className="w-full whitespace-nowrap">
-            <thead>
-              <tr className="text-left font-bold bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4">Checkin</th>
-                <th className="px-6 py-4">Relations</th>
-                <th className="px-6 py-4">Details</th>
+        {/* Table */}
+        <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50/50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
+                  Checkin
+                </th>
+                <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
+                  Relations
+                </th>
+                <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
+                  Details
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {/* 3. MAP ашиглан жагсаалтыг үүсгэх */}
               {currentItems.map((item) => (
                 <tr
                   key={item.id}
-                  className="hover:bg-gray-50 transition-colors group cursor-pointer"
-                  onClick={() => handleSelectItem(item)}
+                  className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 align-top">
                     <div className="font-bold text-blue-600">{item.code}</div>
                     <div className="text-sm text-gray-500">{item.date}</div>
-                    <div
-                      className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        item.status === "Completed"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      <AiOutlineFileText className="mr-1" /> {item.status}
+                    <div className="text-xs mt-1">
+                      Draft: <span className="text-green-600 font-bold">✓</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex items-center">
-                      <span className="text-gray-400 w-20">Contact:</span>{" "}
+                  <td className="px-6 py-4 text-sm align-top leading-relaxed">
+                    <div>
+                      <span className="text-gray-400 w-24 inline-block">
+                        Contact:
+                      </span>{" "}
                       {item.contact}
                     </div>
-                    <div className="flex items-center">
-                      <span className="text-gray-400 w-20">Warehouse:</span>{" "}
+                    <div>
+                      <span className="text-gray-400 w-24 inline-block">
+                        Warehouse:
+                      </span>{" "}
                       {item.warehouse}
                     </div>
-                    <div className="flex items-center">
-                      <span className="text-gray-400 w-20">User:</span>{" "}
+                    <div>
+                      <span className="text-gray-400 w-24 inline-block">
+                        User:
+                      </span>{" "}
                       {item.user}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="max-w-xs whitespace-normal line-clamp-5 text-sm text-gray-600 italic">
-                      {item.details}
-                    </div>
+                  <td className="px-6 py-4 text-sm text-gray-600 align-top max-w-md">
+                    {item.details}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
 
-        <div className="mt-6">
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            {/* Динамик мэдээлэл: Өгөгдлөөс хамаарч тоо нь өөрчлөгдөнө */}
-            <div className="flex items-center">
-              <span className="mr-2">Show</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1); // Хэмжээ өөрчлөгдөхөд 1-р хуудас руу буцна
-                }}
-                className="border-gray-300 rounded-md text-sm p-1 outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-              </select>
-              <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
-              </span>
-            </div>
-
-            {/* Хуудас солих товчлуурууд */}
-            <div className="flex space-x-1">
+          {/* Pagination */}
+          <div className="p-4 flex items-center justify-between border-t text-sm text-gray-600">
+            <span>
+              Showing{" "}
+              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to{" "}
+              {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
+              entries
+            </span>
+            <div className="flex gap-1">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="px-3 py-1 border rounded disabled:opacity-50"
               >
-                Previous
+                Prev
               </button>
-
-              {/* Хуудасны тоогоор товчлуур үүсгэх */}
-              {[...Array(totalPages)].map((_, index) => (
-                <button
-                  key={index + 1}
-                  onClick={() => setCurrentPage(index + 1)}
-                  className={`px-3 py-2 border rounded-md transition-colors ${
-                    currentPage === index + 1
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              ))}
-
               <button
                 onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="px-3 py-1 border rounded disabled:opacity-50"
               >
                 Next
               </button>
