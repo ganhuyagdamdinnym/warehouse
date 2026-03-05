@@ -39,6 +39,7 @@ import Login from "./pages/login/login";
 import CheckoutReport from "./pages/records/checkoutReport";
 import AdjustmentReport from "./pages/records/adjustmentReport";
 import TransferReport from "./pages/records/transferReport";
+import Forgot from "./pages/login/forgot";
 
 function App() {
   const [isOpenSidebar, setIsOpenSideBar] = useState<boolean>(false);
@@ -46,6 +47,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<Forgot />} />
         <Route
           path="/*"
           element={
