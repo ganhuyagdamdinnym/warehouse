@@ -10,8 +10,9 @@ import {
   HiChevronDown,
 } from "react-icons/hi";
 import { AiOutlineFileText } from "react-icons/ai";
+import { AdjutmentDetails } from "../../components/details/adjustmentDetails";
 
-interface CheckinData {
+interface AdjustmentData {
   id: string;
   code: string;
   date: string;
@@ -20,9 +21,17 @@ interface CheckinData {
   warehouse: string;
   user: string;
   details: string;
+  items: Item[];
 }
+type Item = {
+  id: string | number;
+  name: string;
+  code: string;
+  weight: string;
+  quantity: string;
+};
 
-const checkinsList: CheckinData[] = [
+const adjustmentList: AdjustmentData[] = [
   {
     id: "1",
     code: "TCI28",
@@ -33,6 +42,22 @@ const checkinsList: CheckinData[] = [
     user: "Damdinnyam",
     details:
       "Rerum mollitia doloribus necessitatibus rerum cumque blanditiis aut est.",
+    items: [
+      {
+        id: 1,
+        name: "Test Item 01",
+        code: "TI01",
+        weight: "10kg",
+        quantity: "5pc",
+      },
+      {
+        id: 2,
+        name: "Test Item 02",
+        code: "TI02",
+        weight: "2kg",
+        quantity: "10pc",
+      },
+    ],
   },
   {
     id: "2",
@@ -43,6 +68,22 @@ const checkinsList: CheckinData[] = [
     warehouse: "Main Warehouse",
     user: "Suren",
     details: "Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
+    items: [
+      {
+        id: 1,
+        name: "Test Item 01",
+        code: "TI01",
+        weight: "10kg",
+        quantity: "5pc",
+      },
+      {
+        id: 2,
+        name: "Test Item 02",
+        code: "TI02",
+        weight: "2kg",
+        quantity: "10pc",
+      },
+    ],
   },
   {
     id: "3",
@@ -53,6 +94,22 @@ const checkinsList: CheckinData[] = [
     warehouse: "East Wing",
     user: "Bat",
     details: "Repellendus cumque repellat fuga minima odio voluptatem.",
+    items: [
+      {
+        id: 1,
+        name: "Test Item 01",
+        code: "TI01",
+        weight: "10kg",
+        quantity: "5pc",
+      },
+      {
+        id: 2,
+        name: "Test Item 02",
+        code: "TI02",
+        weight: "2kg",
+        quantity: "10pc",
+      },
+    ],
   },
   {
     id: "4",
@@ -63,6 +120,22 @@ const checkinsList: CheckinData[] = [
     warehouse: "North Storage",
     user: "Bold",
     details: "Blanditiis aut est labore totam et aut et eos molestias.",
+    items: [
+      {
+        id: 1,
+        name: "Test Item 01",
+        code: "TI01",
+        weight: "10kg",
+        quantity: "5pc",
+      },
+      {
+        id: 2,
+        name: "Test Item 02",
+        code: "TI02",
+        weight: "2kg",
+        quantity: "10pc",
+      },
+    ],
   },
 ];
 
@@ -73,8 +146,15 @@ const Adjustment: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isOpenDetails, setIsOpenDetails] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  const filteredList = checkinsList.filter((item) => {
+  const handleSelectItem = (item: AdjustmentData) => {
+    setSelectedItem(item);
+    setIsOpenDetails(true);
+  };
+
+  const filteredList = adjustmentList.filter((item) => {
     const matchesSearch =
       item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.contact.toLowerCase().includes(searchTerm.toLowerCase());
@@ -131,7 +211,12 @@ const Adjustment: React.FC = () => {
             Please review the data in the table below
           </p>
         </div>
-
+        {isOpenDetails && selectedItem && (
+          <AdjutmentDetails
+            onClose={() => setIsOpenDetails(false)}
+            items={selectedItem.items}
+          />
+        )}
         <div className="mb-6 flex flex-wrap gap-4 justify-between items-center print:hidden">
           <div className="flex items-center gap-2 w-full max-w-2xl">
             <div className="relative">
@@ -219,6 +304,7 @@ const Adjustment: React.FC = () => {
             <tbody className="divide-y divide-gray-100">
               {currentItems.map((item) => (
                 <tr
+                  onClick={() => handleSelectItem(item)}
                   key={item.id}
                   className="hover:bg-gray-50 transition-colors group"
                 >
