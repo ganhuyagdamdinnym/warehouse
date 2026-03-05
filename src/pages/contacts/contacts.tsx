@@ -1,16 +1,14 @@
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineSearch, HiOutlinePlus, HiChevronDown } from "react-icons/hi";
-import { CheckInDetails } from "../../components/details/checkInDetails";
 
-// 1. Updated Interface to match the image data
 interface CheckinData {
   id: string;
   name: string;
   email: string;
   phone: string;
   details: string;
-  status: "Draft" | "Completed" | "Pending"; // Keeping logic for your filters
+  status: "Draft" | "Completed" | "Pending";
   items: Item[];
 }
 
@@ -103,14 +101,12 @@ const Contacts: React.FC = () => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.email.toLowerCase().includes(searchTerm.toLowerCase());
-
     const matchesStatus =
       statusFilter === "All"
         ? true
         : statusFilter === "Draft"
           ? item.status === "Draft"
           : item.status !== "Draft";
-
     return matchesSearch && matchesStatus;
   });
 
@@ -126,7 +122,7 @@ const Contacts: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Checkins</h3>
+          <h3 className="text-lg font-bold text-gray-900">Contacts</h3>
           <p className="mt-1 text-gray-600">
             Please review the data in the table below
           </p>
@@ -143,24 +139,21 @@ const Contacts: React.FC = () => {
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
-                  <button
-                    onClick={() => {
-                      setStatusFilter("All");
-                      setIsFilterOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100"
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("Draft");
-                      setIsFilterOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100"
-                  >
-                    Draft Only
-                  </button>
+                  {[
+                    { value: "All", label: "All" },
+                    { value: "Draft", label: "Draft Only" },
+                  ].map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => {
+                        setStatusFilter(f.value);
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === f.value ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -181,12 +174,13 @@ const Contacts: React.FC = () => {
             onClick={() => navigate("create")}
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
-            <HiOutlinePlus className="w-4 h-4 mr-2" /> Create New
+            <HiOutlinePlus className="w-4 h-4 mr-2" />
+            <span className="hidden lg:inline">Create New</span>
           </button>
         </div>
 
-        {/* --- TABLE STYLED LIKE THE IMAGE --- */}
-        <div className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm">
+        {/* ── Desktop Table ── */}
+        <div className="hidden md:block bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-200">
@@ -232,67 +226,86 @@ const Contacts: React.FC = () => {
             </tbody>
           </table>
         </div>
-        {/* --- END TABLE --- */}
 
-        {/* Pagination logic remains the same below... */}
+        {/* ── Mobile Cards ── */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {currentItems.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => handleSelectItem(item)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 cursor-pointer active:bg-gray-50"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="font-semibold text-gray-900 text-base">
+                  {item.name}
+                </div>
+                <span className="text-xl text-gray-300">›</span>
+              </div>
+
+              <div className="text-sm text-gray-600 space-y-1 mb-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-xs w-12 shrink-0">
+                    Email
+                  </span>
+                  <span className="truncate">{item.email}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-xs w-12 shrink-0">
+                    Phone
+                  </span>
+                  <span>{item.phone}</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-400 line-clamp-2 italic">
+                {item.details}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
         <div className="mt-6">
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            {/* Динамик мэдээлэл: Өгөгдлөөс хамаарч тоо нь өөрчлөгдөнө */}
-
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
               <span className="mr-2">Show</span>
-
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
-
-                  setCurrentPage(1); // Хэмжээ өөрчлөгдөхөд 1-р хуудас руу буцна
+                  setCurrentPage(1);
                 }}
                 className="border-gray-300 rounded-md text-sm p-1 outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={5}>5</option>
-
                 <option value={10}>10</option>
-
                 <option value={20}>20</option>
               </select>
-
               <span className="ml-2">
                 Showing {displayFrom} to {displayTo} of {totalItems} entries
               </span>
             </div>
 
-            {/* Хуудас солих товчлуурууд */}
-
             <div className="flex space-x-1">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
                 Previous
               </button>
-
-              {/* Хуудасны тоогоор товчлуур үүсгэх */}
-
-              {[...Array(totalPages)].map((_, index) => (
+              {[...Array(totalPages)].map((_, i) => (
                 <button
-                  key={index + 1}
-                  onClick={() => setCurrentPage(index + 1)}
-                  className={`px-3 py-2 border rounded-md transition-colors ${
-                    currentPage === index + 1
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-2 border rounded-md transition-colors ${currentPage === i + 1 ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 hover:bg-gray-50"}`}
                 >
-                  {index + 1}
+                  {i + 1}
                 </button>
               ))}
-
               <button
                 onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"

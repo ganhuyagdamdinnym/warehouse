@@ -67,23 +67,39 @@ const Items: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // 1. Filter Logic
-  const filteredList = checkinsList.filter((item) => {
-    return (
+  const filteredList = checkinsList.filter(
+    (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
+      item.code.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
-  // 2. Pagination Calculations
   const totalItems = filteredList.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
-
   const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
   const displayTo = Math.min(indexOfLastItem, totalItems);
+
+  const ActionButtons = ({ stopProp = false }: { stopProp?: boolean }) => (
+    <div
+      className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm"
+      onClick={stopProp ? (e) => e.stopPropagation() : undefined}
+    >
+      <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
+        <HiOutlineClipboardList className="w-4 h-4" />
+      </button>
+      <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
+        <AiOutlineFileText className="w-4 h-4" />
+      </button>
+      <button className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200">
+        <HiOutlinePencilAlt className="w-4 h-4" />
+      </button>
+      <button className="p-2 bg-white text-red-600 hover:bg-red-50">
+        <HiOutlineTrash className="w-4 h-4" />
+      </button>
+    </div>
+  );
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
@@ -111,7 +127,7 @@ const Items: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setCurrentPage(1); // Reset to page 1 on search
+                  setCurrentPage(1);
                 }}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none text-base"
                 placeholder="Search..."
@@ -123,12 +139,12 @@ const Items: React.FC = () => {
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            Create New Checkin
+            <span className="hidden lg:inline">Create New Item</span>
           </button>
         </div>
 
-        {/* Table */}
-        <div className="bg-white border border-gray-200 shadow-sm md:rounded-md overflow-x-auto">
+        {/* ── Desktop Table ── */}
+        <div className="hidden md:block bg-white border border-gray-200 shadow-sm rounded-md overflow-x-auto">
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="text-left font-bold bg-gray-50 border-b border-gray-200">
@@ -162,7 +178,6 @@ const Items: React.FC = () => {
                       Symbology: {item.symbology}
                     </div>
                   </td>
-
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center gap-1 text-gray-600">
                       Track Weight{" "}
@@ -187,7 +202,6 @@ const Items: React.FC = () => {
                       </span>
                     </div>
                   </td>
-
                   <td className="px-6 py-4 text-sm">
                     {item.variants ? (
                       item.variants.map((v, i) => (
@@ -202,7 +216,6 @@ const Items: React.FC = () => {
                       <span className="text-gray-300">—</span>
                     )}
                   </td>
-
                   <td className="px-6 py-4 text-sm">
                     <div className="text-gray-900 font-semibold">
                       {item.category}
@@ -211,7 +224,6 @@ const Items: React.FC = () => {
                       Unit: <span className="text-gray-800">{item.unit}</span>
                     </div>
                   </td>
-
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-gray-400">Quantity:</span>
@@ -220,22 +232,8 @@ const Items: React.FC = () => {
                       </span>
                     </div>
                   </td>
-
                   <td className="px-6 py-4 text-right">
-                    <div className="inline-flex rounded-md shadow-sm border border-gray-200 overflow-hidden">
-                      <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
-                        <HiOutlineClipboardList className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
-                        <AiOutlineFileText className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200">
-                        <HiOutlinePencilAlt className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 bg-white text-red-600 hover:bg-red-50">
-                        <HiOutlineTrash className="w-5 h-5" />
-                      </button>
-                    </div>
+                    <ActionButtons />
                   </td>
                 </tr>
               ))}
@@ -243,9 +241,93 @@ const Items: React.FC = () => {
           </table>
         </div>
 
-        {/* Dynamic Pagination Section */}
+        {/* ── Mobile Cards ── */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {currentItems.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="font-bold text-gray-900 text-base">
+                    {item.name}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    Code:{" "}
+                    <span className="font-semibold text-gray-700">
+                      {item.code}
+                    </span>
+                    <span className="ml-2 text-gray-400">
+                      · {item.symbology}
+                    </span>
+                  </div>
+                </div>
+                <ActionButtons stopProp />
+              </div>
+
+              {/* Options */}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-3">
+                <div className="flex items-center gap-1 text-gray-600">
+                  Track Weight{" "}
+                  {item.trackWeight ? (
+                    <HiCheck className="text-green-500" />
+                  ) : (
+                    <HiX className="text-red-500" />
+                  )}
+                </div>
+                <div className="flex items-center gap-1 text-gray-600">
+                  Track Qty{" "}
+                  {item.trackQuantity ? (
+                    <HiCheck className="text-green-500" />
+                  ) : (
+                    <HiX className="text-red-500" />
+                  )}
+                </div>
+                <div className="text-gray-500">
+                  Alert:{" "}
+                  <span className="text-gray-900 font-medium">
+                    {item.alertOn}
+                  </span>
+                </div>
+              </div>
+
+              {/* Relations */}
+              <div className="text-sm text-gray-600 space-y-0.5 mb-3">
+                <div>
+                  <span className="text-gray-400 text-xs">Category </span>
+                  {item.category}
+                </div>
+                <div>
+                  <span className="text-gray-400 text-xs">Unit </span>
+                  {item.unit}
+                </div>
+                {item.variants &&
+                  item.variants.map((v, i) => (
+                    <div key={i}>
+                      <span className="text-gray-400 text-xs">{v.label} </span>
+                      {v.values}
+                    </div>
+                  ))}
+              </div>
+
+              {/* Stock */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">Quantity</span>
+                <span
+                  className={`font-bold text-lg ${parseFloat(item.stock) < 0 ? "text-red-500" : "text-gray-900"}`}
+                >
+                  {item.stock}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
         <div className="mt-6">
-          <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
               <span className="mr-2">Show</span>
               <select
@@ -268,30 +350,24 @@ const Items: React.FC = () => {
 
             <div className="flex space-x-1">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
                 Previous
               </button>
-
-              {[...Array(totalPages)].map((_, index) => (
+              {[...Array(totalPages)].map((_, i) => (
                 <button
-                  key={index + 1}
-                  onClick={() => setCurrentPage(index + 1)}
-                  className={`px-3 py-2 border rounded-md transition-colors ${
-                    currentPage === index + 1
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 hover:bg-gray-100"
-                  }`}
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-2 border rounded-md transition-colors ${currentPage === i + 1 ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 hover:bg-gray-100"}`}
                 >
-                  {index + 1}
+                  {i + 1}
                 </button>
               ))}
-
               <button
                 onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
