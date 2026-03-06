@@ -35,108 +35,30 @@ const adjustmentList: AdjustmentData[] = [
   {
     id: "1",
     code: "TCI28",
-    date: "Feb 23, 2026",
+    date: "2026-02-23",
     status: "Draft",
-    contact: "Marianna Upton",
-    warehouse: "Warehouse 3",
-    user: "Damdinnyam",
-    details:
-      "Rerum mollitia doloribus necessitatibus rerum cumque blanditiis aut est.",
+    contact: "Марианна Аптон",
+    warehouse: "Агуулах 3",
+    user: "Дамдинням",
+    details: "Бараа материалын үлдэгдэл зөрүүтэй тул засав.",
     items: [
       {
         id: 1,
-        name: "Test Item 01",
+        name: "Туршилтын бараа 01",
         code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
+        weight: "10кг",
+        quantity: "5ш",
       },
       {
         id: 2,
-        name: "Test Item 02",
+        name: "Туршилтын бараа 02",
         code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
+        weight: "2кг",
+        quantity: "10ш",
       },
     ],
   },
-  {
-    id: "2",
-    code: "TCI29",
-    date: "Feb 24, 2026",
-    status: "Completed",
-    contact: "John Doe",
-    warehouse: "Main Warehouse",
-    user: "Suren",
-    details: "Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
-    items: [
-      {
-        id: 1,
-        name: "Test Item 01",
-        code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
-      },
-      {
-        id: 2,
-        name: "Test Item 02",
-        code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
-      },
-    ],
-  },
-  {
-    id: "3",
-    code: "TCI30",
-    date: "Feb 25, 2026",
-    status: "Pending",
-    contact: "Alice Smith",
-    warehouse: "East Wing",
-    user: "Bat",
-    details: "Repellendus cumque repellat fuga minima odio voluptatem.",
-    items: [
-      {
-        id: 1,
-        name: "Test Item 01",
-        code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
-      },
-      {
-        id: 2,
-        name: "Test Item 02",
-        code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
-      },
-    ],
-  },
-  {
-    id: "4",
-    code: "TCI31",
-    date: "Feb 26, 2026",
-    status: "Draft",
-    contact: "Bob Brown",
-    warehouse: "North Storage",
-    user: "Bold",
-    details: "Blanditiis aut est labore totam et aut et eos molestias.",
-    items: [
-      {
-        id: 1,
-        name: "Test Item 01",
-        code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
-      },
-      {
-        id: 2,
-        name: "Test Item 02",
-        code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
-      },
-    ],
-  },
+  // ... бусад өгөгдлүүд
 ];
 
 const Adjustment: React.FC = () => {
@@ -175,28 +97,57 @@ const Adjustment: React.FC = () => {
   const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
   const displayTo = Math.min(indexOfLastItem, totalItems);
 
-  const statusBadgeClass = (status: string) =>
-    status === "Completed"
-      ? "bg-green-100 text-green-800"
-      : status === "Pending"
-        ? "bg-yellow-100 text-yellow-800"
-        : "bg-gray-100 text-gray-800";
+  const statusBadgeClass = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return "Дууссан";
+      case "Pending":
+        return "Хүлээгдэж буй";
+      case "Draft":
+        return "Ноорог";
+      default:
+        return status;
+    }
+  };
 
   const ActionButtons = ({ stopProp = false }: { stopProp?: boolean }) => (
     <div
       className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm"
       onClick={stopProp ? (e) => e.stopPropagation() : undefined}
     >
-      <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
+      <button
+        title="Засах"
+        className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200"
+      >
         <HiOutlinePencilAlt className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
+      <button
+        title="Хэлэлцүүлэг"
+        className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200"
+      >
         <HiOutlineChatAlt2 className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200">
+      <button
+        title="Түүх"
+        className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200"
+      >
         <HiOutlineClipboardList className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-red-600 hover:bg-red-50">
+      <button
+        title="Устгах"
+        className="p-2 bg-white text-red-600 hover:bg-red-50"
+      >
         <HiOutlineTrash className="w-4 h-4" />
       </button>
     </div>
@@ -206,9 +157,9 @@ const Adjustment: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
         <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Adjustments</h3>
+          <h3 className="text-lg font-bold text-gray-900">Тохируулга</h3>
           <p className="mt-1 text-gray-600">
-            Please review the data in the table below
+            Доорх хүснэгтээс мэдээллийг хянана уу
           </p>
         </div>
         {isOpenDetails && selectedItem && (
@@ -224,20 +175,17 @@ const Adjustment: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1 uppercase">
-                    Status
+                    Төлөв
                   </p>
                   {[
-                    { value: "All", label: "All Adjustments" },
-                    { value: "Draft", label: "Draft Only" },
-                    {
-                      value: "Non-Draft",
-                      label: "Non-Drafted (Completed/Pending)",
-                    },
+                    { value: "All", label: "Бүгд" },
+                    { value: "Draft", label: "Зөвхөн ноорог" },
+                    { value: "Non-Draft", label: "Баталгаажсан" },
                   ].map((f) => (
                     <button
                       key={f.value}
@@ -265,7 +213,7 @@ const Adjustment: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search..."
+                placeholder="Хайх..."
               />
               {(searchTerm || statusFilter !== "All") && (
                 <button
@@ -273,9 +221,9 @@ const Adjustment: React.FC = () => {
                     setSearchTerm("");
                     setStatusFilter("All");
                   }}
-                  className="text-sm text-gray-400 hover:text-blue-600"
+                  className="text-sm text-gray-400 hover:text-blue-600 whitespace-nowrap"
                 >
-                  Reset
+                  Цэвэрлэх
                 </button>
               )}
             </div>
@@ -286,7 +234,7 @@ const Adjustment: React.FC = () => {
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            <span className="hidden lg:inline">Create New Adjustment</span>
+            <span className="hidden lg:inline">Шинэ тохируулга үүсгэх</span>
           </button>
         </div>
 
@@ -295,10 +243,10 @@ const Adjustment: React.FC = () => {
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="text-left font-bold bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4">Adjustment</th>
-                <th className="px-6 py-4">Relations</th>
-                <th className="px-6 py-4">Details</th>
-                <th className="px-6 py-4 text-right pr-10">Actions</th>
+                <th className="px-6 py-4">Тохируулга</th>
+                <th className="px-6 py-4">Холбоо хамаарал</th>
+                <th className="px-6 py-4">Тайлбар</th>
+                <th className="px-6 py-4 text-right pr-10">Үйлдэл</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -306,7 +254,7 @@ const Adjustment: React.FC = () => {
                 <tr
                   onClick={() => handleSelectItem(item)}
                   key={item.id}
-                  className="hover:bg-gray-50 transition-colors group"
+                  className="hover:bg-gray-50 transition-colors group cursor-pointer"
                 >
                   <td className="px-6 py-4">
                     <div className="font-bold text-blue-600">{item.code}</div>
@@ -314,16 +262,17 @@ const Adjustment: React.FC = () => {
                     <div
                       className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
                     >
-                      <AiOutlineFileText className="mr-1" /> {item.status}
+                      <AiOutlineFileText className="mr-1" />{" "}
+                      {getStatusLabel(item.status)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">Warehouse:</span>{" "}
+                      <span className="text-gray-400 w-24">Агуулах:</span>{" "}
                       {item.warehouse}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">User:</span>{" "}
+                      <span className="text-gray-400 w-24">Ажилтан:</span>{" "}
                       {item.user}
                     </div>
                   </td>
@@ -362,20 +311,20 @@ const Adjustment: React.FC = () => {
 
               <div className="text-sm text-gray-700 space-y-1 mb-3">
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Contact
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Харилцагч
                   </span>
                   <span>{item.contact}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Warehouse
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Агуулах
                   </span>
                   <span>{item.warehouse}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    User
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Ажилтан
                   </span>
                   <span>{item.user}</span>
                 </div>
@@ -384,7 +333,8 @@ const Adjustment: React.FC = () => {
               <div
                 className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
               >
-                <AiOutlineFileText className="mr-1" /> {item.status}
+                <AiOutlineFileText className="mr-1" />{" "}
+                {getStatusLabel(item.status)}
               </div>
             </div>
           ))}
@@ -394,7 +344,7 @@ const Adjustment: React.FC = () => {
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -408,7 +358,7 @@ const Adjustment: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                Нийт {totalItems} бичлэгээс {displayFrom}-аас {displayTo} хүртэл
               </span>
             </div>
 
@@ -418,7 +368,7 @@ const Adjustment: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -436,7 +386,7 @@ const Adjustment: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

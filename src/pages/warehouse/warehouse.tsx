@@ -8,7 +8,9 @@ const Warehouse = () => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setLogoPreview(reader.result as string);
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -19,27 +21,30 @@ const Warehouse = () => {
         {/* Breadcrumb Header */}
         <div className="px-4 md:px-0">
           <h3 className="text-lg font-semibold text-gray-900">
-            <div className="flex items-center flex-wrap gap-1">
+            <div className="flex items-center">
               <span className="text-blue-600 hover:text-blue-700 cursor-pointer">
-                Warehouses
+                Агуулахууд
               </span>
-              <span className="text-gray-400 font-medium mx-1">/</span>
-              <span>Warehouse Name</span>
+              <span className="text-gray-400 font-medium mx-2">/</span>
+              Test
             </div>
           </h3>
           <p className="mt-1 text-gray-600 text-sm">
-            Update the record by modifying the details in the form below
+            Доорх маягтын мэдээллийг өөрчилж бичлэгийг шинэчилнэ үү
           </p>
         </div>
 
-        <div className="mt-6 px-4 md:px-0">
-          <form className="bg-white shadow-sm border border-gray-200 rounded-md overflow-hidden">
+        <div className="mt-6">
+          <form
+            className="bg-white shadow-sm border border-gray-200 rounded-md overflow-hidden"
+            onSubmit={(e) => e.preventDefault()}
+          >
             <div className="px-4 py-5 md:p-6 space-y-6">
-              {/* Code & Name */}
+              {/* Top Row: Code and Name */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1">
-                    Code
+                    Код
                   </label>
                   <input
                     type="text"
@@ -49,47 +54,47 @@ const Warehouse = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1">
-                    Name
+                    Нэр
                   </label>
                   <input
                     type="text"
-                    defaultValue="Warehouse 4"
+                    defaultValue="Агуулах 4"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                   />
                 </div>
               </div>
 
-              {/* Phone & Email */}
+              {/* Second Row: Phone and Email */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1">
-                    Phone
+                    Утас
                   </label>
                   <input
                     type="text"
-                    defaultValue="+17695541027"
+                    defaultValue="+976 99114455"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1">
-                    Email
+                    И-мэйл
                   </label>
                   <input
                     type="email"
-                    defaultValue="robel.maverick@example.com"
+                    defaultValue="warehouse@example.mn"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                   />
                 </div>
               </div>
 
-              {/* Logo Upload */}
+              {/* --- LOGO UPLOAD SECTION --- */}
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-2">
-                  Logo
+                  Лого
                 </label>
                 <div className="flex items-center gap-4">
-                  <div className="h-20 w-20 shrink-0 border border-gray-200 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden">
+                  <div className="h-20 w-20 border border-gray-200 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden">
                     {logoPreview ? (
                       <img
                         src={logoPreview}
@@ -98,10 +103,11 @@ const Warehouse = () => {
                       />
                     ) : (
                       <span className="text-gray-400 text-xs text-center px-1">
-                        No Logo
+                        Зураггүй
                       </span>
                     )}
                   </div>
+
                   <div className="flex flex-col gap-2">
                     <input
                       type="file"
@@ -115,7 +121,7 @@ const Warehouse = () => {
                       onClick={() => fileInputRef.current?.click()}
                       className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-50 transition-colors"
                     >
-                      Change
+                      Солих
                     </button>
                     {logoPreview && (
                       <button
@@ -123,26 +129,26 @@ const Warehouse = () => {
                         onClick={() => setLogoPreview(null)}
                         className="text-xs text-red-600 hover:underline text-left"
                       >
-                        Remove image
+                        Зургийг устгах
                       </button>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Address */}
+              {/* Address Section */}
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-1">
-                  Address
+                  Хаяг
                 </label>
                 <textarea
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                   rows={3}
-                  defaultValue="931 Wolf Points Apt. 967 Lake Kylieberg, TN 19639-8157"
-                />
+                  defaultValue="Улаанбаатар хот, Баянзүрх дүүрэг, 14-р хороо"
+                ></textarea>
               </div>
 
-              {/* Active */}
+              {/* Active Status */}
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -154,24 +160,24 @@ const Warehouse = () => {
                   htmlFor="active"
                   className="ml-2 text-sm text-gray-700 font-medium cursor-pointer"
                 >
-                  Active
+                  Идэвхтэй төлөв
                 </label>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="px-4 py-4 bg-gray-50 border-t border-gray-200 flex flex-col-reverse md:flex-row items-stretch md:items-center justify-between gap-3">
+            {/* Form Actions Footer */}
+            <div className="px-4 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
               <button
                 type="button"
-                className="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-2 rounded-md transition-colors text-center md:text-left"
+                className="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-2 rounded-md transition-colors"
               >
-                Delete Warehouse
+                Агуулах устгах
               </button>
               <button
                 type="submit"
                 className="px-6 py-2 bg-slate-800 text-white text-sm font-bold rounded-md hover:bg-slate-700 shadow-sm transition-colors uppercase tracking-wider"
               >
-                Save
+                Хадгалах
               </button>
             </div>
           </form>

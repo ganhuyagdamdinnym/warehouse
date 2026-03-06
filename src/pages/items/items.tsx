@@ -17,7 +17,7 @@ interface CheckinData {
   name: string;
   code: string;
   symbology: string;
-  status: "Draft" | "Completed" | "Pending";
+  status: "Ноорог" | "Дууссан" | "Хүлээгдэж буй";
   trackWeight: boolean;
   trackQuantity: boolean;
   alertOn: string;
@@ -30,32 +30,32 @@ interface CheckinData {
 const checkinsList: CheckinData[] = [
   {
     id: "1",
-    name: "Test Item 50",
+    name: "Туршилтын бараа 50",
     code: "TI50",
     symbology: "CODE128",
-    status: "Draft",
+    status: "Ноорог",
     trackWeight: false,
     trackQuantity: true,
     alertOn: "15.00",
-    category: "Category 8",
-    unit: "Piece",
+    category: "Ангилал 8",
+    unit: "Ширхэг",
     stock: "-18.00",
   },
   {
     id: "2",
-    name: "Test Item 49",
+    name: "Туршилтын бараа 49",
     code: "TI49",
     symbology: "CODE128",
-    status: "Completed",
+    status: "Дууссан",
     trackWeight: false,
     trackQuantity: true,
     alertOn: "15.00",
-    category: "Category 12",
-    unit: "Piece",
+    category: "Ангилал 12",
+    unit: "Ширхэг",
     stock: "7.00",
     variants: [
-      { label: "Color", values: "Red, Green" },
-      { label: "Size", values: "S, M, L" },
+      { label: "Өнгө", values: "Улаан, Ногоон" },
+      { label: "Хэмжээ", values: "S, M, L" },
     ],
   },
 ];
@@ -86,16 +86,28 @@ const Items: React.FC = () => {
       className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm"
       onClick={stopProp ? (e) => e.stopPropagation() : undefined}
     >
-      <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
+      <button
+        className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200"
+        title="Түүх"
+      >
         <HiOutlineClipboardList className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
+      <button
+        className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200"
+        title="Харах"
+      >
         <AiOutlineFileText className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200">
+      <button
+        className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200"
+        title="Засах"
+      >
         <HiOutlinePencilAlt className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-red-600 hover:bg-red-50">
+      <button
+        className="p-2 bg-white text-red-600 hover:bg-red-50"
+        title="Устгах"
+      >
         <HiOutlineTrash className="w-4 h-4" />
       </button>
     </div>
@@ -105,10 +117,8 @@ const Items: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
         <div className="mb-6">
-          <h3 className="text-xl font-bold text-gray-900">Items</h3>
-          <p className="text-gray-600">
-            Please review the data in the table below
-          </p>
+          <h3 className="text-xl font-bold text-gray-900">Бараа материал</h3>
+          <p className="text-gray-600">Доорх хүснэгт дэх өгөгдлийг хянана уу</p>
         </div>
 
         {/* Toolbar */}
@@ -118,7 +128,7 @@ const Items: React.FC = () => {
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-700 font-medium text-sm"
             >
-              Filter <HiChevronDown className="ml-2 w-4 h-4" />
+              Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
             </button>
             <div className="flex items-center flex-1 bg-white shadow-sm rounded-md border border-gray-300 px-3">
               <HiOutlineSearch className="text-gray-400 w-5 h-5" />
@@ -130,7 +140,7 @@ const Items: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none text-base"
-                placeholder="Search..."
+                placeholder="Хайх..."
               />
             </div>
           </div>
@@ -139,7 +149,7 @@ const Items: React.FC = () => {
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            <span className="hidden lg:inline">Create New Item</span>
+            <span className="hidden lg:inline">Шинэ бараа нэмэх</span>
           </button>
         </div>
 
@@ -148,13 +158,13 @@ const Items: React.FC = () => {
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="text-left font-bold bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4 text-sm text-black">Name</th>
-                <th className="px-6 py-4 text-sm text-black">Options</th>
-                <th className="px-6 py-4 text-sm text-black">Variants</th>
-                <th className="px-6 py-4 text-sm text-black">Relations</th>
-                <th className="px-6 py-4 text-sm text-black">Stock</th>
+                <th className="px-6 py-4 text-sm text-black">Нэр</th>
+                <th className="px-6 py-4 text-sm text-black">Сонголтууд</th>
+                <th className="px-6 py-4 text-sm text-black">Хувилбарууд</th>
+                <th className="px-6 py-4 text-sm text-black">Холбоос</th>
+                <th className="px-6 py-4 text-sm text-black">Үлдэгдэл</th>
                 <th className="px-6 py-4 text-right pr-10 text-black">
-                  Actions
+                  Үйлдэл
                 </th>
               </tr>
             </thead>
@@ -169,18 +179,18 @@ const Items: React.FC = () => {
                       {item.name}
                     </div>
                     <div className="text-sm text-gray-500">
-                      Code:{" "}
+                      Код:{" "}
                       <span className="font-semibold text-gray-800">
                         {item.code}
                       </span>
                     </div>
                     <div className="text-xs text-gray-400">
-                      Symbology: {item.symbology}
+                      Тэмдэглэгээ: {item.symbology}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center gap-1 text-gray-600">
-                      Track Weight{" "}
+                      Жин хянах{" "}
                       {item.trackWeight ? (
                         <HiCheck className="text-green-500" />
                       ) : (
@@ -188,7 +198,7 @@ const Items: React.FC = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-1 text-gray-600">
-                      Track Quantity{" "}
+                      Тоо хянах{" "}
                       {item.trackQuantity ? (
                         <HiCheck className="text-green-500" />
                       ) : (
@@ -196,7 +206,7 @@ const Items: React.FC = () => {
                       )}
                     </div>
                     <div className="text-gray-500">
-                      Alert on:{" "}
+                      Доод хязгаар:{" "}
                       <span className="text-gray-900 font-medium">
                         {item.alertOn}
                       </span>
@@ -221,12 +231,12 @@ const Items: React.FC = () => {
                       {item.category}
                     </div>
                     <div className="text-gray-500">
-                      Unit: <span className="text-gray-800">{item.unit}</span>
+                      Нэгж: <span className="text-gray-800">{item.unit}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-gray-400">Quantity:</span>
+                      <span className="text-gray-400">Тоо хэмжээ:</span>
                       <span className="font-bold text-gray-900 text-lg">
                         {item.stock}
                       </span>
@@ -255,7 +265,7 @@ const Items: React.FC = () => {
                     {item.name}
                   </div>
                   <div className="text-xs text-gray-500 mt-0.5">
-                    Code:{" "}
+                    Код:{" "}
                     <span className="font-semibold text-gray-700">
                       {item.code}
                     </span>
@@ -270,7 +280,7 @@ const Items: React.FC = () => {
               {/* Options */}
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-3">
                 <div className="flex items-center gap-1 text-gray-600">
-                  Track Weight{" "}
+                  Жин хянах{" "}
                   {item.trackWeight ? (
                     <HiCheck className="text-green-500" />
                   ) : (
@@ -278,7 +288,7 @@ const Items: React.FC = () => {
                   )}
                 </div>
                 <div className="flex items-center gap-1 text-gray-600">
-                  Track Qty{" "}
+                  Тоо хянах{" "}
                   {item.trackQuantity ? (
                     <HiCheck className="text-green-500" />
                   ) : (
@@ -286,7 +296,7 @@ const Items: React.FC = () => {
                   )}
                 </div>
                 <div className="text-gray-500">
-                  Alert:{" "}
+                  Хязгаар:{" "}
                   <span className="text-gray-900 font-medium">
                     {item.alertOn}
                   </span>
@@ -296,17 +306,17 @@ const Items: React.FC = () => {
               {/* Relations */}
               <div className="text-sm text-gray-600 space-y-0.5 mb-3">
                 <div>
-                  <span className="text-gray-400 text-xs">Category </span>
+                  <span className="text-gray-400 text-xs">Ангилал: </span>
                   {item.category}
                 </div>
                 <div>
-                  <span className="text-gray-400 text-xs">Unit </span>
+                  <span className="text-gray-400 text-xs">Нэгж: </span>
                   {item.unit}
                 </div>
                 {item.variants &&
                   item.variants.map((v, i) => (
                     <div key={i}>
-                      <span className="text-gray-400 text-xs">{v.label} </span>
+                      <span className="text-gray-400 text-xs">{v.label}: </span>
                       {v.values}
                     </div>
                   ))}
@@ -314,7 +324,7 @@ const Items: React.FC = () => {
 
               {/* Stock */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">Quantity</span>
+                <span className="text-xs text-gray-400">Тоо хэмжээ</span>
                 <span
                   className={`font-bold text-lg ${parseFloat(item.stock) < 0 ? "text-red-500" : "text-gray-900"}`}
                 >
@@ -329,7 +339,7 @@ const Items: React.FC = () => {
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -344,7 +354,8 @@ const Items: React.FC = () => {
                 <option value={50}>50</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                Нийт {totalItems} бичилтээс {displayFrom}-аас {displayTo} хүртэл
+                харуулж байна
               </span>
             </div>
 
@@ -354,7 +365,7 @@ const Items: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -372,7 +383,7 @@ const Items: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

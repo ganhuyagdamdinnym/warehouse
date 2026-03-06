@@ -18,41 +18,41 @@ interface WarehouseData {
 const warehousesList: WarehouseData[] = [
   {
     id: "4",
-    name: "Warehouse 4",
+    name: "Агуулах 4",
     code: "WH4",
-    phone: "+17695541027",
+    phone: "+976 99114455",
     email: "robel.maverick@example.com",
-    address: "931 Wolf Points Apt. 967 Lake Kylieberg, TN 19639-8157",
+    address: "Улаанбаатар, Баянзүрх дүүрэг, 14-р хороо",
     active: true,
     status: "Completed",
   },
   {
     id: "3",
-    name: "Warehouse 3",
+    name: "Агуулах 3",
     code: "WH3",
-    phone: "+18316426841",
+    phone: "+976 88112233",
     email: "enos72@example.net",
-    address: "935 Kyleigh Squares Apt. 875 South Princess, KY 87534",
+    address: "Улаанбаатар, Хан-Уул дүүрэг, Үйлдвэр комбинат",
     active: true,
     status: "Completed",
   },
   {
     id: "2",
-    name: "Warehouse 2",
+    name: "Агуулах 2",
     code: "WH2",
-    phone: "+19402172168",
+    phone: "+976 95152535",
     email: "arne83@example.com",
-    address: "538 Philip Curve Suite 171 Madisynville, CA 25986-3889",
+    address: "Дархан хот, 2-р баг, Үйлдвэрийн бүс",
     active: true,
     status: "Completed",
   },
   {
     id: "1",
-    name: "Warehouse 1",
+    name: "Агуулах 1",
     code: "WH1",
-    phone: "+15408847209",
+    phone: "+976 91910011",
     email: "rath.waino@example.org",
-    address: "6897 Barrows Meadows Lake Elizaport, MO 07353-7812",
+    address: "Эрдэнэт хот, Баян-Өндөр сум",
     active: true,
     status: "Completed",
   },
@@ -95,9 +95,9 @@ const Warehouses: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Warehouses</h3>
+          <h3 className="text-lg font-bold text-gray-900">Агуулахын бүртгэл</h3>
           <p className="mt-1 text-gray-600">
-            Please review the data in the table below
+            Доорх хүснэгтээс агуулахуудын мэдээллийг хянана уу
           </p>
         </div>
 
@@ -108,13 +108,13 @@ const Warehouses: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   {[
-                    { value: "All", label: "All" },
-                    { value: "Draft", label: "Draft Only" },
+                    { value: "All", label: "Бүгд" },
+                    { value: "Draft", label: "Зөвхөн ноорог" },
                   ].map((f) => (
                     <button
                       key={f.value}
@@ -137,14 +137,14 @@ const Warehouses: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search"
+                placeholder="Хайх (Нэр, и-мэйл)"
               />
               {searchTerm && (
                 <span
                   className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
                   onClick={() => setSearchTerm("")}
                 >
-                  Reset
+                  Цэвэрлэх
                 </span>
               )}
             </div>
@@ -161,16 +161,16 @@ const Warehouses: React.FC = () => {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Name
+                  Нэр / Код
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Contact
+                  Холбоо барих
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Address
+                  Хаяг
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Active
+                  Төлөв
                 </th>
                 <th className="px-6 py-4"></th>
               </tr>
@@ -183,7 +183,8 @@ const Warehouses: React.FC = () => {
                   onClick={() => handleSelectItem(item)}
                 >
                   <td className="px-6 py-5 text-sm text-gray-800 font-medium">
-                    {item.name} ({item.code})
+                    {item.name}{" "}
+                    <span className="text-gray-400 ml-1">({item.code})</span>
                   </td>
                   <td className="px-6 py-5 text-sm text-gray-800">
                     <div className="flex flex-col">
@@ -198,9 +199,9 @@ const Warehouses: React.FC = () => {
                   </td>
                   <td className="px-6 py-5 text-sm">
                     {item.active && (
-                      <div className="flex items-center text-gray-800">
+                      <div className="flex items-center text-gray-800 font-medium">
                         <IoCheckmark className="text-green-500 mr-1 w-4 h-4" />
-                        <span>Yes</span>
+                        <span>Идэвхтэй</span>
                       </div>
                     )}
                   </td>
@@ -227,7 +228,7 @@ const Warehouses: React.FC = () => {
                     {item.name}
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">
-                    Code:{" "}
+                    Код:{" "}
                     <span className="font-medium text-gray-700">
                       {item.code}
                     </span>
@@ -236,22 +237,22 @@ const Warehouses: React.FC = () => {
                 <span className="text-xl text-gray-300">›</span>
               </div>
 
-              <div className="text-sm text-gray-600 space-y-1 mb-2">
+              <div className="text-sm text-gray-600 space-y-1 mb-2 border-l-2 border-gray-100 pl-3">
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-12 shrink-0">
-                    Phone
+                  <span className="text-gray-400 text-xs w-14 shrink-0">
+                    Утас
                   </span>
                   <span>{item.phone}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-12 shrink-0">
-                    Email
+                  <span className="text-gray-400 text-xs w-14 shrink-0">
+                    И-мэйл
                   </span>
                   <span className="truncate">{item.email}</span>
                 </div>
                 <div className="flex items-start gap-1">
-                  <span className="text-gray-400 text-xs w-12 shrink-0 mt-0.5">
-                    Address
+                  <span className="text-gray-400 text-xs w-14 shrink-0 mt-0.5">
+                    Хаяг
                   </span>
                   <span className="text-gray-600 text-xs leading-relaxed">
                     {item.address}
@@ -260,9 +261,9 @@ const Warehouses: React.FC = () => {
               </div>
 
               {item.active && (
-                <div className="flex items-center text-sm text-gray-800 mt-1">
-                  <IoCheckmark className="text-green-500 mr-1 w-4 h-4" />
-                  <span>Active</span>
+                <div className="flex items-center text-sm text-green-600 font-medium mt-1">
+                  <IoCheckmark className="mr-1 w-4 h-4" />
+                  <span>Идэвхтэй</span>
                 </div>
               )}
             </div>
@@ -273,7 +274,7 @@ const Warehouses: React.FC = () => {
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -287,7 +288,8 @@ const Warehouses: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                Нийт {totalItems} бичлэгээс {displayFrom}-{displayTo} харуулж
+                байна
               </span>
             </div>
 
@@ -297,7 +299,7 @@ const Warehouses: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -315,7 +317,7 @@ const Warehouses: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

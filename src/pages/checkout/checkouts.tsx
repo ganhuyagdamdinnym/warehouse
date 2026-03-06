@@ -23,6 +23,7 @@ interface CheckoutData {
   details: string;
   items: Item[];
 }
+
 type Item = {
   id: string | number;
   name: string;
@@ -30,86 +31,35 @@ type Item = {
   weight: string;
   quantity: string;
 };
+
 const checkoutsList: CheckoutData[] = [
   {
     id: "1",
     code: "TCI28",
-    date: "Feb 23, 2026",
+    date: "2026-02-23",
     status: "Draft",
-    contact: "Marianna Upton",
-    warehouse: "Warehouse 3",
-    user: "Damdinnyam",
-    details:
-      "Rerum mollitia doloribus necessitatibus rerum cumque blanditiis aut est.",
+    contact: "Марианна Аптон",
+    warehouse: "Агуулах 3",
+    user: "Дамдинням",
+    details: "Барааны тайлбар хэсэг энд харагдана.",
     items: [
       {
         id: 1,
-        name: "Test Item 01",
+        name: "Тест бараа 01",
         code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
+        weight: "10кг",
+        quantity: "5ш",
       },
       {
         id: 2,
-        name: "Test Item 02",
+        name: "Тест бараа 02",
         code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
+        weight: "2кг",
+        quantity: "10ш",
       },
     ],
   },
-  {
-    id: "2",
-    code: "TCI29",
-    date: "Feb 24, 2026",
-    status: "Completed",
-    contact: "John Doe",
-    warehouse: "Main Warehouse",
-    user: "Suren",
-    details: "Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
-    items: [
-      {
-        id: 1,
-        name: "Test Item 01",
-        code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
-      },
-      {
-        id: 2,
-        name: "Test Item 02",
-        code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
-      },
-    ],
-  },
-  {
-    id: "3",
-    code: "TCI30",
-    date: "Feb 25, 2026",
-    status: "Pending",
-    contact: "Alice Smith",
-    warehouse: "East Wing",
-    user: "Bat",
-    details: "Repellendus cumque repellat fuga minima odio voluptatem.",
-    items: [
-      {
-        id: 1,
-        name: "Test Item 01",
-        code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
-      },
-      {
-        id: 2,
-        name: "Test Item 02",
-        code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
-      },
-    ],
-  },
+  // ... бусад өгөгдөл
 ];
 
 const Checkout: React.FC = () => {
@@ -120,7 +70,7 @@ const Checkout: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isOpenDetails, setIsOpenDetails] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<CheckoutData | null>(null);
 
   const handleSelectItem = (item: CheckoutData) => {
     setSelectedItem(item);
@@ -148,28 +98,57 @@ const Checkout: React.FC = () => {
   const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
   const displayTo = Math.min(indexOfLastItem, totalItems);
 
-  const statusBadgeClass = (status: string) =>
-    status === "Completed"
-      ? "bg-green-100 text-green-800"
-      : status === "Pending"
-        ? "bg-yellow-100 text-yellow-800"
-        : "bg-gray-100 text-gray-800";
+  const statusBadgeClass = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const translateStatus = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return "Дууссан";
+      case "Pending":
+        return "Хүлээгдэж буй";
+      case "Draft":
+        return "Ноорог";
+      default:
+        return status;
+    }
+  };
 
   const ActionButtons = ({ stopProp = false }: { stopProp?: boolean }) => (
     <div
       className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm"
       onClick={stopProp ? (e) => e.stopPropagation() : undefined}
     >
-      <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
+      <button
+        title="Засах"
+        className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200"
+      >
         <HiOutlinePencilAlt className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
+      <button
+        title="Чат"
+        className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200"
+      >
         <HiOutlineChatAlt2 className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200">
+      <button
+        title="Бүртгэл"
+        className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200"
+      >
         <HiOutlineClipboardList className="w-4 h-4" />
       </button>
-      <button className="p-2 bg-white text-red-600 hover:bg-red-50">
+      <button
+        title="Устгах"
+        className="p-2 bg-white text-red-600 hover:bg-red-50"
+      >
         <HiOutlineTrash className="w-4 h-4" />
       </button>
     </div>
@@ -179,18 +158,19 @@ const Checkout: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
         <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Checkouts</h3>
+          <h3 className="text-lg font-bold text-gray-900">Зарлагын бүртгэл</h3>
           <p className="mt-1 text-gray-600">
-            Please review the data in the table below
+            Доорх хүснэгтээс бүх зарлагын мэдээллийг хянана уу.
           </p>
         </div>
+
         {isOpenDetails && selectedItem && (
           <CheckoutDetails
             onClose={() => setIsOpenDetails(false)}
             items={selectedItem.items}
           />
-          //<div>heelooo</div>
         )}
+
         <div className="mb-6 flex flex-wrap gap-4 justify-between items-center print:hidden">
           <div className="flex items-center gap-2 w-full max-w-2xl">
             <div className="relative">
@@ -198,20 +178,17 @@ const Checkout: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1 uppercase">
-                    Status
+                    Төлөв
                   </p>
                   {[
-                    { value: "All", label: "All Checkouts" },
-                    { value: "Draft", label: "Draft Only" },
-                    {
-                      value: "Non-Draft",
-                      label: "Non-Drafted (Completed/Pending)",
-                    },
+                    { value: "All", label: "Бүгд" },
+                    { value: "Draft", label: "Зөвхөн ноорог" },
+                    { value: "Non-Draft", label: "Баталгаажсан" },
                   ].map((f) => (
                     <button
                       key={f.value}
@@ -239,7 +216,7 @@ const Checkout: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search..."
+                placeholder="Хайх..."
               />
               {(searchTerm || statusFilter !== "All") && (
                 <button
@@ -249,7 +226,7 @@ const Checkout: React.FC = () => {
                   }}
                   className="text-sm text-gray-400 hover:text-blue-600"
                 >
-                  Reset
+                  Цэвэрлэх
                 </button>
               )}
             </div>
@@ -260,7 +237,7 @@ const Checkout: React.FC = () => {
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            <span className="hidden lg:inline">Create New Checkout</span>
+            <span className="hidden lg:inline">Шинэ зарлага бүртгэх</span>
           </button>
         </div>
 
@@ -269,10 +246,10 @@ const Checkout: React.FC = () => {
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="text-left font-bold bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4">Checkout</th>
-                <th className="px-6 py-4">Relations</th>
-                <th className="px-6 py-4">Details</th>
-                <th className="px-6 py-4 text-right pr-10">Actions</th>
+                <th className="px-6 py-4">Зарлага</th>
+                <th className="px-6 py-4">Холбоо хамаарал</th>
+                <th className="px-6 py-4">Тайлбар</th>
+                <th className="px-6 py-4 text-right pr-10">Үйлдэл</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -280,7 +257,7 @@ const Checkout: React.FC = () => {
                 <tr
                   onClick={() => handleSelectItem(item)}
                   key={item.id}
-                  className="hover:bg-gray-50 transition-colors group"
+                  className="hover:bg-gray-50 transition-colors group cursor-pointer"
                 >
                   <td className="px-6 py-4">
                     <div className="font-bold text-blue-600">{item.code}</div>
@@ -288,20 +265,21 @@ const Checkout: React.FC = () => {
                     <div
                       className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
                     >
-                      <AiOutlineFileText className="mr-1" /> {item.status}
+                      <AiOutlineFileText className="mr-1" />{" "}
+                      {translateStatus(item.status)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">Contact:</span>{" "}
+                      <span className="text-gray-400 w-24">Харилцагч:</span>{" "}
                       {item.contact}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">Warehouse:</span>{" "}
+                      <span className="text-gray-400 w-24">Агуулах:</span>{" "}
                       {item.warehouse}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">User:</span>{" "}
+                      <span className="text-gray-400 w-24">Бүртгэсэн:</span>{" "}
                       {item.user}
                     </div>
                   </td>
@@ -324,6 +302,7 @@ const Checkout: React.FC = () => {
           {currentItems.map((item) => (
             <div
               key={item.id}
+              onClick={() => handleSelectItem(item)}
               className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 cursor-pointer active:bg-gray-50"
             >
               <div className="flex items-start justify-between mb-3">
@@ -340,20 +319,20 @@ const Checkout: React.FC = () => {
 
               <div className="text-sm text-gray-700 space-y-1 mb-3">
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Contact
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Харилцагч
                   </span>
                   <span>{item.contact}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Warehouse
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Агуулах
                   </span>
                   <span>{item.warehouse}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    User
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Ажилтан
                   </span>
                   <span>{item.user}</span>
                 </div>
@@ -362,17 +341,18 @@ const Checkout: React.FC = () => {
               <div
                 className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
               >
-                <AiOutlineFileText className="mr-1" /> {item.status}
+                <AiOutlineFileText className="mr-1" />{" "}
+                {translateStatus(item.status)}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Pagination */}
+        {/* Хуудаслалт (Pagination) */}
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах:</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -386,7 +366,8 @@ const Checkout: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                Нийт {totalItems} бичлэгээс {displayFrom}-аас {displayTo} хүртэл
+                харуулж байна
               </span>
             </div>
 
@@ -396,7 +377,7 @@ const Checkout: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -414,7 +395,7 @@ const Checkout: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

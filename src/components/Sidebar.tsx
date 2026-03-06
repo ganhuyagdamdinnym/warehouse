@@ -32,116 +32,227 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   {
-    name: "Checkins",
+    name: "Орлого",
     href: "/checkins",
     icon: AiOutlineArrowLeft,
     children: [
-      { name: "List All Checkins", href: "/checkin" },
-      { name: "Create New Checkin", href: "/checkin/create" },
+      { name: "Бүх орлогын жагсаалт", href: "/checkin" },
+      { name: "Шинэ орлого бүртгэх", href: "/checkin/create" },
     ],
   },
   {
-    name: "Checkouts",
+    name: "Зарлага",
     href: "/checkouts",
     icon: AiOutlineArrowRight,
     children: [
-      { name: "List All Checkouts", href: "/checkout" },
-      { name: "Create New Checkout", href: "/checkout/create" },
+      { name: "Бүх зарлагын жагсаалт", href: "/checkout" },
+      { name: "Шинэ зарлага бүртгэх", href: "/checkout/create" },
     ],
   },
   {
-    name: "Adjustments",
+    name: "Засвар",
     href: "/adjustments",
     icon: AiOutlineControl,
     children: [
-      { name: "Adjustments", href: "/adjustment" },
-      { name: "Create New Adjustment", href: "/adjustment/create" },
+      { name: "Засварын жагсаалт", href: "/adjustment" },
+      { name: "Шинэ засвар хийх", href: "/adjustment/create" },
     ],
   },
   {
-    name: "Transfers",
+    name: "Шилжүүлэг",
     href: "/transfers",
     icon: AiOutlineTruck,
     children: [
-      { name: "Transfers", href: "/transfer" },
-      { name: "Create New Transfer", href: "/transfer/create" },
+      { name: "Шилжүүлгийн жагсаалт", href: "/transfer" },
+      { name: "Шинэ шилжүүлэг хийх", href: "/transfer/create" },
     ],
   },
   {
-    name: "Items",
+    name: "Бараа",
     href: "/items",
     icon: AiOutlineHeart,
     children: [
-      { name: "List All Items", href: "/items" },
-      { name: "Create New Item", href: "/items/create" },
-      { name: "Import Items", href: "/items/import" },
+      { name: "Бүх барааны жагсаалт", href: "/items" },
+      { name: "Шинэ бараа нэмэх", href: "/items/create" },
+      { name: "Бараа импортлох", href: "/items/import" },
     ],
   },
   {
-    name: "Contacts",
+    name: "Харилцагч",
     href: "/contacts",
     icon: AiOutlineTeam,
     children: [
-      { name: "List All Contacts", href: "/contacts" },
-      { name: "Create New Contact", href: "/contacts/create" },
-      { name: "Import Contacts", href: "/contacts/import" },
+      { name: "Бүх харилцагч", href: "/contacts" },
+      { name: "Шинэ харилцагч нэмэх", href: "/contacts/create" },
+      { name: "Харилцагч импортлох", href: "/contacts/import" },
     ],
   },
   {
-    name: "Categories",
+    name: "Ангилал",
     href: "/categories",
     icon: AiOutlineDatabase,
     children: [
-      { name: "List All Categories", href: "/categories" },
-      { name: "Create New Category", href: "/categories/create" },
-      { name: "Import Categories", href: "/categories/import" },
+      { name: "Бүх ангилал", href: "/categories" },
+      { name: "Шинэ ангилал үүсгэх", href: "/categories/create" },
+      { name: "Ангилал импортлох", href: "/categories/import" },
     ],
   },
   {
-    name: "Units",
+    name: "Нэгж",
     href: "/units",
     icon: AiOutlineCi,
     children: [
-      { name: "List All Units", href: "/units" },
-      { name: "Create New Unit", href: "/units/create" },
-      { name: "Import Units", href: "/units/import" },
+      { name: "Бүх нэгж", href: "/units" },
+      { name: "Шинэ нэгж үүсгэх", href: "/units/create" },
+      { name: "Нэгж импортлох", href: "/units/import" },
     ],
   },
   {
-    name: "Warehouses",
+    name: "Агуулах",
     href: "/warehouses",
     icon: AiOutlineBank,
     children: [
-      { name: "List All Warehouses", href: "/warehouses" },
-      { name: "Create New Warehouse", href: "/warehouses/create" },
-      { name: "Import Warehouses", href: "/warehouses/import" },
+      { name: "Бүх агуулах", href: "/warehouses" },
+      { name: "Шинэ агуулах нэмэх", href: "/warehouses/create" },
+      { name: "Агуулах импортлох", href: "/warehouses/import" },
     ],
   },
   {
-    name: "Users",
+    name: "Хэрэглэгч",
     href: "/users",
     icon: AiOutlineUsergroupAdd,
     children: [
-      { name: "List All Users", href: "/users" },
-      { name: "List All User Roles", href: "/roles" },
-      { name: "Create New User", href: "/users/create" },
-      { name: "Create New User Role", href: "/roles/create" },
+      { name: "Бүх хэрэглэгч", href: "/users" },
+      { name: "Хэрэглэгчийн эрхүүд", href: "/roles" },
+      { name: "Шинэ хэрэглэгч нэмэх", href: "/users/create" },
+      { name: "Шинэ хэрэглэгчийн эрх үүсгэх", href: "/roles/create" },
     ],
   },
-
   {
-    name: "Reports",
+    name: "Тайлан",
     href: "/reports",
     icon: AiOutlineLineChart,
     children: [
-      { name: "Total Records", href: "/reports" },
-      { name: "Checkin Report", href: "/reports/checkin" },
-      { name: "Checkout Report", href: "/reports/checkout" },
-      { name: "Transfer Report", href: "/reports/transfer" },
-      { name: "Adjustment Report", href: "/reports/adjustment" },
+      { name: "Нийт бүртгэл", href: "/reports" },
+      { name: "Орлогын тайлан", href: "/reports/checkin" },
+      { name: "Зарлагын тайлан", href: "/reports/checkout" },
+      { name: "Шилжүүлгийн тайлан", href: "/reports/transfer" },
+      { name: "Засварын тайлан", href: "/reports/adjustment" },
     ],
   },
 ];
+// const navigation: NavItem[] = [
+//   {
+//     name: "Checkins",
+//     href: "/checkins",
+//     icon: AiOutlineArrowLeft,
+//     children: [
+//       { name: "List All Checkins", href: "/checkin" },
+//       { name: "Create New Checkin", href: "/checkin/create" },
+//     ],
+//   },
+//   {
+//     name: "Checkouts",
+//     href: "/checkouts",
+//     icon: AiOutlineArrowRight,
+//     children: [
+//       { name: "List All Checkouts", href: "/checkout" },
+//       { name: "Create New Checkout", href: "/checkout/create" },
+//     ],
+//   },
+//   {
+//     name: "Adjustments",
+//     href: "/adjustments",
+//     icon: AiOutlineControl,
+//     children: [
+//       { name: "Adjustments", href: "/adjustment" },
+//       { name: "Create New Adjustment", href: "/adjustment/create" },
+//     ],
+//   },
+//   {
+//     name: "Transfers",
+//     href: "/transfers",
+//     icon: AiOutlineTruck,
+//     children: [
+//       { name: "Transfers", href: "/transfer" },
+//       { name: "Create New Transfer", href: "/transfer/create" },
+//     ],
+//   },
+//   {
+//     name: "Items",
+//     href: "/items",
+//     icon: AiOutlineHeart,
+//     children: [
+//       { name: "List All Items", href: "/items" },
+//       { name: "Create New Item", href: "/items/create" },
+//       { name: "Import Items", href: "/items/import" },
+//     ],
+//   },
+//   {
+//     name: "Contacts",
+//     href: "/contacts",
+//     icon: AiOutlineTeam,
+//     children: [
+//       { name: "List All Contacts", href: "/contacts" },
+//       { name: "Create New Contact", href: "/contacts/create" },
+//       { name: "Import Contacts", href: "/contacts/import" },
+//     ],
+//   },
+//   {
+//     name: "Categories",
+//     href: "/categories",
+//     icon: AiOutlineDatabase,
+//     children: [
+//       { name: "List All Categories", href: "/categories" },
+//       { name: "Create New Category", href: "/categories/create" },
+//       { name: "Import Categories", href: "/categories/import" },
+//     ],
+//   },
+//   {
+//     name: "Units",
+//     href: "/units",
+//     icon: AiOutlineCi,
+//     children: [
+//       { name: "List All Units", href: "/units" },
+//       { name: "Create New Unit", href: "/units/create" },
+//       { name: "Import Units", href: "/units/import" },
+//     ],
+//   },
+//   {
+//     name: "Warehouses",
+//     href: "/warehouses",
+//     icon: AiOutlineBank,
+//     children: [
+//       { name: "List All Warehouses", href: "/warehouses" },
+//       { name: "Create New Warehouse", href: "/warehouses/create" },
+//       { name: "Import Warehouses", href: "/warehouses/import" },
+//     ],
+//   },
+//   {
+//     name: "Users",
+//     href: "/users",
+//     icon: AiOutlineUsergroupAdd,
+//     children: [
+//       { name: "List All Users", href: "/users" },
+//       { name: "List All User Roles", href: "/roles" },
+//       { name: "Create New User", href: "/users/create" },
+//       { name: "Create New User Role", href: "/roles/create" },
+//     ],
+//   },
+
+//   {
+//     name: "Reports",
+//     href: "/reports",
+//     icon: AiOutlineLineChart,
+//     children: [
+//       { name: "Total Records", href: "/reports" },
+//       { name: "Checkin Report", href: "/reports/checkin" },
+//       { name: "Checkout Report", href: "/reports/checkout" },
+//       { name: "Transfer Report", href: "/reports/transfer" },
+//       { name: "Adjustment Report", href: "/reports/adjustment" },
+//     ],
+//   },
+// ];
 
 export const Sidebar: React.FC = () => {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
@@ -163,7 +274,7 @@ export const Sidebar: React.FC = () => {
       <style>{`div.ondark::-webkit-scrollbar { display: none; }`}</style>
       <div className="py-2">
         <div className="mt-1 font-bold text-xs text-gray-600 px-4 py-2 uppercase tracking-wider">
-          Main
+          Үндсэн
         </div>
 
         <Link
@@ -175,7 +286,7 @@ export const Sidebar: React.FC = () => {
           }`}
         >
           <AiFillHome className="w-4 h-4 mr-3" />
-          <span className="grow font-medium">Dashboard</span>
+          <span className="grow font-medium">Хянах самбар</span>
         </Link>
 
         {navigation.map((item) => {

@@ -14,28 +14,28 @@ interface UserData {
 const usersList: UserData[] = [
   {
     id: "1",
-    name: "Ibrahim Waters",
+    name: "Ибрахим Уотерс",
     email: "enola47@example.org",
     phone: "(567) 288-6529",
     role: "Super Admin",
   },
   {
     id: "2",
-    name: "Euna Wyman I",
+    name: "Эуна Виман",
     email: "hhermiston@example.net",
     phone: "+1-484-894-9068",
     role: "Admin",
   },
   {
     id: "3",
-    name: "Mrs. Rosa Miller",
+    name: "Роза Миллер",
     email: "roslyn.jacobson@example.org",
     phone: "1-931-900-1350",
     role: "User",
   },
   {
     id: "4",
-    name: "Andreanne Hoeger",
+    name: "Андреан Хөгэр",
     email: "admin@tecdiary.com",
     phone: "+1-234-567-890",
     role: "Super Admin",
@@ -86,14 +86,14 @@ const Users: React.FC = () => {
       <div className="px-4 md:px-0">
         <div className="mb-6 flex justify-between items-end">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Users</h3>
+            <h3 className="text-lg font-bold text-gray-900">Хэрэглэгчид</h3>
             <p className="mt-1 text-gray-600 text-sm">
-              Please review the data in the table below
+              Системийн хэрэглэгчдийн мэдээллийг доорх хүснэгтээс хянана уу
             </p>
           </div>
           <button className="bg-[#1e293b] text-white px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 uppercase tracking-wider shadow-sm hover:bg-slate-700 transition">
             <span className="text-lg">+</span>
-            <span className="hidden lg:inline">Create New User</span>
+            <span className="hidden lg:inline">Шинэ хэрэглэгч үүсгэх</span>
           </button>
         </div>
 
@@ -105,20 +105,25 @@ const Users: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium text-sm"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
-                  {["All", "Super Admin", "Admin", "User"].map((role) => (
+                  {[
+                    { val: "All", lab: "Бүгд" },
+                    { val: "Super Admin", lab: "Супер Админ" },
+                    { val: "Admin", lab: "Админ" },
+                    { val: "User", lab: "Хэрэглэгч" },
+                  ].map((role) => (
                     <button
-                      key={role}
+                      key={role.val}
                       onClick={() => {
-                        setRoleFilter(role);
+                        setRoleFilter(role.val);
                         setIsFilterOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-md ${roleFilter === role ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md ${roleFilter === role.val ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
                     >
-                      {role}
+                      {role.lab}
                     </button>
                   ))}
                 </div>
@@ -131,14 +136,14 @@ const Users: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none text-sm"
-                placeholder="Search"
+                placeholder="Хайх (Нэр, и-мэйл)"
               />
               {searchTerm && (
                 <span
                   className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
                   onClick={() => setSearchTerm("")}
                 >
-                  Reset
+                  Цэвэрлэх
                 </span>
               )}
             </div>
@@ -154,9 +159,11 @@ const Users: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-200 bg-white">
-                <th className="px-6 py-4 font-bold text-gray-900">Name</th>
-                <th className="px-6 py-4 font-bold text-gray-900">Email</th>
-                <th className="px-6 py-4 font-bold text-gray-900">Role</th>
+                <th className="px-6 py-4 font-bold text-gray-900">Нэр</th>
+                <th className="px-6 py-4 font-bold text-gray-900">
+                  И-мэйл хаяг
+                </th>
+                <th className="px-6 py-4 font-bold text-gray-900">Эрх</th>
                 <th className="px-6 py-4"></th>
               </tr>
             </thead>
@@ -173,8 +180,12 @@ const Users: React.FC = () => {
                   <td className="px-6 py-5 text-sm text-gray-800">
                     {user.email}
                   </td>
-                  <td className="px-6 py-5 text-sm text-gray-800">
-                    {user.role}
+                  <td className="px-6 py-5 text-sm">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold ${roleBadgeClass(user.role)}`}
+                    >
+                      {user.role}
+                    </span>
                   </td>
                   <td className="px-6 py-5 text-right text-gray-400">
                     <span className="text-xl group-hover:text-gray-600 transition-colors">
@@ -208,7 +219,7 @@ const Users: React.FC = () => {
               </div>
 
               <div className="text-sm text-gray-600 mb-3">
-                <span className="text-gray-400 text-xs">Phone: </span>
+                <span className="text-gray-400 text-xs">Утас: </span>
                 {user.phone}
               </div>
 
@@ -225,7 +236,7 @@ const Users: React.FC = () => {
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -239,7 +250,8 @@ const Users: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                Нийт {totalItems} бичлэгээс {displayFrom}-{displayTo} харуулж
+                байна
               </span>
             </div>
 
@@ -249,7 +261,7 @@ const Users: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-1.5 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:opacity-50 text-xs font-medium"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -267,7 +279,7 @@ const Users: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-1.5 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:opacity-50 text-xs font-medium"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

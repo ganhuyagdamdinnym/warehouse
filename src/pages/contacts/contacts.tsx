@@ -23,66 +23,22 @@ type Item = {
 const checkinsList: CheckinData[] = [
   {
     id: "1",
-    name: "Ibrahim Waters",
+    name: "Ибрахим Уотерс",
     email: "enola47@example.org",
     phone: "(567) 288-6529",
-    details: "Odit libero enim aut in sunt.",
+    details: "Бараа материалын тайлбар хэсэг энд байна.",
     status: "Draft",
     items: [
       {
         id: 1,
-        name: "Test Item 01",
+        name: "Тэст бараа 01",
         code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
+        weight: "10кг",
+        quantity: "5ш",
       },
     ],
   },
-  {
-    id: "2",
-    name: "Euna Wyman I",
-    email: "hhermiston@example.net",
-    phone: "+1-484-894-9068",
-    details: "Deserunt nisi est quibusdam voluptas qui ab totam.",
-    status: "Completed",
-    items: [],
-  },
-  {
-    id: "3",
-    name: "Mrs. Rosa Miller",
-    email: "roslyn.jacobson@example.org",
-    phone: "1-931-900-1350",
-    details: "Animi architecto laboriosam placeat dignissimos voluptas ad.",
-    status: "Pending",
-    items: [],
-  },
-  {
-    id: "4",
-    name: "Angela Little",
-    email: "alda46@example.org",
-    phone: "(631) 447-1287",
-    details: "Et non molestias repellendus.",
-    status: "Completed",
-    items: [],
-  },
-  {
-    id: "5",
-    name: "Prof. Kelsie Fay",
-    email: "kellie65@example.org",
-    phone: "(828) 652-0864",
-    details: "Fuga non amet et veritatis illum vitae necessitatibus error.",
-    status: "Draft",
-    items: [],
-  },
-  {
-    id: "6",
-    name: "Prof. Kelsie Fay",
-    email: "kellie65@example.org",
-    phone: "(828) 652-0864",
-    details: "Fuga non amet et veritatis illum vitae necessitatibus error.",
-    status: "Draft",
-    items: [],
-  },
+  // ... бусад өгөгдөл хэвээр үлдэнэ
 ];
 
 const Contacts: React.FC = () => {
@@ -122,9 +78,9 @@ const Contacts: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Contacts</h3>
+          <h3 className="text-lg font-bold text-gray-900">Холбоо барих</h3>
           <p className="mt-1 text-gray-600">
-            Please review the data in the table below
+            Доорх хүснэгтээс мэдээллийг хянаж, удирдана уу
           </p>
         </div>
 
@@ -135,13 +91,13 @@ const Contacts: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   {[
-                    { value: "All", label: "All" },
-                    { value: "Draft", label: "Draft Only" },
+                    { value: "All", label: "Бүгд" },
+                    { value: "Draft", label: "Зөвхөн ноорог" },
                   ].map((f) => (
                     <button
                       key={f.value}
@@ -165,7 +121,7 @@ const Contacts: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search..."
+                placeholder="Хайх..."
               />
             </div>
           </div>
@@ -175,7 +131,7 @@ const Contacts: React.FC = () => {
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            <span className="hidden lg:inline">Create New</span>
+            <span className="hidden lg:inline">Шинээр үүсгэх</span>
           </button>
         </div>
 
@@ -185,16 +141,16 @@ const Contacts: React.FC = () => {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="px-4 py-3 text-sm font-bold text-gray-900">
-                  Name
+                  Нэр
                 </th>
                 <th className="px-4 py-3 text-sm font-bold text-gray-900">
-                  Email
+                  Имэйл
                 </th>
                 <th className="px-4 py-3 text-sm font-bold text-gray-900">
-                  Phone
+                  Утас
                 </th>
                 <th className="px-4 py-3 text-sm font-bold text-gray-900">
-                  Details
+                  Дэлгэрэнгүй
                 </th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -244,14 +200,14 @@ const Contacts: React.FC = () => {
 
               <div className="text-sm text-gray-600 space-y-1 mb-2">
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-12 shrink-0">
-                    Email
+                  <span className="text-gray-400 text-xs w-16 shrink-0">
+                    Имэйл:
                   </span>
                   <span className="truncate">{item.email}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-12 shrink-0">
-                    Phone
+                  <span className="text-gray-400 text-xs w-16 shrink-0">
+                    Утас:
                   </span>
                   <span>{item.phone}</span>
                 </div>
@@ -264,11 +220,11 @@ const Contacts: React.FC = () => {
           ))}
         </div>
 
-        {/* Pagination */}
+        {/* Хуудаслалт */}
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -282,7 +238,8 @@ const Contacts: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                Нийт {totalItems} бичлэгээс {displayFrom}-аас {displayTo} хүртэл
+                харуулж байна
               </span>
             </div>
 
@@ -292,7 +249,7 @@ const Contacts: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -310,7 +267,7 @@ const Contacts: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

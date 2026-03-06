@@ -16,34 +16,25 @@ const CreateCheckOut = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItemsList, setSelectedItemsList] = useState<any[]>([]);
-
-  // 1. File state for TypeScript
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  // 2. Refs for outside clicks and hidden file input
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
-  const warehouses = [
-    "Warehouse 1",
-    "Warehouse 2",
-    "Warehouse 3",
-    "Main Storage",
-  ];
+  const contacts = ["Марианна Аптон", "Жон Доу", "Алис Смит", "Боб Браун"];
+  const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
   const items = [
-    "Product 1 - Warehouse A",
-    "Product 2 - Warehouse B",
-    "Item 3 - Storage C",
-    "Spare Part 4",
-    "Electronic Device 5",
+    "Бүтээгдэхүүн 1 - Агуулах А",
+    "Бүтээгдэхүүн 2 - Агуулах Б",
+    "Бараа 3 - С хэсэг",
+    "Сэлбэг хэрэгсэл 4",
+    "Цахилгаан хэрэгсэл 5",
   ];
 
   const filteredItems = items.filter((item) =>
     item.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -57,14 +48,13 @@ const CreateCheckOut = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle selecting item from search -> Add to table
   const handleSelectItem = (item: string) => {
     const newItem = {
       id: Date.now(),
       name: item,
       weight: 1,
       quantity: 1,
-      unit: "Dozen",
+      unit: "Хайрцаг", // Default unit in Mongolian
     };
     setSelectedItemsList([...selectedItemsList, newItem]);
     setSearchTerm("");
@@ -75,7 +65,6 @@ const CreateCheckOut = () => {
     setSelectedItemsList(selectedItemsList.filter((item) => item.id !== id));
   };
 
-  // 3. File Input Handlers (TS)
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -100,10 +89,10 @@ const CreateCheckOut = () => {
       <div>
         <div className="px-4 md:px-0 md:col-span-1">
           <h3 className="text-lg font-bold text-gray-900">
-            Create New Checkout
+            Шинэ зарлага үүсгэх
           </h3>
           <p className="mt-1 text-gray-600">
-            Please fill the form below to add new record.
+            Шинэ бүртгэл нэмэхийн тулд доорх маягтыг бөглөнө үү.
           </p>
         </div>
 
@@ -112,12 +101,12 @@ const CreateCheckOut = () => {
             <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
               <div className="grid gap-6">
                 <div className="flex flex-col gap-6">
-                  {/* Top Fields */}
+                  {/* Дээд хэсгийн талбарууд */}
                   <div className="flex flex-col lg:flex-row gap-6">
                     <div className="flex flex-col gap-6 w-full lg:w-1/2">
                       <div className="col-span-6 sm:col-span-4 relative mb-2">
                         <label className="font-medium text-gray-700">
-                          <span>Date</span>
+                          <span>Огноо</span>
                         </label>
                         <input
                           type="date"
@@ -126,10 +115,10 @@ const CreateCheckOut = () => {
                       </div>
                       <div className="col-span-6 sm:col-span-4 relative mb-2">
                         <label className="font-medium text-gray-700">
-                          <span>Reference</span>
+                          <span>Лавлах дугаар</span>
                         </label>
                         <input
-                          placeholder="Reference"
+                          placeholder="Дугаар оруулна уу"
                           type="text"
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -138,10 +127,10 @@ const CreateCheckOut = () => {
                     <div className="flex flex-col gap-6 w-full lg:w-1/2">
                       <div className="col-span-6 sm:col-span-4 relative mb-2">
                         <label className="font-medium text-gray-700">
-                          <span>Contact</span>
+                          <span>Харилцагч</span>
                         </label>
                         <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm">
-                          <option value="">Select Contact</option>
+                          <option value="">Харилцагч сонгох</option>
                           {contacts.map((c) => (
                             <option key={c} value={c}>
                               {c}
@@ -151,10 +140,10 @@ const CreateCheckOut = () => {
                       </div>
                       <div className="col-span-6 sm:col-span-4 relative mb-2">
                         <label className="font-medium text-gray-700">
-                          <span>Warehouse</span>
+                          <span>Агуулах</span>
                         </label>
                         <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm">
-                          <option value="">Select Warehouse</option>
+                          <option value="">Агуулах сонгох</option>
                           {warehouses.map((wh) => (
                             <option key={wh} value={wh}>
                               {wh}
@@ -165,7 +154,7 @@ const CreateCheckOut = () => {
                     </div>
                   </div>
 
-                  {/* Item Search & Table Section */}
+                  {/* Бараа хайх болон Хүснэгтийн хэсэг */}
                   <div className="p-4 md:px-6 bg-gray-50 -mx-4 md:-mx-6">
                     <div
                       className="col-span-6 sm:col-span-4 relative mb-2"
@@ -185,7 +174,7 @@ const CreateCheckOut = () => {
                             setIsOpen(true);
                           }}
                           onFocus={() => setIsOpen(true)}
-                          placeholder="Search and select..."
+                          placeholder="Бараа хайх болон сонгох..."
                           className="pr-8 mt-1 border rounded-md shadow-xs py-2 pl-4 text-base border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none block w-full transition-all"
                         />
                       </div>
@@ -204,7 +193,7 @@ const CreateCheckOut = () => {
                             ))
                           ) : (
                             <div className="px-4 py-2 text-gray-400 text-sm">
-                              No results found
+                              Илэрц олдсонгүй
                             </div>
                           )}
                         </div>
@@ -219,16 +208,16 @@ const CreateCheckOut = () => {
                               <HiOutlineTrash className="text-gray-400" />
                             </th>
                             <th className="px-2 lg:px-6 py-4 text-sm uppercase text-gray-600">
-                              Item
+                              Бараа
                             </th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56 text-sm uppercase text-gray-600">
-                              Weight
+                              Жин
                             </th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56 text-sm uppercase text-gray-600">
-                              Quantity
+                              Тоо хэмжээ
                             </th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56 text-sm uppercase text-gray-600">
-                              Unit
+                              Нэгж
                             </th>
                           </tr>
                         </thead>
@@ -267,9 +256,9 @@ const CreateCheckOut = () => {
                                 </td>
                                 <td className="px-2 lg:px-6 py-4">
                                   <select className="w-full border border-gray-300 rounded px-2 py-1 bg-white focus:ring-1 focus:ring-blue-500 outline-none">
-                                    <option>Dozen</option>
-                                    <option>Box</option>
-                                    <option>Piece</option>
+                                    <option>Хайрцаг</option>
+                                    <option>Боодол</option>
+                                    <option>Ширхэг</option>
                                   </select>
                                 </td>
                               </tr>
@@ -280,7 +269,7 @@ const CreateCheckOut = () => {
                                 colSpan={5}
                                 className="border-t px-2 lg:px-6 py-4 text-gray-500"
                               >
-                                Add item to the list by search or scan barcode
+                                Хайх эсвэл баркод уншуулан бараа нэмнэ үү
                               </td>
                             </tr>
                           )}
@@ -289,10 +278,10 @@ const CreateCheckOut = () => {
                     </div>
                   </div>
 
-                  {/* TypeScript File Input Section */}
+                  {/* Хавсралт файлын хэсэг */}
                   <div>
                     <label className="font-medium text-gray-700">
-                      Attachments
+                      Хавсралт файлууд
                     </label>
                     <input
                       type="file"
@@ -311,17 +300,17 @@ const CreateCheckOut = () => {
                       <div className="space-y-1 text-center">
                         <p className="text-gray-600">
                           <span className="text-blue-600 font-semibold">
-                            Click to upload
+                            Энд дарж хуулна уу
                           </span>{" "}
-                          or drag and drop
+                          эсвэл файлаа чирч оруулна уу
                         </p>
                         <p className="text-xs text-gray-500">
-                          PNG, JPG, PDF, DOCX, XLSX & ZIP
+                          PNG, JPG, PDF, DOCX, XLSX болон ZIP
                         </p>
                       </div>
                     </div>
 
-                    {/* Preview of uploaded files */}
+                    {/* Хуулсан файлуудыг харуулах */}
                     {uploadedFiles.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {uploadedFiles.map((file, idx) => (
@@ -346,15 +335,15 @@ const CreateCheckOut = () => {
                     )}
                   </div>
 
-                  {/* Details & Draft */}
+                  {/* Дэлгэрэнгүй болон Ноорог */}
                   <div className="col-span-6 sm:col-span-4">
                     <label className="font-medium text-gray-700">
-                      <span>Details</span>
+                      <span>Дэлгэрэнгүй тайлбар</span>
                     </label>
                     <textarea
                       className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       rows={3}
-                      placeholder="Enter details here..."
+                      placeholder="Тайлбараа энд бичнэ үү..."
                     ></textarea>
                   </div>
                   <div className="flex mb-2">
@@ -365,7 +354,7 @@ const CreateCheckOut = () => {
                         className="rounded-sm border-gray-300 text-indigo-600 shadow-xs focus:border-indigo-300 focus:ring-3 focus:ring-indigo-200/50"
                       />
                       <span className="ml-2 text-gray-600">
-                        This record is draft
+                        Энэ бүртгэлийг ноорог төлөвтэй хадгалах
                       </span>
                     </label>
                   </div>
@@ -373,13 +362,13 @@ const CreateCheckOut = () => {
               </div>
             </div>
 
-            {/* Footer */}
+            {/* Хөл хэсэг (Footer) */}
             <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
               <button
                 type="button"
                 className="relative flex items-center justify-center px-6 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 transition-all duration-150"
               >
-                Save
+                Хадгалах
               </button>
             </div>
           </form>

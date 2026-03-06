@@ -15,8 +15,7 @@ interface CheckinData {
   id: string;
   code: string;
   date: string;
-  status: "Draft" | "Completed" | "Pending";
-
+  status: "Ноорог" | "Дууссан" | "Хүлээгдэж буй";
   user: string;
   to: string;
   from: string;
@@ -27,50 +26,49 @@ const checkinsList: CheckinData[] = [
   {
     id: "1",
     code: "TCI28",
-    date: "Feb 23, 2026",
-    status: "Draft",
-    to: "warehouse1 center",
-    from: "warehouse4 jj",
-    user: "Damdinnyam",
-    details:
-      "Rerum mollitia doloribus necessitatibus rerum cumque blanditiis aut est.",
+    date: "2026-02-23",
+    status: "Ноорог",
+    to: "Төв агуулах 1",
+    from: "Агуулах 4 ЖЖ",
+    user: "Дамдинням",
+    details: "Бараа материалын шилжүүлэг эхлэл хэсэг.",
   },
   {
     id: "2",
     code: "TCI29",
-    date: "Feb 24, 2026",
-    status: "Completed",
-    to: "warehouse1 center",
-    from: "warehouse4 jj",
-    user: "Suren",
-    details: "Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
+    date: "2026-02-24",
+    status: "Дууссан",
+    to: "Төв агуулах 1",
+    from: "Агуулах 4 ЖЖ",
+    user: "Сүрэн",
+    details: "Бүх барааг амжилттай хүлээн авсан.",
   },
   {
     id: "3",
     code: "TCI30",
-    date: "Feb 25, 2026",
-    status: "Pending",
-    to: "warehouse1 center",
-    from: "warehouse4 jj",
-    user: "Bat",
-    details: "Repellendus cumque repellat fuga minima odio voluptatem.",
+    date: "2026-02-25",
+    status: "Хүлээгдэж буй",
+    to: "Төв агуулах 1",
+    from: "Агуулах 4 ЖЖ",
+    user: "Бат",
+    details: "Тээвэрлэлт замдаа явж байна.",
   },
   {
     id: "4",
     code: "TCI31",
-    date: "Feb 26, 2026",
-    status: "Draft",
-    to: "warehouse1 center",
-    from: "warehouse4 jj",
-    user: "Bold",
-    details: "Blanditiis aut est labore totam et aut et eos molestias.",
+    date: "2026-02-26",
+    status: "Ноорог",
+    to: "Төв агуулах 1",
+    from: "Агуулах 4 ЖЖ",
+    user: "Болд",
+    details: "Шалгах шаардлагатай мэдээллүүд байгаа.",
   },
 ];
 
 const Transfer: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [statusFilter, setStatusFilter] = useState<string>("Бүгд");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -81,11 +79,11 @@ const Transfer: React.FC = () => {
       .includes(searchTerm.toLowerCase());
 
     const matchesStatus =
-      statusFilter === "All"
+      statusFilter === "Бүгд"
         ? true
-        : statusFilter === "Draft"
-          ? item.status === "Draft"
-          : item.status !== "Draft";
+        : statusFilter === "Ноорог"
+          ? item.status === "Ноорог"
+          : item.status !== "Ноорог";
     return matchesSearch && matchesStatus;
   });
 
@@ -98,9 +96,9 @@ const Transfer: React.FC = () => {
   const displayTo = Math.min(indexOfLastItem, totalItems);
 
   const statusBadgeClass = (status: string) =>
-    status === "Completed"
+    status === "Дууссан"
       ? "bg-green-100 text-green-800"
-      : status === "Pending"
+      : status === "Хүлээгдэж буй"
         ? "bg-yellow-100 text-yellow-800"
         : "bg-gray-100 text-gray-800";
 
@@ -128,9 +126,9 @@ const Transfer: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
         <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Transfers</h3>
+          <h3 className="text-lg font-bold text-gray-900">Шилжүүлгүүд</h3>
           <p className="mt-1 text-gray-600">
-            Please review the data in the table below
+            Доорх хүснэгтээс мэдээллийг хянана уу
           </p>
         </div>
 
@@ -141,19 +139,19 @@ const Transfer: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1 uppercase">
-                    Status
+                    Төлөв
                   </p>
                   {[
-                    { value: "All", label: "All Transfers" },
-                    { value: "Draft", label: "Draft Only" },
+                    { value: "Бүгд", label: "Бүх шилжүүлэг" },
+                    { value: "Ноорог", label: "Зөвхөн ноорог" },
                     {
-                      value: "Non-Draft",
-                      label: "Non-Drafted (Completed/Pending)",
+                      value: "Бусад",
+                      label: "Бусад (Дууссан/Хүлээгдэж буй)",
                     },
                   ].map((f) => (
                     <button
@@ -182,17 +180,17 @@ const Transfer: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search..."
+                placeholder="Хайх..."
               />
-              {(searchTerm || statusFilter !== "All") && (
+              {(searchTerm || statusFilter !== "Бүгд") && (
                 <button
                   onClick={() => {
                     setSearchTerm("");
-                    setStatusFilter("All");
+                    setStatusFilter("Бүгд");
                   }}
                   className="text-sm text-gray-400 hover:text-blue-600"
                 >
-                  Reset
+                  Цэвэрлэх
                 </button>
               )}
             </div>
@@ -203,7 +201,7 @@ const Transfer: React.FC = () => {
             className="inline-flex items-center px-4 py-3 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            <span className="hidden lg:inline">Create New Transfer</span>
+            <span className="hidden lg:inline">Шинэ шилжүүлэг үүсгэх</span>
           </button>
         </div>
 
@@ -212,10 +210,10 @@ const Transfer: React.FC = () => {
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="text-left font-bold bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4">Transfer</th>
-                <th className="px-6 py-4">Relations</th>
-                <th className="px-6 py-4">Details</th>
-                <th className="px-6 py-4 text-right pr-10">Actions</th>
+                <th className="px-6 py-4">Шилжүүлэг</th>
+                <th className="px-6 py-4">Холбоо хамаарал</th>
+                <th className="px-6 py-4">Дэлгэрэнгүй</th>
+                <th className="px-6 py-4 text-right pr-10">Үйлдэл</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -235,14 +233,15 @@ const Transfer: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">To:</span> {item.to}
+                      <span className="text-gray-400 w-24">Хүлээн авах:</span>{" "}
+                      {item.to}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">Warehouse:</span>{" "}
+                      <span className="text-gray-400 w-24">Агуулах:</span>{" "}
                       {item.from}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">User:</span>{" "}
+                      <span className="text-gray-400 w-24">Хэрэглэгч:</span>{" "}
                       {item.user}
                     </div>
                   </td>
@@ -281,20 +280,20 @@ const Transfer: React.FC = () => {
 
               <div className="text-sm text-gray-700 space-y-1 mb-3">
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    To
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Хүлээн авах
                   </span>
                   <span>{item.to}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Warehouse
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Агуулах
                   </span>
                   <span>{item.from}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    User
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Хэрэглэгч
                   </span>
                   <span>{item.user}</span>
                 </div>
@@ -313,7 +312,7 @@ const Transfer: React.FC = () => {
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -327,7 +326,8 @@ const Transfer: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                {totalItems} бичлэгээс {displayFrom}-аас {displayTo} хүртэл
+                харуулж байна
               </span>
             </div>
 
@@ -337,7 +337,7 @@ const Transfer: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -355,7 +355,7 @@ const Transfer: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

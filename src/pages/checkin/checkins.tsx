@@ -41,7 +41,7 @@ const checkinsList: CheckinData[] = [
     contact: "Marianna Upton",
     warehouse: "Warehouse 3",
     user: "Damdinnyam",
-    details: "Rerum mollitia doloribus necessitatibus rerum cumque.",
+    details: "Барааны орлогын туршилтын тайлбар.",
     items: [
       {
         id: 1,
@@ -67,7 +67,7 @@ const checkinsList: CheckinData[] = [
     contact: "John Doe",
     warehouse: "Main Warehouse",
     user: "Kevin",
-    details: "Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
+    details: "Агуулахад бараа орсон тухай мэдээлэл.",
     items: [
       {
         id: 3,
@@ -120,9 +120,9 @@ const Checkins: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
         <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Checkins</h3>
+          <h3 className="text-lg font-bold text-gray-900">Орлого</h3>
           <p className="mt-1 text-gray-600">
-            Please review the data in the table below
+            Доорх хүснэгт дэх мэдээллийг шалгана уу
           </p>
         </div>
 
@@ -140,12 +140,12 @@ const Checkins: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1 uppercase">
-                    Status
+                    Төлөв
                   </p>
                   {["All", "Draft", "Non-Draft"].map((f) => (
                     <button
@@ -155,13 +155,17 @@ const Checkins: React.FC = () => {
                         setIsFilterOpen(false);
                         setCurrentPage(1);
                       }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === f ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md ${
+                        statusFilter === f
+                          ? "bg-blue-50 text-blue-600"
+                          : "hover:bg-gray-100"
+                      }`}
                     >
                       {f === "All"
-                        ? "All Checkins"
+                        ? "Бүх орлого"
                         : f === "Draft"
-                          ? "Draft Only"
-                          : "Non-Drafted (Completed/Pending)"}
+                          ? "Ноорог"
+                          : "Ноорог биш (Дууссан/Хүлээгдэж буй)"}
                     </button>
                   ))}
                 </div>
@@ -178,7 +182,7 @@ const Checkins: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search..."
+                placeholder="Хайх..."
               />
               {(searchTerm || statusFilter !== "All") && (
                 <button
@@ -188,7 +192,7 @@ const Checkins: React.FC = () => {
                   }}
                   className="text-sm text-gray-400 hover:text-blue-600"
                 >
-                  Reset
+                  Цэвэрлэх
                 </button>
               )}
             </div>
@@ -199,19 +203,18 @@ const Checkins: React.FC = () => {
             className="inline-flex items-center px-4 py-3 max-h-10 bg-gray-800 rounded-md font-semibold text-xs text-white uppercase hover:bg-gray-700 transition"
           >
             <HiOutlinePlus className="w-4 h-4 mr-2" />
-            <p className="hidden lg:block">Create New Checkin</p>
+            <p className="hidden lg:block">Шинэ орлого нэмэх</p>
           </button>
         </div>
 
-        {/* ── Table: hidden on mobile ── */}
         <div className="hidden md:block bg-white rounded-md shadow-sm overflow-x-auto">
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="text-left font-bold bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4">Checkin</th>
-                <th className="px-6 py-4">Relations</th>
-                <th className="px-6 py-4">Details</th>
-                <th className="px-6 py-4 text-right pr-10">Actions</th>
+                <th className="px-6 py-4">Орлого</th>
+                <th className="px-6 py-4">Холбоотой мэдээлэл</th>
+                <th className="px-6 py-4">Тайлбар</th>
+                <th className="px-6 py-4 text-right pr-10">Үйлдэл</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -225,22 +228,26 @@ const Checkins: React.FC = () => {
                     <div className="font-bold text-blue-600">{item.code}</div>
                     <div className="text-sm text-gray-500">{item.date}</div>
                     <div
-                      className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${item.status === "Completed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
+                      className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        item.status === "Completed"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
                     >
                       <AiOutlineFileText className="mr-1" /> {item.status}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">Contact:</span>{" "}
+                      <span className="text-gray-400 w-20">Харилцагч:</span>{" "}
                       {item.contact}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">Warehouse:</span>{" "}
+                      <span className="text-gray-400 w-20">Агуулах:</span>{" "}
                       {item.warehouse}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-gray-400 w-20">User:</span>{" "}
+                      <span className="text-gray-400 w-20">Хэрэглэгч:</span>{" "}
                       {item.user}
                     </div>
                   </td>
@@ -271,80 +278,11 @@ const Checkins: React.FC = () => {
           </table>
         </div>
 
-        {/* ── Card list: visible on mobile only ── */}
-        <div className="flex flex-col gap-3 md:hidden">
-          {currentItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleSelectItem(item)}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 cursor-pointer active:bg-gray-50"
-            >
-              {/* Top row: code + actions */}
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="font-bold text-blue-600 text-base">
-                    {item.code}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {item.date}
-                  </div>
-                </div>
-                <div
-                  className="flex rounded-lg border border-gray-200 overflow-hidden shadow-sm"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
-                    <HiOutlinePencilAlt className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
-                    <HiOutlineChatAlt2 className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200">
-                    <HiOutlineClipboardList className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 bg-white text-red-600 hover:bg-red-50">
-                    <HiOutlineTrash className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Relations */}
-              <div className="text-sm text-gray-700 space-y-1 mb-3">
-                <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Contact
-                  </span>
-                  <span>{item.contact}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Warehouse
-                  </span>
-                  <span>{item.warehouse}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    User
-                  </span>
-                  <span>{item.user}</span>
-                </div>
-              </div>
-
-              {/* Status badge */}
-              <div
-                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${item.status === "Completed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
-              >
-                <AiOutlineFileText className="mr-1" /> {item.status}
-              </div>
-            </div>
-          ))}
-        </div>
-
         {/* Pagination */}
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -358,7 +296,7 @@ const Checkins: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                {displayFrom} - {displayTo} / {totalItems}
               </span>
             </div>
 
@@ -368,13 +306,17 @@ const Checkins: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
                   key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-2 border rounded-md transition-colors ${currentPage === i + 1 ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+                  className={`px-3 py-2 border rounded-md transition-colors ${
+                    currentPage === i + 1
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
                   {i + 1}
                 </button>
@@ -386,7 +328,7 @@ const Checkins: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

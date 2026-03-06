@@ -21,7 +21,7 @@ const AdjustmentsList: AdjustmentData[] = [
     date: "2026-02-23",
     status: "Draft",
     contact: "Marianna Upton",
-    warehouse: "Warehouse 3",
+    warehouse: "Агуулах 3",
     user: "Damdinnyam",
     details:
       "Rerum mollitia doloribus necessitatibus rerum cumque blanditiis aut est.",
@@ -32,9 +32,9 @@ const AdjustmentsList: AdjustmentData[] = [
     date: "2026-03-01",
     status: "Completed",
     contact: "Reese Reichert PhD",
-    warehouse: "Warehouse 2",
+    warehouse: "Агуулах 2",
     user: "Prof. Merle Bergstrom",
-    details: "Stock adjustment due to inventory count mismatch.",
+    details: "Тооллогын зөрүүгээс шалтгаалж үлдэгдэл зассан.",
   },
 ];
 
@@ -123,6 +123,20 @@ const AdjustmentReport: React.FC = () => {
         ? "bg-yellow-100 text-yellow-800"
         : "bg-gray-100 text-gray-800";
 
+  // Төлөвийг монголоор харуулах туслах функц
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Draft":
+        return "Ноорог";
+      case "Completed":
+        return "Дууссан";
+      case "Pending":
+        return "Хүлээгдэж буй";
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
@@ -137,10 +151,10 @@ const AdjustmentReport: React.FC = () => {
             </button>
             <div>
               <h1 className="text-xl font-bold text-gray-800">
-                Adjustment Report
+                Засварлалтын тайлан
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                Review your stock adjustments below
+                Бараа материалын үлдэгдлийн засварлалтыг доороос хянана уу
               </p>
             </div>
           </div>
@@ -148,7 +162,7 @@ const AdjustmentReport: React.FC = () => {
             onClick={() => setShowForm(!showForm)}
             className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 bg-[#2D3748] text-white text-xs font-bold rounded shadow-sm hover:bg-slate-700 transition-all uppercase tracking-wider"
           >
-            <span className="text-sm font-bold">⇅</span> Toggle Form
+            <span className="text-sm font-bold">⇅</span> Шүүлтүүр
           </button>
         </div>
 
@@ -161,7 +175,7 @@ const AdjustmentReport: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Start Date
+                  Эхлэх огноо
                 </label>
                 <input
                   type="date"
@@ -174,7 +188,7 @@ const AdjustmentReport: React.FC = () => {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  End Date
+                  Дуусах огноо
                 </label>
                 <input
                   type="date"
@@ -187,11 +201,11 @@ const AdjustmentReport: React.FC = () => {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Reference
+                  Лавлах код
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. TCI"
+                  placeholder="ж.нь: TCI"
                   value={inputs.reference}
                   onChange={(e) =>
                     setInputs({ ...inputs, reference: e.target.value })
@@ -201,7 +215,7 @@ const AdjustmentReport: React.FC = () => {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Status
+                  Төлөв
                 </label>
                 <select
                   value={inputs.status}
@@ -210,15 +224,15 @@ const AdjustmentReport: React.FC = () => {
                   }
                   className={inputClass}
                 >
-                  <option value="">All Status</option>
-                  <option value="Draft">Draft</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Pending">Pending</option>
+                  <option value="">Бүх төлөв</option>
+                  <option value="Draft">Ноорог</option>
+                  <option value="Completed">Дууссан</option>
+                  <option value="Pending">Хүлээгдэж буй</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Contact
+                  Харилцагч
                 </label>
                 <select
                   value={inputs.contact}
@@ -227,14 +241,14 @@ const AdjustmentReport: React.FC = () => {
                   }
                   className={inputClass}
                 >
-                  <option value="">Select Contact</option>
+                  <option value="">Харилцагч сонгох</option>
                   <option value="Marianna Upton">Marianna Upton</option>
                   <option value="Reese Reichert PhD">Reese Reichert PhD</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Warehouse
+                  Агуулах
                 </label>
                 <select
                   value={inputs.warehouse}
@@ -243,14 +257,14 @@ const AdjustmentReport: React.FC = () => {
                   }
                   className={inputClass}
                 >
-                  <option value="">Select Warehouse</option>
-                  <option value="Warehouse 2">Warehouse 2</option>
-                  <option value="Warehouse 3">Warehouse 3</option>
+                  <option value="">Агуулах сонгох</option>
+                  <option value="Warehouse 2">Агуулах 2</option>
+                  <option value="Warehouse 3">Агуулах 3</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  User
+                  Хэрэглэгч
                 </label>
                 <select
                   value={inputs.user}
@@ -259,7 +273,7 @@ const AdjustmentReport: React.FC = () => {
                   }
                   className={inputClass}
                 >
-                  <option value="">Select User</option>
+                  <option value="">Хэрэглэгч сонгох</option>
                   <option value="Damdinnyam">Damdinnyam</option>
                   <option value="Prof. Merle Bergstrom">
                     Prof. Merle Bergstrom
@@ -274,13 +288,13 @@ const AdjustmentReport: React.FC = () => {
                 onClick={handleReset}
                 className="px-6 py-2 bg-gray-200 rounded text-sm font-bold text-gray-700 hover:bg-gray-300 text-center"
               >
-                RESET
+                ЦЭВЭРЛЭХ
               </button>
               <button
                 type="submit"
                 className="px-8 py-2 bg-[#1A202C] text-white text-xs font-bold rounded uppercase tracking-widest hover:bg-black text-center"
               >
-                SUBMIT
+                ШҮҮХ
               </button>
             </div>
           </form>
@@ -292,13 +306,13 @@ const AdjustmentReport: React.FC = () => {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
-                  Adjustment
+                  Засварлалт
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
-                  Relations
+                  Холбогдох мэдээлэл
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
-                  Details
+                  Тайлбар
                 </th>
               </tr>
             </thead>
@@ -314,25 +328,26 @@ const AdjustmentReport: React.FC = () => {
                     <div
                       className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
                     >
-                      <AiOutlineFileText className="mr-1" /> {item.status}
+                      <AiOutlineFileText className="mr-1" />{" "}
+                      {getStatusLabel(item.status)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm align-top leading-relaxed">
                     <div>
                       <span className="text-gray-400 w-24 inline-block">
-                        Contact:
+                        Харилцагч:
                       </span>{" "}
                       {item.contact}
                     </div>
                     <div>
                       <span className="text-gray-400 w-24 inline-block">
-                        Warehouse:
+                        Агуулах:
                       </span>{" "}
                       {item.warehouse}
                     </div>
                     <div>
                       <span className="text-gray-400 w-24 inline-block">
-                        User:
+                        Хэрэглэгч:
                       </span>{" "}
                       {item.user}
                     </div>
@@ -348,7 +363,7 @@ const AdjustmentReport: React.FC = () => {
                     colSpan={3}
                     className="px-6 py-10 text-center text-gray-500"
                   >
-                    No adjustments found matching your criteria.
+                    Таны хайсан өгөгдөл олдсонгүй.
                   </td>
                 </tr>
               )}
@@ -356,10 +371,9 @@ const AdjustmentReport: React.FC = () => {
           </table>
           <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t text-sm text-gray-600">
             <span>
-              Showing{" "}
-              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to{" "}
-              {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
-              entries
+              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}-ээс{" "}
+              {Math.min(currentPage * itemsPerPage, totalItems)} хүртэл, нийт{" "}
+              {totalItems} бичлэг
             </span>
             <div className="flex gap-1">
               <button
@@ -367,7 +381,7 @@ const AdjustmentReport: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-1.5 border rounded disabled:opacity-50 hover:bg-gray-50"
               >
-                Prev
+                Өмнөх
               </button>
               <button
                 onClick={() =>
@@ -376,7 +390,7 @@ const AdjustmentReport: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-1.5 border rounded disabled:opacity-50 hover:bg-gray-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>
@@ -386,7 +400,7 @@ const AdjustmentReport: React.FC = () => {
         <div className="flex flex-col gap-3 md:hidden">
           {currentItems.length === 0 && (
             <div className="bg-white rounded-xl border border-gray-100 p-6 text-center text-gray-500 text-sm">
-              No adjustments found matching your criteria.
+              Таны хайсан өгөгдөл олдсонгүй.
             </div>
           )}
           {currentItems.map((item) => (
@@ -406,26 +420,27 @@ const AdjustmentReport: React.FC = () => {
                 <div
                   className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
                 >
-                  <AiOutlineFileText className="mr-1" /> {item.status}
+                  <AiOutlineFileText className="mr-1" />{" "}
+                  {getStatusLabel(item.status)}
                 </div>
               </div>
 
               <div className="text-sm text-gray-700 space-y-1 mb-3">
                 <div className="flex gap-1">
                   <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Contact
+                    Харилцагч
                   </span>
                   <span>{item.contact}</span>
                 </div>
                 <div className="flex gap-1">
                   <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Warehouse
+                    Агуулах
                   </span>
                   <span>{item.warehouse}</span>
                 </div>
                 <div className="flex gap-1">
                   <span className="text-gray-400 text-xs w-16 shrink-0">
-                    User
+                    Хэрэглэгч
                   </span>
                   <span>{item.user}</span>
                 </div>
@@ -440,7 +455,7 @@ const AdjustmentReport: React.FC = () => {
           <div className="flex items-center justify-between text-sm text-gray-600 pt-2">
             <span>
               {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}–
-              {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+              {Math.min(currentPage * itemsPerPage, totalItems)} / {totalItems}
             </span>
             <div className="flex gap-1">
               <button
@@ -448,7 +463,7 @@ const AdjustmentReport: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-1.5 border rounded disabled:opacity-50 bg-white hover:bg-gray-50"
               >
-                Prev
+                Өмнөх
               </button>
               <button
                 onClick={() =>
@@ -457,7 +472,7 @@ const AdjustmentReport: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-1.5 border rounded disabled:opacity-50 bg-white hover:bg-gray-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

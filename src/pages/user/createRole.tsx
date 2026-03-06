@@ -5,10 +5,10 @@ const CreateRole = () => {
         {/* Breadcrumb Header */}
         <div className="px-4 md:px-0">
           <h3 className="text-lg font-semibold text-gray-900">
-            <div className="flex items-center">Create New Role</div>
+            <div className="flex items-center">Шинэ эрх үүсгэх</div>
           </h3>
           <p className="mt-1 text-gray-600 text-sm">
-            Please fill the form below to add new record.
+            Шинэ бичлэг нэмэхийн тулд доорх маягтыг бөглөнө үү.
           </p>
         </div>
 
@@ -18,7 +18,7 @@ const CreateRole = () => {
               <div>
                 <div className="col-span-6 sm:col-span-4 relative mb-2">
                   <label className="block text-md font-medium text-gray-900 mb-1">
-                    Name
+                    Нэр
                   </label>
                   <input
                     type="text"
@@ -35,7 +35,7 @@ const CreateRole = () => {
                 type="submit"
                 className="px-6 py-2 bg-slate-800 text-white text-sm font-bold rounded-md hover:bg-slate-700 shadow-sm transition-colors uppercase tracking-wider"
               >
-                Save
+                Хадгалах
               </button>
             </div>
           </form>

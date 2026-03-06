@@ -115,11 +115,11 @@ export const Header = (props: Props) => {
                     href="/profile"
                     className="block px-4 py-2 leading-5 text-gray-700 hover:bg-gray-100 cursor-pointer transition duration-150 ease-in-out"
                   >
-                    Profile
+                    Пропайл
                   </a>
                   <div className="border-t border-gray-100"></div>
                   <button className="block w-full px-4 py-2 leading-5 text-gray-700 text-left hover:bg-gray-100 focus:outline-hidden transition duration-150 ease-in-out">
-                    Log Out
+                    Гарах
                   </button>
                 </div>
               </div>

@@ -27,7 +27,7 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
         {/* Modal Header - Fixed at top */}
         <div className="flex items-center justify-between border-b px-6 py-4 print:hidden">
           <div className="flex gap-1 text-xl font-semibold">
-            Checkin Details
+            Орлогын дэлгэрэнгүй
             <span className="hidden text-gray-500 sm:inline">(TCI28)</span>
           </div>
           <button
@@ -57,10 +57,10 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
             {/* Warehouse Info Section */}
             <div className="flex flex-col justify-between gap-4 sm:flex-row print:flex-row">
               <div className="flex items-start">
-                <h1 className="text-2xl font-bold">Warehouse</h1>
+                <h1 className="text-2xl font-bold">Агуулах</h1>
               </div>
               <div className="max-w-md leading-snug text-left sm:text-right print:text-right">
-                <div className="font-bold">Warehouse 1 (WH1)</div>
+                <div className="font-bold">Агуулах 1 (WH1)</div>
                 <div className="text-sm text-gray-600">
                   2141 Upton Burgs Apt. 914 Port Makaylafurt, ME 70020-7413
                 </div>
@@ -73,7 +73,7 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
 
             <div className="py-2 text-center">
               <h1 className="text-lg font-bold uppercase tracking-wide">
-                Checkin
+                Орлого авах
               </h1>
             </div>
 
@@ -81,21 +81,22 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
             <div className="flex flex-col justify-between gap-4 sm:flex-row print:flex-row">
               <div className="w-full space-y-1 text-sm leading-snug sm:w-1/2">
                 <div>
-                  <span className="text-gray-500">Date:</span> Feb 26, 2026
+                  <span className="text-gray-500">Огноо:</span> 2026 оны 2-р
+                  сарын 26
                 </div>
                 <div>
-                  <span className="text-gray-500">Reference:</span> TCI27
+                  <span className="text-gray-500">Дугаар:</span> TCI27
                 </div>
                 <div>
-                  <span className="text-gray-500">Created at:</span> Feb 26,
-                  2026 7:20 AM
+                  <span className="text-gray-500">Үүсгэсэн:</span> 2026 оны 2-р
+                  сарын 26, 07:20
                 </div>
               </div>
               <div className="w-full text-sm leading-snug sm:w-1/2">
                 <div className="font-bold uppercase text-gray-500 text-xs mb-1">
-                  For:
+                  Хэнд:
                 </div>
-                <div className="font-semibold text-base">Braeden Schoen</div>
+                <div className="font-semibold text-base">Брэдэн Шоен</div>
                 <div>+1 (283) 572-3820</div>
                 <div className="text-blue-600 font-medium">
                   bernita.bartell@example.net
@@ -109,13 +110,13 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">
-                      Item
+                      Бараа
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-bold uppercase text-gray-500 w-32">
-                      Weight
+                      Жин
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-bold uppercase text-gray-500 w-32">
-                      Quantity
+                      Тоо хэмжээ
                     </th>
                   </tr>
                 </thead>
@@ -147,9 +148,8 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
 
             {/* Footer Note */}
             <div className="mt-6 text-sm text-gray-500 italic leading-relaxed">
-              Impedit ipsum quibusdam tempora omnis consequatur omnis. Magni
-              odit fugiat aut. Voluptatum accusantium aliquam animi ut
-              asperiores velit.
+              Бараа материалыг хүлээн авч бүртгэлд орууллаа. Тайланг нягтлан
+              бодох бүртгэлд ашиглана.
             </div>
           </div>
         </div>
@@ -160,13 +160,13 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
             onClick={() => window.print()}
             className="px-4 py-2 bg-gray-800 text-white text-sm font-bold rounded hover:bg-black transition-all"
           >
-            PRINT
+            ХЭВЛЭХ
           </button>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-bold rounded hover:bg-gray-300 transition-all"
           >
-            CLOSE
+            ХААХ
           </button>
         </div>
       </div>

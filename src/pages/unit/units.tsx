@@ -15,23 +15,23 @@ interface UnitData {
 const unitsList: UnitData[] = [
   {
     id: "1",
-    name: "Dozen",
+    name: "Доозон",
     code: "dz",
-    baseUnit: "Piece (pc)",
-    formula: "Piece (pc) * 12 = Dozen (dz)",
+    baseUnit: "Ширхэг (pc)",
+    formula: "Ширхэг (pc) * 12 = Доозон (dz)",
     status: "Completed",
   },
   {
     id: "2",
-    name: "Centimeter",
+    name: "Сантиметр",
     code: "cm",
-    baseUnit: "Meter (m)",
-    formula: "Meter (m) * 100 = Centimeter (cm)",
+    baseUnit: "Метр (m)",
+    formula: "Метр (m) * 100 = Сантиметр (cm)",
     status: "Completed",
   },
   {
     id: "3",
-    name: "Kilogram",
+    name: "Килограмм",
     code: "kg",
     baseUnit: "",
     formula: "",
@@ -39,7 +39,7 @@ const unitsList: UnitData[] = [
   },
   {
     id: "4",
-    name: "Piece",
+    name: "Ширхэг",
     code: "pc",
     baseUnit: "",
     formula: "",
@@ -47,7 +47,7 @@ const unitsList: UnitData[] = [
   },
   {
     id: "5",
-    name: "Meter",
+    name: "Метр",
     code: "m",
     baseUnit: "",
     formula: "",
@@ -92,9 +92,9 @@ const Units: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Units</h3>
+          <h3 className="text-lg font-bold text-gray-900">Хэмжих нэгж</h3>
           <p className="mt-1 text-gray-600">
-            Please review the data in the table below
+            Доорх хүснэгтээс мэдээллийг хянана уу
           </p>
         </div>
 
@@ -105,13 +105,13 @@ const Units: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   {[
-                    { value: "All", label: "All" },
-                    { value: "Draft", label: "Draft Only" },
+                    { value: "All", label: "Бүгд" },
+                    { value: "Draft", label: "Зөвхөн ноорог" },
                   ].map((f) => (
                     <button
                       key={f.value}
@@ -134,14 +134,14 @@ const Units: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search"
+                placeholder="Хайх"
               />
               {searchTerm && (
                 <span
                   className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
                   onClick={() => setSearchTerm("")}
                 >
-                  Reset
+                  Цэвэрлэх
                 </span>
               )}
             </div>
@@ -158,16 +158,16 @@ const Units: React.FC = () => {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Name
+                  Нэр
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Code
+                  Код
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Base Unit
+                  Үндсэн нэгж
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Formula
+                  Томьёо
                 </th>
                 <th className="px-6 py-4"></th>
               </tr>
@@ -218,7 +218,7 @@ const Units: React.FC = () => {
                     {item.name}
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">
-                    Code:{" "}
+                    Код:{" "}
                     <span className="font-medium text-gray-700">
                       {item.code}
                     </span>
@@ -229,7 +229,7 @@ const Units: React.FC = () => {
 
               {item.baseUnit && (
                 <div className="text-sm text-gray-600 mb-2">
-                  <span className="text-gray-400 text-xs">Base Unit </span>
+                  <span className="text-gray-400 text-xs">Үндсэн нэгж: </span>
                   {item.baseUnit}
                 </div>
               )}
@@ -247,7 +247,7 @@ const Units: React.FC = () => {
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -261,7 +261,8 @@ const Units: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                Нийт {totalItems} бичлэгээс {displayFrom}-аас {displayTo} хүртэл
+                харуулж байна
               </span>
             </div>
 
@@ -271,7 +272,7 @@ const Units: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -289,7 +290,7 @@ const Units: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

@@ -124,6 +124,20 @@ const TransferReport: React.FC = () => {
         ? "bg-yellow-100 text-yellow-800"
         : "bg-gray-100 text-gray-800";
 
+  // Төлөвийг монголоор харуулах туслах функц
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Draft":
+        return "Ноорог";
+      case "Completed":
+        return "Дууссан";
+      case "Pending":
+        return "Хүлээгдэж буй";
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
@@ -138,10 +152,10 @@ const TransferReport: React.FC = () => {
             </button>
             <div>
               <h1 className="text-xl font-bold text-gray-800">
-                Transfer Report
+                Шилжүүлгийн тайлан
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                Please review the transfer records below
+                Шилжүүлгийн бүртгэлийг доороос хянана уу
               </p>
             </div>
           </div>
@@ -149,7 +163,7 @@ const TransferReport: React.FC = () => {
             onClick={() => setShowForm(!showForm)}
             className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 bg-[#2D3748] text-white text-xs font-bold rounded shadow-sm hover:bg-slate-700 transition-all uppercase tracking-wider"
           >
-            <span className="text-sm font-bold">⇅</span> Toggle Form
+            <span className="text-sm font-bold">⇅</span> Шүүлтүүр
           </button>
         </div>
 
@@ -162,7 +176,7 @@ const TransferReport: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Start Date
+                  Эхлэх огноо
                 </label>
                 <input
                   type="date"
@@ -175,7 +189,7 @@ const TransferReport: React.FC = () => {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  End Date
+                  Дуусах огноо
                 </label>
                 <input
                   type="date"
@@ -188,11 +202,11 @@ const TransferReport: React.FC = () => {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Reference (Code)
+                  Лавлах код
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. TCI"
+                  placeholder="ж.нь: TCI"
                   value={inputs.reference}
                   onChange={(e) =>
                     setInputs({ ...inputs, reference: e.target.value })
@@ -202,7 +216,7 @@ const TransferReport: React.FC = () => {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Status
+                  Төлөв
                 </label>
                 <select
                   value={inputs.status}
@@ -211,15 +225,15 @@ const TransferReport: React.FC = () => {
                   }
                   className={inputClass}
                 >
-                  <option value="">All Status</option>
-                  <option value="Draft">Draft</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Pending">Pending</option>
+                  <option value="">Бүх төлөв</option>
+                  <option value="Draft">Ноорог</option>
+                  <option value="Completed">Дууссан</option>
+                  <option value="Pending">Хүлээгдэж буй</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  From Warehouse
+                  Ачуулсан агуулах
                 </label>
                 <select
                   value={inputs.fromWarehouse}
@@ -228,14 +242,14 @@ const TransferReport: React.FC = () => {
                   }
                   className={inputClass}
                 >
-                  <option value="">Select Warehouse</option>
+                  <option value="">Агуулах сонгох</option>
                   <option value="warehouse4 jj">warehouse4 jj</option>
                   <option value="warehouse1 center">warehouse1 center</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  To Warehouse
+                  Хүлээн авсан агуулах
                 </label>
                 <select
                   value={inputs.toWarehouse}
@@ -244,14 +258,14 @@ const TransferReport: React.FC = () => {
                   }
                   className={inputClass}
                 >
-                  <option value="">Select Warehouse</option>
+                  <option value="">Агуулах сонгох</option>
                   <option value="warehouse1 center">warehouse1 center</option>
                   <option value="warehouse2 center">warehouse2 center</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  User
+                  Хэрэглэгч
                 </label>
                 <select
                   value={inputs.user}
@@ -260,7 +274,7 @@ const TransferReport: React.FC = () => {
                   }
                   className={inputClass}
                 >
-                  <option value="">Select User</option>
+                  <option value="">Хэрэглэгч сонгох</option>
                   <option value="Damdinnyam">Damdinnyam</option>
                   <option value="Prof. Merle Bergstrom">
                     Prof. Merle Bergstrom
@@ -275,13 +289,13 @@ const TransferReport: React.FC = () => {
                 onClick={handleReset}
                 className="px-6 py-2 bg-gray-200 rounded text-sm font-bold text-gray-700 hover:bg-gray-300 text-center"
               >
-                RESET
+                ЦЭВЭРЛЭХ
               </button>
               <button
                 type="submit"
                 className="px-8 py-2 bg-[#1A202C] text-white text-xs font-bold rounded uppercase tracking-widest hover:bg-black text-center"
               >
-                SUBMIT
+                ШҮҮХ
               </button>
             </div>
           </form>
@@ -293,13 +307,13 @@ const TransferReport: React.FC = () => {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
-                  Transfer Info
+                  Шилжүүлгийн мэдээлэл
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
-                  Route & User
+                  Маршрут & Хэрэглэгч
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
-                  Details
+                  Тайлбар
                 </th>
               </tr>
             </thead>
@@ -315,25 +329,26 @@ const TransferReport: React.FC = () => {
                     <div
                       className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
                     >
-                      <AiOutlineFileText className="mr-1" /> {item.status}
+                      <AiOutlineFileText className="mr-1" />{" "}
+                      {getStatusLabel(item.status)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm align-top leading-relaxed">
                     <div>
                       <span className="text-gray-400 w-20 inline-block">
-                        From:
+                        Ачуулсан:
                       </span>{" "}
                       {item.from}
                     </div>
                     <div>
                       <span className="text-gray-400 w-20 inline-block">
-                        To:
+                        Хүлээн авсан:
                       </span>{" "}
                       {item.to}
                     </div>
                     <div>
                       <span className="text-gray-400 w-20 inline-block">
-                        User:
+                        Хэрэглэгч:
                       </span>{" "}
                       {item.user}
                     </div>
@@ -349,7 +364,7 @@ const TransferReport: React.FC = () => {
                     colSpan={3}
                     className="px-6 py-10 text-center text-gray-500"
                   >
-                    No data found.
+                    Өгөгдөл олдсонгүй.
                   </td>
                 </tr>
               )}
@@ -357,10 +372,9 @@ const TransferReport: React.FC = () => {
           </table>
           <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t text-sm text-gray-600">
             <span>
-              Showing{" "}
-              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to{" "}
-              {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
-              entries
+              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}-ээс{" "}
+              {Math.min(currentPage * itemsPerPage, totalItems)} хүртэл, нийт{" "}
+              {totalItems} бичлэг
             </span>
             <div className="flex gap-1">
               <button
@@ -368,7 +382,7 @@ const TransferReport: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-1.5 border rounded disabled:opacity-50 hover:bg-gray-50"
               >
-                Prev
+                Өмнөх
               </button>
               <button
                 onClick={() =>
@@ -377,7 +391,7 @@ const TransferReport: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-1.5 border rounded disabled:opacity-50 hover:bg-gray-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>
@@ -387,7 +401,7 @@ const TransferReport: React.FC = () => {
         <div className="flex flex-col gap-3 md:hidden">
           {currentItems.length === 0 && (
             <div className="bg-white rounded-xl border border-gray-100 p-6 text-center text-gray-500 text-sm">
-              No data found.
+              Өгөгдөл олдсонгүй.
             </div>
           )}
           {currentItems.map((item) => (
@@ -407,26 +421,27 @@ const TransferReport: React.FC = () => {
                 <div
                   className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
                 >
-                  <AiOutlineFileText className="mr-1" /> {item.status}
+                  <AiOutlineFileText className="mr-1" />{" "}
+                  {getStatusLabel(item.status)}
                 </div>
               </div>
 
               <div className="text-sm text-gray-700 space-y-1 mb-3">
                 <div className="flex gap-1">
                   <span className="text-gray-400 text-xs w-12 shrink-0">
-                    From
+                    Ачуулсан
                   </span>
                   <span>{item.from}</span>
                 </div>
                 <div className="flex gap-1">
                   <span className="text-gray-400 text-xs w-12 shrink-0">
-                    To
+                    Хүлээн авсан
                   </span>
                   <span>{item.to}</span>
                 </div>
                 <div className="flex gap-1">
                   <span className="text-gray-400 text-xs w-12 shrink-0">
-                    User
+                    Хэрэглэгч
                   </span>
                   <span>{item.user}</span>
                 </div>
@@ -441,7 +456,7 @@ const TransferReport: React.FC = () => {
           <div className="flex items-center justify-between text-sm text-gray-600 pt-2">
             <span>
               {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}–
-              {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+              {Math.min(currentPage * itemsPerPage, totalItems)} / {totalItems}
             </span>
             <div className="flex gap-1">
               <button
@@ -449,7 +464,7 @@ const TransferReport: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-1.5 border rounded disabled:opacity-50 bg-white hover:bg-gray-50"
               >
-                Prev
+                Өмнөх
               </button>
               <button
                 onClick={() =>
@@ -458,7 +473,7 @@ const TransferReport: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-1.5 border rounded disabled:opacity-50 bg-white hover:bg-gray-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

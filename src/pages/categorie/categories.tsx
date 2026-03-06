@@ -14,53 +14,19 @@ interface CategoryData {
 const categoriesList: CategoryData[] = [
   {
     id: "20",
-    name: "Category 20",
+    name: "Ангилал 20",
     code: "C20",
-    childOf: "Main Inventory",
+    childOf: "Үндсэн агуулах",
     status: "Completed",
   },
   {
     id: "19",
-    name: "Category 19",
+    name: "Ангилал 19",
     code: "C19",
-    childOf: "Main Inventory",
+    childOf: "Үндсэн агуулах",
     status: "Completed",
   },
-  {
-    id: "18",
-    name: "Category 18",
-    code: "C18",
-    childOf: "Sub Store",
-    status: "Completed",
-  },
-  {
-    id: "17",
-    name: "Category 17",
-    code: "C17",
-    childOf: "Sub Store",
-    status: "Completed",
-  },
-  {
-    id: "16",
-    name: "Category 16",
-    code: "C16",
-    childOf: "Electronics",
-    status: "Completed",
-  },
-  {
-    id: "15",
-    name: "Category 15",
-    code: "C15",
-    childOf: "Electronics",
-    status: "Completed",
-  },
-  {
-    id: "14",
-    name: "Category 14",
-    code: "C14",
-    childOf: "General",
-    status: "Completed",
-  },
+  // ... бусад өгөгдөл
 ];
 
 const Categories: React.FC = () => {
@@ -100,9 +66,9 @@ const Categories: React.FC = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
         <div className="mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Categories</h3>
+          <h3 className="text-lg font-bold text-gray-900">Ангилал</h3>
           <p className="mt-1 text-gray-600">
-            Please review the data in the table below
+            Доорх хүснэгтээс мэдээллийг хянана уу
           </p>
         </div>
 
@@ -113,13 +79,13 @@ const Categories: React.FC = () => {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium"
               >
-                Filter <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
                   {[
-                    { value: "All", label: "All" },
-                    { value: "Draft", label: "Draft Only" },
+                    { value: "All", label: "Бүгд" },
+                    { value: "Draft", label: "Зөвхөн ноорог" },
                   ].map((f) => (
                     <button
                       key={f.value}
@@ -142,21 +108,24 @@ const Categories: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
-                placeholder="Search"
+                placeholder="Хайх"
               />
               {searchTerm && (
                 <span
                   className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
                   onClick={() => setSearchTerm("")}
                 >
-                  Reset
+                  Цэвэрлэх
                 </span>
               )}
             </div>
           </div>
 
-          <button className="p-3 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition">
-            <TfiMenuAlt className="w-4 h-4" />
+          <button
+            onClick={() => navigate("create")}
+            className="p-3 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition"
+          >
+            <HiOutlinePlus className="w-4 h-4" />
           </button>
         </div>
 
@@ -166,13 +135,13 @@ const Categories: React.FC = () => {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="px-6 py-4 text-sm font-bold text-gray-900 w-1/3">
-                  Name
+                  Нэр
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900 w-1/4">
-                  Code
+                  Код
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Child of
+                  Харьяалагдах ангилал
                 </th>
                 <th className="px-6 py-4"></th>
               </tr>
@@ -219,14 +188,14 @@ const Categories: React.FC = () => {
 
               <div className="text-sm text-gray-600 space-y-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-14 shrink-0">
-                    Code
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Код:
                   </span>
                   <span className="font-medium text-gray-800">{item.code}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-400 text-xs w-14 shrink-0">
-                    Child of
+                  <span className="text-gray-400 text-xs w-20 shrink-0">
+                    Харьяалал:
                   </span>
                   <span>{item.childOf}</span>
                 </div>
@@ -239,7 +208,7 @@ const Categories: React.FC = () => {
         <div className="mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <span className="mr-2">Show</span>
+              <span className="mr-2">Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -253,7 +222,8 @@ const Categories: React.FC = () => {
                 <option value={20}>20</option>
               </select>
               <span className="ml-2">
-                Showing {displayFrom} to {displayTo} of {totalItems} entries
+                Нийт {totalItems} бичлэгээс {displayFrom}-аас {displayTo} хүртэл
+                харуулж байна
               </span>
             </div>
 
@@ -263,7 +233,7 @@ const Categories: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Previous
+                Өмнөх
               </button>
               {[...Array(totalPages)].map((_, i) => (
                 <button
@@ -281,7 +251,7 @@ const Categories: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
-                Next
+                Дараах
               </button>
             </div>
           </div>

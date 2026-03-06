@@ -45,19 +45,19 @@ const Profile = () => {
         <div>
           <div className="px-4 md:px-0 md:col-span-1">
             <h3 className="text-lg font-bold text-gray-900">
-              Profile Information
+              Хэрэглэгчийн мэдээлэл
             </h3>
             <p className="mt-1 text-gray-600">
-              Update your account's profile information and email address.
+              Та өөрийн бүртгэлийн мэдээлэл болон имэйл хаягаа шинэчилнэ үү.
             </p>
           </div>
-          <p className="mt-6">
+          <div className="mt-6">
             <form onSubmit={handleSubmit}>
               <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
                 <div className="grid gap-6">
                   <div className="col-span-6 sm:col-span-4">
                     <label className="font-medium text-gray-700 block mb-2">
-                      Photo
+                      Зураг
                     </label>
 
                     {/* Hidden TS-typed File Input */}
@@ -78,7 +78,7 @@ const Profile = () => {
                         />
                       ) : (
                         <div className="rounded-full w-20 h-20 bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200">
-                          <span className="text-xs">No Photo</span>
+                          <span className="text-xs">Зураггүй</span>
                         </div>
                       )}
                     </div>
@@ -89,7 +89,7 @@ const Profile = () => {
                         onClick={handleSelectPhoto}
                         className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none transition"
                       >
-                        Select a new photo
+                        Шинэ зураг сонгох
                       </button>
 
                       {photoPreview && (
@@ -98,7 +98,7 @@ const Profile = () => {
                           onClick={handleRemovePhoto}
                           className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-red-600 uppercase tracking-widest shadow-sm hover:bg-red-50 focus:outline-none transition"
                         >
-                          Remove photo
+                          Зургийг устгах
                         </button>
                       )}
                     </div>
@@ -106,7 +106,7 @@ const Profile = () => {
 
                   <div className="col-span-6 sm:col-span-4">
                     <label className="block text-md font-medium text-gray-900 mb-1">
-                      Name
+                      Нэр
                     </label>
                     <input
                       type="text"
@@ -117,7 +117,7 @@ const Profile = () => {
 
                   <div className="col-span-6 sm:col-span-4">
                     <label className="block text-md font-medium text-gray-900 mb-1">
-                      Email
+                      Имэйл
                     </label>
                     <input
                       type="email"
@@ -133,11 +133,11 @@ const Profile = () => {
                   type="submit"
                   className="px-6 py-2 bg-slate-800 text-white text-sm font-bold rounded-md hover:bg-slate-700 transition uppercase tracking-wider"
                 >
-                  Save
+                  Хадгалах
                 </button>
               </div>
             </form>
-          </p>
+          </div>
         </div>
         <div className="hidden sm:block">
           <div className="py-8">
@@ -146,10 +146,12 @@ const Profile = () => {
         </div>
         <div className="mt-10 sm:mt-0">
           <div className="px-4 md:px-0 md:col-span-1">
-            <h3 className="text-lg font-bold text-gray-900">Update Password</h3>
+            <h3 className="text-lg font-bold text-gray-900">
+              Нууц үг шинэчлэх
+            </h3>
             <p className="mt-1 text-gray-600">
-              Ensure your account is using a long, random password to stay
-              secure.
+              Аюулгүй байдлаа хангахын тулд урт бөгөөд санамсаргүй нууц үг
+              ашиглахыг зөвлөж байна.
             </p>
           </div>
           <div className="mt-6">
@@ -158,39 +160,39 @@ const Profile = () => {
                 <div className="grid gap-6">
                   <div className="col-span-6 sm:col-span-4">
                     <label className="block text-md font-medium text-gray-900 mb-1">
-                      Current Password
+                      Одоогийн нууц үг
                     </label>
                     <input
-                      type="text"
-                      defaultValue="WH4"
+                      type="password"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                     />
                   </div>
                   <div className="col-span-6 sm:col-span-4">
                     <label className="block text-md font-medium text-gray-900 mb-1">
-                      New Password
+                      Шинэ нууц үг
                     </label>
                     <input
-                      type="text"
-                      defaultValue="WH4"
+                      type="password"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                     />
                   </div>
                   <div className="col-span-6 sm:col-span-4">
                     <label className="block text-md font-medium text-gray-900 mb-1">
-                      Confirm Password
+                      Нууц үг баталгаажуулах
                     </label>
                     <input
-                      type="text"
-                      defaultValue="WH4"
+                      type="password"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                     />
                   </div>
                 </div>
               </div>
               <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
-                <button className="relative flex items-center justify-center px-4 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150">
-                  Save
+                <button
+                  type="submit"
+                  className="relative flex items-center justify-center px-4 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150"
+                >
+                  Хадгалах
                 </button>
               </div>
             </form>
