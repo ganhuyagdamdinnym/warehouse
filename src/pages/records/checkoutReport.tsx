@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { HiArrowLeft } from "react-icons/hi";
+import { AiOutlineFileText } from "react-icons/ai";
 
 interface CheckinData {
   id: string;
@@ -27,14 +29,12 @@ const checkinsList: CheckinData[] = [
     details: "Qui harum neque vero nam necessitatibus laudantium...",
     items: [],
   },
-  // Илүү дата нэмж тестлэх боломжтой
 ];
 
 const CheckoutReport: React.FC = () => {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
 
-  // 1. Бүх оролтын утгууд
   const [inputs, setInputs] = useState({
     startDate: "",
     endDate: "",
@@ -46,13 +46,9 @@ const CheckoutReport: React.FC = () => {
     user: "",
     category: "",
   });
-
-  // 2. Зөвхөн Submit дарахад шүүлт хийх утгууд
   const [appliedFilters, setAppliedFilters] = useState({ ...inputs });
-
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(10);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,25 +73,19 @@ const CheckoutReport: React.FC = () => {
     setCurrentPage(1);
   };
 
-  // 3. Шүүх логик
   const filteredList = checkinsList.filter((item) => {
-    // Reference & Contact шүүлтүүр
     const matchesRef = item.code
       .toLowerCase()
       .includes(appliedFilters.reference.toLowerCase());
     const matchesContact = item.contact
       .toLowerCase()
       .includes(appliedFilters.contact.toLowerCase());
-
-    // Warehouse, User, Category шүүлтүүр (Хэрэв сонгосон бол)
     const matchesWarehouse =
       !appliedFilters.warehouse || item.warehouse === appliedFilters.warehouse;
     const matchesUser =
       !appliedFilters.user || item.user === appliedFilters.user;
     const matchesCategory =
       !appliedFilters.category || item.category === appliedFilters.category;
-
-    // Date шүүлтүүр
     const itemDate = new Date(item.date).getTime();
     const start = appliedFilters.startDate
       ? new Date(appliedFilters.startDate).getTime()
@@ -104,7 +94,6 @@ const CheckoutReport: React.FC = () => {
       ? new Date(appliedFilters.endDate).getTime()
       : Infinity;
     const matchesDate = itemDate >= start && itemDate <= end;
-
     return (
       matchesRef &&
       matchesContact &&
@@ -122,22 +111,42 @@ const CheckoutReport: React.FC = () => {
     currentPage * itemsPerPage,
   );
 
+  const inputClass =
+    "w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white";
+
+  const statusBadgeClass = (status: string) =>
+    status === "Completed"
+      ? "bg-green-100 text-green-800"
+      : status === "Pending"
+        ? "bg-yellow-100 text-yellow-800"
+        : "bg-gray-100 text-gray-800";
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
-      <div className="max-w-7xl mx-auto">
+    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
+      <div className="px-4 md:px-0">
         {/* Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-xl font-bold text-gray-800">Checkout Report</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Please review the report below
-            </p>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+          <div className="flex items-start gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="mt-1 p-1.5 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 shadow-sm transition-colors"
+            >
+              <HiArrowLeft className="w-4 h-4" />
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">
+                Checkout Report
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Please review the report below
+              </p>
+            </div>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2D3748] text-white text-xs font-bold rounded shadow-sm hover:bg-slate-700 transition-all uppercase"
+            className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 bg-[#2D3748] text-white text-xs font-bold rounded shadow-sm hover:bg-slate-700 transition-all uppercase tracking-wider"
           >
-            <span className="text-sm font-bold">⇅</span> TOGGLE FORM
+            <span className="text-sm font-bold">⇅</span> Toggle Form
           </button>
         </div>
 
@@ -145,10 +154,9 @@ const CheckoutReport: React.FC = () => {
         {showForm && (
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8"
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-8"
           >
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              {/* Dates */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
                   Start Date
@@ -159,7 +167,7 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, startDate: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                  className={inputClass}
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -172,7 +180,7 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, endDate: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                  className={inputClass}
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -185,7 +193,7 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, startCreatedAt: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                  className={inputClass}
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -198,11 +206,9 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, endCreatedAt: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                  className={inputClass}
                 />
               </div>
-
-              {/* Selects & Inputs */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
                   Reference
@@ -214,7 +220,7 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, reference: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                  className={inputClass}
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -226,7 +232,7 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, contact: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                  className={inputClass}
                 >
                   <option value="">Contact</option>
                   <option value="Reese Reichert PhD">Reese Reichert PhD</option>
@@ -241,7 +247,7 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, warehouse: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                  className={inputClass}
                 >
                   <option value="">Warehouse</option>
                   <option value="Warehouse 2">Warehouse 2</option>
@@ -256,7 +262,7 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, user: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                  className={inputClass}
                 >
                   <option value="">User</option>
                   <option value="Prof. Merle Bergstrom">
@@ -273,7 +279,7 @@ const CheckoutReport: React.FC = () => {
                   onChange={(e) =>
                     setInputs({ ...inputs, category: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                  className={inputClass}
                 >
                   <option value="">Category</option>
                   <option value="Electronics">Electronics</option>
@@ -281,17 +287,17 @@ const CheckoutReport: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t pt-6">
+            <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3 border-t pt-5">
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-6 py-2 bg-gray-200 rounded text-sm font-bold text-gray-700 hover:bg-gray-300"
+                className="px-6 py-2 bg-gray-200 rounded text-sm font-bold text-gray-700 hover:bg-gray-300 text-center"
               >
                 RESET
               </button>
               <button
                 type="submit"
-                className="px-8 py-2 bg-[#1A202C] text-white text-xs font-bold rounded uppercase tracking-widest hover:bg-black"
+                className="px-8 py-2 bg-[#1A202C] text-white text-xs font-bold rounded uppercase tracking-widest hover:bg-black text-center"
               >
                 SUBMIT
               </button>
@@ -299,13 +305,13 @@ const CheckoutReport: React.FC = () => {
           </form>
         )}
 
-        {/* Table */}
-        <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-x-auto">
+        {/* ── Desktop Table ── */}
+        <div className="hidden md:block bg-white rounded-sm shadow-sm border border-gray-200 overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-gray-50/50 border-b border-gray-200">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
-                  Checkin
+                  Checkout
                 </th>
                 <th className="px-6 py-4 text-sm font-bold text-gray-700 uppercase">
                   Relations
@@ -324,8 +330,10 @@ const CheckoutReport: React.FC = () => {
                   <td className="px-6 py-4 align-top">
                     <div className="font-bold text-blue-600">{item.code}</div>
                     <div className="text-sm text-gray-500">{item.date}</div>
-                    <div className="text-xs mt-1">
-                      Draft: <span className="text-green-600 font-bold">✓</span>
+                    <div
+                      className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
+                    >
+                      <AiOutlineFileText className="mr-1" /> {item.status}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm align-top leading-relaxed">
@@ -355,9 +363,7 @@ const CheckoutReport: React.FC = () => {
               ))}
             </tbody>
           </table>
-
-          {/* Pagination */}
-          <div className="p-4 flex items-center justify-between border-t text-sm text-gray-600">
+          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t text-sm text-gray-600">
             <span>
               Showing{" "}
               {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to{" "}
@@ -368,7 +374,7 @@ const CheckoutReport: React.FC = () => {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
+                className="px-3 py-1.5 border rounded disabled:opacity-50 hover:bg-gray-50"
               >
                 Prev
               </button>
@@ -377,7 +383,81 @@ const CheckoutReport: React.FC = () => {
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="px-3 py-1 border rounded disabled:opacity-50"
+                className="px-3 py-1.5 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Mobile Cards ── */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {currentItems.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="font-bold text-blue-600 text-base">
+                    {item.code}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-0.5">
+                    {item.date}
+                  </div>
+                </div>
+                <div
+                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
+                >
+                  <AiOutlineFileText className="mr-1" /> {item.status}
+                </div>
+              </div>
+              <div className="text-sm text-gray-700 space-y-1 mb-3">
+                <div className="flex gap-1">
+                  <span className="text-gray-400 text-xs w-16 shrink-0">
+                    Contact
+                  </span>
+                  <span>{item.contact}</span>
+                </div>
+                <div className="flex gap-1">
+                  <span className="text-gray-400 text-xs w-16 shrink-0">
+                    Warehouse
+                  </span>
+                  <span>{item.warehouse}</span>
+                </div>
+                <div className="flex gap-1">
+                  <span className="text-gray-400 text-xs w-16 shrink-0">
+                    User
+                  </span>
+                  <span>{item.user}</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 italic line-clamp-2">
+                {item.details}
+              </p>
+            </div>
+          ))}
+
+          <div className="flex items-center justify-between text-sm text-gray-600 pt-2">
+            <span>
+              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}–
+              {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+            </span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 border rounded disabled:opacity-50 bg-white hover:bg-gray-50"
+              >
+                Prev
+              </button>
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="px-3 py-1.5 border rounded disabled:opacity-50 bg-white hover:bg-gray-50"
               >
                 Next
               </button>

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineSearch, HiOutlinePlus, HiChevronDown } from "react-icons/hi";
-import { TfiMenuAlt } from "react-icons/tfi"; // For the menu icon in the image
+import { TfiMenuAlt } from "react-icons/tfi";
 
-// 1. Updated Interface for Categories
 interface CategoryData {
   id: string;
   name: string;
@@ -12,7 +11,6 @@ interface CategoryData {
   status: "Draft" | "Completed" | "Pending";
 }
 
-// Dummy data filled to match the image sequence
 const categoriesList: CategoryData[] = [
   {
     id: "20",
@@ -81,14 +79,12 @@ const Categories: React.FC = () => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.code.toLowerCase().includes(searchTerm.toLowerCase());
-
     const matchesStatus =
       statusFilter === "All"
         ? true
         : statusFilter === "Draft"
           ? item.status === "Draft"
           : item.status !== "Draft";
-
     return matchesSearch && matchesStatus;
   });
 
@@ -121,24 +117,21 @@ const Categories: React.FC = () => {
               </button>
               {isFilterOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
-                  <button
-                    onClick={() => {
-                      setStatusFilter("All");
-                      setIsFilterOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100"
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStatusFilter("Draft");
-                      setIsFilterOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100"
-                  >
-                    Draft Only
-                  </button>
+                  {[
+                    { value: "All", label: "All" },
+                    { value: "Draft", label: "Draft Only" },
+                  ].map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => {
+                        setStatusFilter(f.value);
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md ${statusFilter === f.value ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -151,12 +144,14 @@ const Categories: React.FC = () => {
                 className="w-full px-2 py-2 border-0 focus:ring-0 outline-none"
                 placeholder="Search"
               />
-              <span
-                className="text-gray-400 text-sm cursor-pointer"
-                onClick={() => setSearchTerm("")}
-              >
-                Reset
-              </span>
+              {searchTerm && (
+                <span
+                  className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
+                  onClick={() => setSearchTerm("")}
+                >
+                  Reset
+                </span>
+              )}
             </div>
           </div>
 
@@ -165,8 +160,8 @@ const Categories: React.FC = () => {
           </button>
         </div>
 
-        {/* --- TABLE STYLED LIKE THE CATEGORIES IMAGE --- */}
-        <div className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm">
+        {/* ── Desktop Table ── */}
+        <div className="hidden md:block bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-200">
@@ -207,9 +202,42 @@ const Categories: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination Section */}
+        {/* ── Mobile Cards ── */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {currentItems.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => handleSelectItem(item)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 cursor-pointer active:bg-gray-50"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="font-semibold text-gray-900 text-base">
+                  {item.name}
+                </div>
+                <span className="text-xl text-gray-300">›</span>
+              </div>
+
+              <div className="text-sm text-gray-600 space-y-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-xs w-14 shrink-0">
+                    Code
+                  </span>
+                  <span className="font-medium text-gray-800">{item.code}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-xs w-14 shrink-0">
+                    Child of
+                  </span>
+                  <span>{item.childOf}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
         <div className="mt-6">
-          <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
             <div className="flex items-center">
               <span className="mr-2">Show</span>
               <select
@@ -231,28 +259,24 @@ const Categories: React.FC = () => {
 
             <div className="flex space-x-1">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               >
                 Previous
               </button>
-              {[...Array(totalPages)].map((_, index) => (
+              {[...Array(totalPages)].map((_, i) => (
                 <button
-                  key={index + 1}
-                  onClick={() => setCurrentPage(index + 1)}
-                  className={`px-3 py-2 border rounded-md transition-colors ${
-                    currentPage === index + 1
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-2 border rounded-md transition-colors ${currentPage === i + 1 ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 hover:bg-gray-50"}`}
                 >
-                  {index + 1}
+                  {i + 1}
                 </button>
               ))}
               <button
                 onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-3 py-2 border rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
