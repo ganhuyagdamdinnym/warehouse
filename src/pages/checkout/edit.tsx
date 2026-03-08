@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { HiChevronDown } from "react-icons/hi";
 
-const CreateAdjustment = () => {
+const CheckoutEdit = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
@@ -39,11 +39,17 @@ const CreateAdjustment = () => {
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div>
         <div className="px-4 md:px-0 md:col-span-1">
-          <h3 className="text-lg font-bold text-gray-900">
-            Шинэ өөрчлөлт үүсгэх
+          <h3 className="text-lg font-semibold text-gray-900">
+            <div className="flex items-center">
+              <a href="#" className="text-blue-600 hover:text-blue-700">
+                Зарлага
+              </a>
+              <span className="text-blue-600 font-medium mx-2">/</span>
+              имбмр
+            </div>
           </h3>
           <p className="mt-1 text-gray-600">
-            Шинэ бичилт нэмэхийн тулд доорх формыг бөглөнө үү.
+            Доорх формын дагуу мэдээллийг өөрчлөн бүртгэлийг шинэчилнэ үү
           </p>
         </div>
         <div className="mt-6">
@@ -250,4 +256,4 @@ const CreateAdjustment = () => {
   );
 };
 
-export default CreateAdjustment;
+export default CheckoutEdit;

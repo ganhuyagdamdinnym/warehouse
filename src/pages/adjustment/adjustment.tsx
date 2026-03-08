@@ -125,39 +125,14 @@ const Adjustment: React.FC = () => {
     <div
       className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm"
       onClick={stopProp ? (e) => e.stopPropagation() : undefined}
-    >
-      <button
-        title="Засах"
-        className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200"
-      >
-        <HiOutlinePencilAlt className="w-4 h-4" />
-      </button>
-      <button
-        title="Хэлэлцүүлэг"
-        className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200"
-      >
-        <HiOutlineChatAlt2 className="w-4 h-4" />
-      </button>
-      <button
-        title="Түүх"
-        className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200"
-      >
-        <HiOutlineClipboardList className="w-4 h-4" />
-      </button>
-      <button
-        title="Устгах"
-        className="p-2 bg-white text-red-600 hover:bg-red-50"
-      >
-        <HiOutlineTrash className="w-4 h-4" />
-      </button>
-    </div>
+    ></div>
   );
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
         <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Тохируулга</h3>
+          <h3 className="text-lg font-bold text-gray-900">Өөрчлөлт</h3>
           <p className="mt-1 text-gray-600">
             Доорх хүснэгтээс мэдээллийг хянана уу
           </p>
@@ -282,7 +257,34 @@ const Adjustment: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <ActionButtons />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/adjustment/${item.id}/edit`);
+                      }}
+                      title="Засах"
+                      className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200"
+                    >
+                      <HiOutlinePencilAlt className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="Хэлэлцүүлэг"
+                      className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200"
+                    >
+                      <HiOutlineChatAlt2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="Түүх"
+                      className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200"
+                    >
+                      <HiOutlineClipboardList className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="Устгах"
+                      className="p-2 bg-white text-red-600 hover:bg-red-50"
+                    >
+                      <HiOutlineTrash className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}

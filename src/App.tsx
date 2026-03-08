@@ -40,6 +40,9 @@ import CheckoutReport from "./pages/records/checkoutReport";
 import AdjustmentReport from "./pages/records/adjustmentReport";
 import TransferReport from "./pages/records/transferReport";
 import Forgot from "./pages/login/forgot";
+import CheckinEdit from "./pages/checkin/edit";
+import CheckoutEdit from "./pages/checkout/edit";
+import AdjustmentEdit from "./pages/adjustment/edit";
 
 function App() {
   const [isOpenSidebar, setIsOpenSideBar] = useState<boolean>(false);
@@ -75,15 +78,27 @@ function App() {
                           path="/checkin/create"
                           element={<CreateCheckIn />}
                         />
+                        <Route
+                          path="/checkin/:id/edit"
+                          element={<CheckinEdit />}
+                        />
                         <Route path="/checkout" element={<Checkout />} />
                         <Route
                           path="/checkout/create"
                           element={<CreateCheckOut />}
                         />
+                        <Route
+                          path="/checkout/:id/edit"
+                          element={<CheckoutEdit />}
+                        />
                         <Route path="/adjustment" element={<Adjustment />} />
                         <Route
                           path="/adjustment/create"
                           element={<CreateAdjustment />}
+                        />
+                        <Route
+                          path="/adjustment/:id/edit"
+                          element={<AdjustmentEdit />}
                         />
                         <Route path="/transfer" element={<Transfer />} />
                         <Route

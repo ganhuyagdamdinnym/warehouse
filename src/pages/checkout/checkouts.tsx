@@ -126,32 +126,7 @@ const Checkout: React.FC = () => {
     <div
       className="inline-flex rounded-lg border border-gray-200 overflow-hidden shadow-sm"
       onClick={stopProp ? (e) => e.stopPropagation() : undefined}
-    >
-      <button
-        title="Засах"
-        className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200"
-      >
-        <HiOutlinePencilAlt className="w-4 h-4" />
-      </button>
-      <button
-        title="Чат"
-        className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200"
-      >
-        <HiOutlineChatAlt2 className="w-4 h-4" />
-      </button>
-      <button
-        title="Бүртгэл"
-        className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200"
-      >
-        <HiOutlineClipboardList className="w-4 h-4" />
-      </button>
-      <button
-        title="Устгах"
-        className="p-2 bg-white text-red-600 hover:bg-red-50"
-      >
-        <HiOutlineTrash className="w-4 h-4" />
-      </button>
-    </div>
+    ></div>
   );
 
   return (
@@ -289,7 +264,34 @@ const Checkout: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <ActionButtons />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/checkout/${item.id}/edit`);
+                      }}
+                      title="Засах"
+                      className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200"
+                    >
+                      <HiOutlinePencilAlt className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="Чат"
+                      className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200"
+                    >
+                      <HiOutlineChatAlt2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="Бүртгэл"
+                      className="p-2 bg-white text-yellow-600 hover:bg-yellow-50 border-r border-gray-200"
+                    >
+                      <HiOutlineClipboardList className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="Устгах"
+                      className="p-2 bg-white text-red-600 hover:bg-red-50"
+                    >
+                      <HiOutlineTrash className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}

@@ -50,12 +50,12 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    name: "Засвар",
+    name: "Өөрчлөлт",
     href: "/adjustments",
     icon: AiOutlineControl,
     children: [
-      { name: "Засварын жагсаалт", href: "/adjustment" },
-      { name: "Шинэ засвар хийх", href: "/adjustment/create" },
+      { name: "Өөрчлөлтийн жагсаалт", href: "/adjustment" },
+      { name: "Шинэ өөрчлөлт хийх", href: "/adjustment/create" },
     ],
   },
   {

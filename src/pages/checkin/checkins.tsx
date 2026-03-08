@@ -258,7 +258,13 @@ const Checkins: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="inline-flex rounded-md shadow-sm border border-gray-200 overflow-hidden">
-                      <button className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/checkin/${item.id}/edit`);
+                        }}
+                        className="p-2 bg-white text-blue-600 hover:bg-blue-50 border-r border-gray-200"
+                      >
                         <HiOutlinePencilAlt className="w-5 h-5" />
                       </button>
                       <button className="p-2 bg-white text-indigo-600 hover:bg-indigo-50 border-r border-gray-200">
