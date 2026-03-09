@@ -1,5 +1,12 @@
 import React, { useState, useRef } from "react";
-
+import {
+  HiOutlineHashtag,
+  HiOutlinePhone,
+  HiOutlineMail,
+  HiOutlinePhotograph,
+  HiOutlinePlusCircle,
+} from "react-icons/hi";
+import { HiOutlineHomeModern, HiOutlineMapPin } from "react-icons/hi2";
 const CreateWarehouse = () => {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -15,80 +22,100 @@ const CreateWarehouse = () => {
     }
   };
 
+  // Styles
+  const baseInputClass =
+    "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
+  const labelClass = "text-sm font-semibold text-gray-700";
+
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
+    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto bg-gray-50/30">
       <div>
-        {/* Breadcrumb Header */}
-        <div className="px-4 md:px-0">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Шинэ агуулах нэмэх
-          </h3>
-          <p className="mt-1 text-gray-600 text-sm">
-            Шинэ бүртгэл үүсгэхийн тулд доорх формыг бөглөнө үү.
-          </p>
+        {/* Header */}
+        <div className="px-4 md:px-0 border-b border-gray-100 pb-6">
+          <div className="flex items-center gap-3">
+            <HiOutlinePlusCircle className="w-7 h-7 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Шинэ агуулах нэмэх
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Шинэ бүртгэл үүсгэхийн тулд доорх формыг бөглөнө үү.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="mt-6">
           <form
-            className="bg-white shadow-sm border border-gray-200 rounded-md overflow-hidden"
+            className="bg-white border border-gray-200 md:rounded-md overflow-hidden"
             onSubmit={(e) => e.preventDefault()}
           >
-            <div className="px-4 py-5 md:p-6 space-y-6">
+            <div className="px-4 py-6 md:p-8 space-y-6 max-w-5xl">
               {/* Top Row: Code and Name */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1">
-                    Код
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="WH4"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                  />
+                <div className="relative group">
+                  <label className={labelClass}>Код</label>
+                  <div className="relative mt-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                      <HiOutlineHashtag className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Агуулахын код"
+                      className={`${baseInputClass} pl-10`}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1">
-                    Нэр
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Агуулах 4"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                  />
+                <div className="relative group">
+                  <label className={labelClass}>Нэр</label>
+                  <div className="relative mt-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                      <HiOutlineHomeModern className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Агуулахын нэр"
+                      className={`${baseInputClass} pl-10`}
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Second Row: Phone and Email */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1">
-                    Утас
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="+976 99114455"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                  />
+                <div className="relative group">
+                  <label className={labelClass}>Утас</label>
+                  <div className="relative mt-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                      <HiOutlinePhone className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Утасны дугаар"
+                      className={`${baseInputClass} pl-10`}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1">
-                    И-мэйл
-                  </label>
-                  <input
-                    type="email"
-                    defaultValue="warehouse@example.mn"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                  />
+                <div className="relative group">
+                  <label className={labelClass}>И-мэйл</label>
+                  <div className="relative mt-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                      <HiOutlineMail className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="email"
+                      placeholder="И-мэйл хаяг"
+                      className={`${baseInputClass} pl-10`}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* --- LOGO UPLOAD SECTION --- */}
-              <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                  Лого
-                </label>
-                <div className="flex items-center gap-4">
-                  <div className="h-20 w-20 border border-gray-200 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden">
+              {/* LOGO UPLOAD SECTION */}
+              <div className="group">
+                <label className={labelClass}>Лого</label>
+                <div className="mt-2 flex items-center gap-5">
+                  <div className="h-24 w-24 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden transition-colors group-hover:border-blue-200">
                     {logoPreview ? (
                       <img
                         src={logoPreview}
@@ -96,9 +123,7 @@ const CreateWarehouse = () => {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <span className="text-gray-400 text-xs text-center px-1">
-                        Зураггүй
-                      </span>
+                      <HiOutlinePhotograph className="w-8 h-8 text-gray-300" />
                     )}
                   </div>
 
@@ -113,17 +138,17 @@ const CreateWarehouse = () => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md shadow-sm hover:bg-gray-50 transition-colors"
+                      className="px-4 py-2 bg-blue-50 text-blue-600 text-sm font-bold rounded-md hover:bg-blue-100 transition-colors"
                     >
-                      Солих
+                      Зураг сонгох
                     </button>
                     {logoPreview && (
                       <button
                         type="button"
                         onClick={() => setLogoPreview(null)}
-                        className="text-xs text-red-600 hover:underline text-left"
+                        className="text-xs text-red-500 font-medium hover:underline text-left"
                       >
-                        Зургийг устгах
+                        Устгах
                       </button>
                     )}
                   </div>
@@ -131,28 +156,33 @@ const CreateWarehouse = () => {
               </div>
 
               {/* Address Section */}
-              <div>
-                <label className="block text-sm font-bold text-gray-900 mb-1">
-                  Хаяг
-                </label>
-                <textarea
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                  rows={3}
-                  defaultValue="Улаанбаатар хот, Баянзүрх дүүрэг, 14-р хороо"
-                ></textarea>
+              <div className="relative group">
+                <label className={labelClass}>Хаяг</label>
+                <div className="relative mt-1">
+                  <div className="absolute top-3 left-3 pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                    <HiOutlineMapPin className="w-4 h-4" />
+                  </div>
+                  <textarea
+                    className={`${baseInputClass} pl-10 resize-none`}
+                    rows={3}
+                    placeholder="Агуулахын байршил, дэлгэрэнгүй хаяг..."
+                  ></textarea>
+                </div>
               </div>
 
               {/* Active Status */}
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="active"
-                  defaultChecked
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
-                />
+              <div className="flex items-center gap-3 p-3 bg-blue-50/50 rounded-lg w-fit pr-6 border border-blue-100/50">
+                <div className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="active"
+                    defaultChecked
+                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer transition-all"
+                  />
+                </div>
                 <label
                   htmlFor="active"
-                  className="ml-2 text-sm text-gray-700 font-medium cursor-pointer"
+                  className="text-sm text-gray-700 font-bold cursor-pointer"
                 >
                   Идэвхтэй төлөв
                 </label>
@@ -160,19 +190,21 @@ const CreateWarehouse = () => {
             </div>
 
             {/* Form Actions Footer */}
-            <div className="px-4 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-              <button
-                type="button"
-                className="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-2 rounded-md transition-colors"
-              >
-                Агуулах устгах
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-slate-800 text-white text-sm font-bold rounded-md hover:bg-slate-700 shadow-sm transition-colors uppercase tracking-wider"
-              >
-                Хадгалах
-              </button>
+            <div className="px-4 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end md:px-8">
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-gray-700 font-semibold text-sm px-4"
+                >
+                  Цуцлах
+                </button>
+                <button
+                  type="submit"
+                  className="px-10 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 active:scale-95 transition-all shadow-blue-100 uppercase tracking-wider"
+                >
+                  Хадгалах
+                </button>
+              </div>
             </div>
           </form>
         </div>

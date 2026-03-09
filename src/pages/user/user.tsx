@@ -1,6 +1,25 @@
+import { useState } from "react";
+import { Confirmation } from "../../components/confirmation";
+
 const User = () => {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleDelete = () => {
+    console.log("Устгасан");
+    setShowConfirm(false);
+  };
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => setShowConfirm(false)}
+          onConfirm={handleDelete}
+          title="Хэрэглэгчийг устгах уу?"
+          description="Та энэ хэрэглэгчийг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+        />
+      )}
+
       <div>
         {/* Breadcrumb Header */}
         <div className="px-4 md:px-0">
@@ -132,37 +151,33 @@ const User = () => {
               </div>
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col lg:flex-row gap-6">
-                  <div className="flex">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="view_all"
-                        defaultChecked
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor="view_all"
-                        className="ml-2 text-gray-600 cursor-pointer"
-                      >
-                        Бүх бичлэгийг харах боломжтой
-                      </label>
-                    </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="view_all"
+                      defaultChecked
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                    />
+                    <label
+                      htmlFor="view_all"
+                      className="ml-2 text-gray-600 cursor-pointer"
+                    >
+                      Бүх бичлэгийг харах боломжтой
+                    </label>
                   </div>
-                  <div className="flex">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="edit_all"
-                        defaultChecked
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor="edit_all"
-                        className="ml-2 text-gray-600 cursor-pointer"
-                      >
-                        Бүх бичлэгийг засах боломжтой
-                      </label>
-                    </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="edit_all"
+                      defaultChecked
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                    />
+                    <label
+                      htmlFor="edit_all"
+                      className="ml-2 text-gray-600 cursor-pointer"
+                    >
+                      Бүх бичлэгийг засах боломжтой
+                    </label>
                   </div>
                 </div>
               </div>
@@ -172,6 +187,7 @@ const User = () => {
             <div className="px-4 py-4 mt-6 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
               <button
                 type="button"
+                onClick={() => setShowConfirm(true)}
                 className="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-2 rounded-md transition-colors"
               >
                 Хэрэглэгчийг устгах

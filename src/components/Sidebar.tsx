@@ -74,7 +74,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "Бүх барааны жагсаалт", href: "/items" },
       { name: "Шинэ бараа нэмэх", href: "/items/create" },
-      { name: "Бараа импортлох", href: "/items/import" },
+      // { name: "Бараа импортлох", href: "/items/import" },
     ],
   },
   {
@@ -84,7 +84,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "Бүх харилцагч", href: "/contacts" },
       { name: "Шинэ харилцагч нэмэх", href: "/contacts/create" },
-      { name: "Харилцагч импортлох", href: "/contacts/import" },
+      // { name: "Харилцагч импортлох", href: "/contacts/import" },
     ],
   },
   {
@@ -94,7 +94,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "Бүх ангилал", href: "/categories" },
       { name: "Шинэ ангилал үүсгэх", href: "/categories/create" },
-      { name: "Ангилал импортлох", href: "/categories/import" },
+      // { name: "Ангилал импортлох", href: "/categories/import" },
     ],
   },
   {
@@ -104,7 +104,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "Бүх нэгж", href: "/units" },
       { name: "Шинэ нэгж үүсгэх", href: "/units/create" },
-      { name: "Нэгж импортлох", href: "/units/import" },
+      //{ name: "Нэгж импортлох", href: "/units/import" },
     ],
   },
   {
@@ -114,7 +114,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "Бүх агуулах", href: "/warehouses" },
       { name: "Шинэ агуулах нэмэх", href: "/warehouses/create" },
-      { name: "Агуулах импортлох", href: "/warehouses/import" },
+      //{ name: "Агуулах импортлох", href: "/warehouses/import" },
     ],
   },
   {
@@ -141,118 +141,6 @@ const navigation: NavItem[] = [
     ],
   },
 ];
-// const navigation: NavItem[] = [
-//   {
-//     name: "Checkins",
-//     href: "/checkins",
-//     icon: AiOutlineArrowLeft,
-//     children: [
-//       { name: "List All Checkins", href: "/checkin" },
-//       { name: "Create New Checkin", href: "/checkin/create" },
-//     ],
-//   },
-//   {
-//     name: "Checkouts",
-//     href: "/checkouts",
-//     icon: AiOutlineArrowRight,
-//     children: [
-//       { name: "List All Checkouts", href: "/checkout" },
-//       { name: "Create New Checkout", href: "/checkout/create" },
-//     ],
-//   },
-//   {
-//     name: "Adjustments",
-//     href: "/adjustments",
-//     icon: AiOutlineControl,
-//     children: [
-//       { name: "Adjustments", href: "/adjustment" },
-//       { name: "Create New Adjustment", href: "/adjustment/create" },
-//     ],
-//   },
-//   {
-//     name: "Transfers",
-//     href: "/transfers",
-//     icon: AiOutlineTruck,
-//     children: [
-//       { name: "Transfers", href: "/transfer" },
-//       { name: "Create New Transfer", href: "/transfer/create" },
-//     ],
-//   },
-//   {
-//     name: "Items",
-//     href: "/items",
-//     icon: AiOutlineHeart,
-//     children: [
-//       { name: "List All Items", href: "/items" },
-//       { name: "Create New Item", href: "/items/create" },
-//       { name: "Import Items", href: "/items/import" },
-//     ],
-//   },
-//   {
-//     name: "Contacts",
-//     href: "/contacts",
-//     icon: AiOutlineTeam,
-//     children: [
-//       { name: "List All Contacts", href: "/contacts" },
-//       { name: "Create New Contact", href: "/contacts/create" },
-//       { name: "Import Contacts", href: "/contacts/import" },
-//     ],
-//   },
-//   {
-//     name: "Categories",
-//     href: "/categories",
-//     icon: AiOutlineDatabase,
-//     children: [
-//       { name: "List All Categories", href: "/categories" },
-//       { name: "Create New Category", href: "/categories/create" },
-//       { name: "Import Categories", href: "/categories/import" },
-//     ],
-//   },
-//   {
-//     name: "Units",
-//     href: "/units",
-//     icon: AiOutlineCi,
-//     children: [
-//       { name: "List All Units", href: "/units" },
-//       { name: "Create New Unit", href: "/units/create" },
-//       { name: "Import Units", href: "/units/import" },
-//     ],
-//   },
-//   {
-//     name: "Warehouses",
-//     href: "/warehouses",
-//     icon: AiOutlineBank,
-//     children: [
-//       { name: "List All Warehouses", href: "/warehouses" },
-//       { name: "Create New Warehouse", href: "/warehouses/create" },
-//       { name: "Import Warehouses", href: "/warehouses/import" },
-//     ],
-//   },
-//   {
-//     name: "Users",
-//     href: "/users",
-//     icon: AiOutlineUsergroupAdd,
-//     children: [
-//       { name: "List All Users", href: "/users" },
-//       { name: "List All User Roles", href: "/roles" },
-//       { name: "Create New User", href: "/users/create" },
-//       { name: "Create New User Role", href: "/roles/create" },
-//     ],
-//   },
-
-//   {
-//     name: "Reports",
-//     href: "/reports",
-//     icon: AiOutlineLineChart,
-//     children: [
-//       { name: "Total Records", href: "/reports" },
-//       { name: "Checkin Report", href: "/reports/checkin" },
-//       { name: "Checkout Report", href: "/reports/checkout" },
-//       { name: "Transfer Report", href: "/reports/transfer" },
-//       { name: "Adjustment Report", href: "/reports/adjustment" },
-//     ],
-//   },
-// ];
 
 export const Sidebar: React.FC = () => {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});

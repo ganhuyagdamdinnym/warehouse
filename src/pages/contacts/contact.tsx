@@ -1,8 +1,24 @@
-import React from "react";
+import { useState } from "react";
+import { Confirmation } from "../../components/confirmation";
 
 const ContactPage = () => {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleDelete = () => {
+    // your delete logic here
+    console.log("Устгасан");
+    setShowConfirm(false);
+  };
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => setShowConfirm(false)}
+          onConfirm={handleDelete}
+        />
+      )}
+
       <div>
         <div className="px-4 md:px-0 md:col-span-1">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -18,12 +34,12 @@ const ContactPage = () => {
             Доорх формын дагуу мэдээллийг өөрчлөн бүртгэлийг шинэчилнэ үү
           </p>
         </div>
+
         <div className="mt-6">
           <form>
             <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
               <div className="grid gap-6">
                 <div className="flex flex-col gap-y-6">
-                  {/* Нэр */}
                   <div className="col-span-6 sm:col-span-4 relative mb-2">
                     <label className="text-gray-700 font-medium">
                       <span>Нэр</span>
@@ -33,8 +49,6 @@ const ContactPage = () => {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
-
-                  {/* Имэйл */}
                   <div className="col-span-6 sm:col-span-4 relative mb-2">
                     <label className="text-gray-700 font-medium">
                       <span>Имэйл хаяг</span>
@@ -44,8 +58,6 @@ const ContactPage = () => {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
-
-                  {/* Утас */}
                   <div className="col-span-6 sm:col-span-4 relative mb-2">
                     <label className="text-gray-700 font-medium">
                       <span>Утасны дугаар</span>
@@ -55,8 +67,6 @@ const ContactPage = () => {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 shadow-xs rounded-md focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
-
-                  {/* Дэлгэрэнгүй */}
                   <div className="col-span-6 sm:col-span-4">
                     <label className="text-gray-700 font-medium">
                       <span>Дэлгэрэнгүй мэдээлэл</span>
@@ -65,28 +75,26 @@ const ContactPage = () => {
                       className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       rows={3}
                       placeholder="Тайлбар энд бичнэ үү..."
-                    ></textarea>
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Үйлдэл хийх хэсэг */}
               <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md mt-6">
                 <div className="w-full flex items-center justify-between">
                   <button
                     type="button"
+                    onClick={() => setShowConfirm(true)}
                     className="text-red-600 px-4 py-2 rounded-sm border-2 border-transparent hover:border-gray-300 focus:outline-hidden focus:border-gray-300 transition-colors"
                   >
                     Бүртгэлийг устгах
                   </button>
-                  <div className="flex items-center">
-                    <button
-                      type="submit"
-                      className="relative flex items-center justify-center px-6 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150"
-                    >
-                      Хадгалах
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    className="relative flex items-center justify-center px-6 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 transition-all ease-in-out duration-150"
+                  >
+                    Хадгалах
+                  </button>
                 </div>
               </div>
             </div>

@@ -1,27 +1,32 @@
 import { useState, useRef, useEffect } from "react";
-import { HiChevronDown } from "react-icons/hi";
+import {
+  HiChevronDown,
+  HiOutlineCalendar,
+  HiOutlineSearch,
+  HiOutlineTrash,
+  HiOutlinePaperClip,
+  HiOutlineSwitchHorizontal,
+} from "react-icons/hi";
 
 const CreateTransfer = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState("");
-  // Dummy data for select options
-  const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
+  const [selectedItemsList, setSelectedItemsList] = useState<any[]>([]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
   const items = [
     "Бүтээгдэхүүн 1 - Агуулах А",
     "Бүтээгдэхүүн 2 - Агуулах Б",
     "Бараа 3 - Хадгалах C",
     "Сэлбэг хэрэгсэл 4",
-    "Цахим төхөөрөмж 5",
   ];
+
   const filteredItems = items.filter((item) =>
     item.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Гадна дарахад хаах
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -35,216 +40,279 @@ const CreateTransfer = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleSelectItem = (item: string) => {
+    const newItem = {
+      id: Date.now(),
+      name: item,
+      weight: 1,
+      quantity: 1,
+      unit: "Ширхэг",
+    };
+    setSelectedItemsList([...selectedItemsList, newItem]);
+    setSearchTerm("");
+    setIsOpen(false);
+  };
+
+  const removeItem = (id: number) => {
+    setSelectedItemsList(selectedItemsList.filter((item) => item.id !== id));
+  };
+
+  // Styles
+  const baseInputClass =
+    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
+  const tableInputClass =
+    "w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none";
+
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
-      <div>
-        <div className="px-4 md:px-0 md:col-span-1">
-          <h3 className="text-lg font-bold text-gray-900">
+    <div className="md:flex-1 md:px-6 py-8 md:p-10 bg-gray-50 min-h-screen">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="px-4 md:px-0 mb-8">
+          <h3 className="text-2xl font-bold text-gray-900">
             Шинэ шилжүүлэг үүсгэх
           </h3>
-          <p className="mt-1 text-gray-600">
-            Шинэ бичилт нэмэхийн тулд доорх формыг бөглөнө үү.
+          <p className="mt-1 text-sm text-gray-500">
+            Агуулах хооронд бараа материалын хөдөлгөөн бүртгэх.
           </p>
         </div>
-        <div className="mt-6">
-          <form>
-            <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
-              <div className="grid gap-6">
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Left Side */}
-                    <div className="flex flex-col gap-6 w-full lg:w-1/2">
-                      <div className="col-span-6 sm:col-span-4 relative mb-2">
-                        <label className="font-medium text-gray-700">
-                          <span>Огноо</span>
-                        </label>
-                        <input
-                          type="date"
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                        />
-                      </div>
-                      <div className="col-span-6 sm:col-span-4 relative mb-2">
-                        <label className="font-medium text-gray-700">
-                          <span>Лавлах дугаар</span>
-                        </label>
-                        <input
-                          placeholder="Лавлах дугаар"
-                          type="text"
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                        />
-                      </div>
-                    </div>
 
-                    {/* Right Side */}
-                    <div className="flex flex-col gap-6 w-full lg:w-1/2">
-                      <div className="col-span-6 sm:col-span-4 relative mb-2">
-                        <label className="font-medium text-gray-700">
-                          <span>Харилцагч</span>
-                        </label>
-                        <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm">
-                          <option value="">Харилцагч сонгох</option>
-                          {contacts.map((contact) => (
-                            <option key={contact} value={contact}>
-                              {contact}
-                            </option>
-                          ))}
-                        </select>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="p-6 md:p-8 space-y-8">
+              {/* Transfer Details Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 ml-0.5">
+                      Огноо
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineCalendar className="w-4 h-4" />
                       </div>
-                      <div className="col-span-6 sm:col-span-4 relative mb-2">
-                        <label className="font-medium text-gray-700">
-                          <span>Агуулах</span>
-                        </label>
-                        <select className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm">
-                          <option value="">Агуулах сонгох</option>
-                          {warehouses.map((wh) => (
-                            <option key={wh} value={wh}>
-                              {wh}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 md:px-6 bg-gray-50 -mx-4 md:-mx-6">
-                    <div
-                      className="col-span-6 sm:col-span-4 relative mb-2"
-                      ref={containerRef}
-                    >
-                      <div className="relative flex items-center">
-                        <label className="inline-block cursor-pointer absolute top-1/2 -translate-y-1/2 right-2 border border-transparent p-1 text-gray-400">
-                          <div className="h-4 w-4">
-                            <HiChevronDown
-                              className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
-                            />
-                          </div>
-                        </label>
-
-                        <input
-                          type="text"
-                          value={
-                            isOpen ? searchTerm : selectedValue || searchTerm
-                          }
-                          onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setIsOpen(true);
-                          }}
-                          onFocus={() => setIsOpen(true)}
-                          placeholder="Хайх болон сонгох..."
-                          className="pr-8 mt-1 border rounded-md shadow-xs py-2 pl-4 text-base border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none block w-full transition-all"
-                        />
-                      </div>
-
-                      {/* Dropdown жагсаалт */}
-                      {isOpen && (
-                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                          {filteredItems.length > 0 ? (
-                            filteredItems.map((item, index) => (
-                              <div
-                                key={index}
-                                className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-gray-700 border-b border-gray-50 last:border-none"
-                                onClick={() => {
-                                  setSelectedValue(item);
-                                  setSearchTerm(item);
-                                  setIsOpen(false);
-                                }}
-                              >
-                                {item}
-                              </div>
-                            ))
-                          ) : (
-                            <div className="px-4 py-2 text-gray-400 text-sm">
-                              Илэрц олдсонгүй
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="bg-white mt-4 rounded-md shadow-sm overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="text-left font-bold">
-                            <th className="px-2 lg:pl-6 py-4 w-4"></th>
-                            <th className="px-2 lg:px-6 py-4">Бараа</th>
-                            <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Жин</span>
-                            </th>
-                            <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Тоо ширхэг</span>
-                            </th>
-                            <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Нэгж</span>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td
-                              colSpan={5}
-                              className="border-t px-2 lg:px-6 py-4"
-                            >
-                              Хайх эсвэл баркод уншуулж жагсаалтад бараа нэмнэ
-                              үү
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                      <input
+                        type="date"
+                        className={`${baseInputClass} pl-10 accent-blue-600 cursor-pointer`}
+                      />
                     </div>
                   </div>
                   <div>
-                    <label className="font-medium text-gray-700">
-                      Хавсралт файлууд
+                    <label className="text-sm font-semibold text-gray-700 ml-0.5">
+                      Лавлах дугаар
                     </label>
-                    <div className="border-gray-300 mt-1 flex justify-center px-6 py-3 border-2 border-dashed rounded-md">
-                      <div className="space-y-1 text-center">
-                        <div className="flex items-center justify-center text-gray-600">
-                          <p className="pl-1">эсвэл чирч оруулна уу</p>
+                    <input
+                      placeholder="Шилжүүлгийн дугаар"
+                      type="text"
+                      className={baseInputClass}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 ml-0.5 italic text-blue-600">
+                      Гарах агуулах (From)
+                    </label>
+                    <select className={baseInputClass}>
+                      <option value="">Сонгох...</option>
+                      {warehouses.map((wh) => (
+                        <option key={wh} value={wh}>
+                          {wh}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 ml-0.5 italic text-green-600">
+                      Орох агуулах (To)
+                    </label>
+                    <select className={baseInputClass}>
+                      <option value="">Сонгох...</option>
+                      {warehouses.map((wh) => (
+                        <option key={wh} value={wh}>
+                          {wh}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Item Search Section */}
+              <div className="pt-4">
+                <div className="relative mb-6" ref={containerRef}>
+                  <label className="text-sm font-semibold text-gray-700 mb-1.5 block ml-0.5">
+                    Бараа нэмэх
+                  </label>
+                  <div className="relative group">
+                    <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors w-5 h-5" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setIsOpen(true);
+                      }}
+                      onFocus={() => setIsOpen(true)}
+                      placeholder="Барааны нэр эсвэл код..."
+                      className={`${baseInputClass} pl-10 py-2.5 bg-gray-50/50 group-focus-within:bg-white`}
+                    />
+                    <HiChevronDown
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    />
+                  </div>
+
+                  {isOpen && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-y-auto">
+                      {filteredItems.map((item, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none"
+                          onClick={() => handleSelectItem(item)}
+                        >
+                          {item}
                         </div>
-                        <div className="text-sm text-gray-700">
-                          <div>
-                            Та .png, .jpg, .pdf, .docx, .xlsx болон .zip файлууд
-                            сонгох боломжтой.
-                          </div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="font-medium text-gray-700">
-                      <span>Дэлгэрэнгүй</span>
-                    </label>
-                    <textarea
-                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      rows={3}
-                      placeholder="Энд дэлгэрэнгүй мэдээллийг оруулна уу..."
-                    ></textarea>
-                  </div>
-                  <div className="flex mb-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="draft"
-                        className="rounded-sm border-gray-300 text-indigo-600 shadow-xs focus:border-indigo-300 focus:ring-3 focus:ring-indigo-200/50"
-                      />
-                      <span className="ml-2 text-gray-600">
-                        Энэ бичилт ноорог төлөвтэй байна
-                      </span>
-                    </label>
-                  </div>
+                  )}
+                </div>
+
+                {/* Table */}
+                <div className="border border-gray-200 rounded-md overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr className="text-left text-gray-600 font-bold">
+                        <th className="px-4 py-3.5 w-12 text-center text-gray-400">
+                          #
+                        </th>
+                        <th className="px-4 py-3.5 uppercase tracking-wider text-[11px]">
+                          Бараа материалын нэр
+                        </th>
+                        <th className="px-4 py-3.5 uppercase tracking-wider text-[11px] w-32 text-center">
+                          Жин
+                        </th>
+                        <th className="px-4 py-3.5 uppercase tracking-wider text-[11px] w-32 text-center">
+                          Тоо хэмжээ
+                        </th>
+                        <th className="px-4 py-3.5 uppercase tracking-wider text-[11px] w-40 text-center">
+                          Нэгж
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 bg-white">
+                      {selectedItemsList.length > 0 ? (
+                        selectedItemsList.map((row) => (
+                          <tr
+                            key={row.id}
+                            className="hover:bg-blue-50/10 transition-colors"
+                          >
+                            <td className="px-4 py-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => removeItem(row.id)}
+                                className="text-gray-300 hover:text-red-600 transition-colors"
+                              >
+                                <HiOutlineTrash className="w-5 h-5" />
+                              </button>
+                            </td>
+                            <td className="px-4 py-3 font-medium text-gray-800">
+                              {row.name}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <input
+                                type="number"
+                                defaultValue={row.weight}
+                                className={tableInputClass}
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <input
+                                type="number"
+                                defaultValue={row.quantity}
+                                className={tableInputClass}
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <select className={tableInputClass}>
+                                <option>Ширхэг</option>
+                                <option>Кг</option>
+                                <option>Метр</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="py-10 text-center text-gray-400 italic bg-gray-50/30"
+                          >
+                            Шилжүүлэх бараа сонгогдоогүй байна.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
-              <div className="w-full flex items-center justify-between">
-                <div></div>
-                <div className="flex items-center">
-                  <button className="relative flex items-center justify-center px-4 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150">
-                    Хадгалах
-                  </button>
+
+              {/* Bottom Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block ml-0.5">
+                    Хавсралт файл
+                  </label>
+                  <div className="border-2 border-dashed border-gray-200 bg-gray-50 rounded-md p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all group">
+                    <HiOutlinePaperClip className="text-gray-400 group-hover:text-blue-600 w-8 h-8 mb-2" />
+                    <p className="text-xs text-gray-500 font-medium">
+                      Баримт бичиг хуулах (PDF, Image)
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block ml-0.5">
+                    Шилжүүлгийн тайлбар
+                  </label>
+                  <textarea
+                    className={`${baseInputClass} resize-none`}
+                    rows={5}
+                    placeholder="Шилжүүлэг хийх шалтгаан, нэмэлт тэмдэглэл..."
+                  ></textarea>
                 </div>
               </div>
+
+              <div className="pt-2">
+                <label className="flex items-center cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all"
+                  />
+                  <span className="ml-2 text-sm text-gray-600 font-medium">
+                    Энэ бичилтийг ноорог төлөвт хадгалах
+                  </span>
+                </label>
+              </div>
             </div>
-          </form>
-        </div>
+
+            {/* Actions */}
+            <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-4">
+              <button
+                type="button"
+                className="px-6 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                Цуцлах
+              </button>
+              <button
+                type="submit"
+                className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-bold text-sm transition-all active:scale-95"
+              >
+                <HiOutlineSwitchHorizontal className="w-4 h-4" />
+                Шилжүүлэг баталгаажуулах
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   );

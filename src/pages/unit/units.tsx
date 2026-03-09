@@ -166,9 +166,7 @@ const Units: React.FC = () => {
                 <th className="px-6 py-4 text-sm font-bold text-gray-900">
                   Үндсэн нэгж
                 </th>
-                <th className="px-6 py-4 text-sm font-bold text-gray-900">
-                  Томьёо
-                </th>
+
                 <th className="px-6 py-4"></th>
               </tr>
             </thead>
@@ -188,13 +186,7 @@ const Units: React.FC = () => {
                   <td className="px-6 py-5 text-sm text-gray-500">
                     {item.baseUnit}
                   </td>
-                  <td className="px-6 py-5 text-sm">
-                    {item.formula && (
-                      <span className="bg-slate-700 text-white px-3 py-1 rounded text-xs font-mono">
-                        {item.formula}
-                      </span>
-                    )}
-                  </td>
+
                   <td className="px-6 py-5 text-right text-gray-400">
                     <span className="text-lg">›</span>
                   </td>
@@ -232,12 +224,6 @@ const Units: React.FC = () => {
                   <span className="text-gray-400 text-xs">Үндсэн нэгж: </span>
                   {item.baseUnit}
                 </div>
-              )}
-
-              {item.formula && (
-                <span className="inline-block bg-slate-700 text-white px-3 py-1 rounded text-xs font-mono mt-1">
-                  {item.formula}
-                </span>
               )}
             </div>
           ))}

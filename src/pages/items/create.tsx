@@ -1,192 +1,225 @@
-import React from "react";
+import React, { useRef } from "react";
+import {
+  HiOutlineCube,
+  HiOutlinePhotograph,
+  HiOutlineTag,
+  HiOutlineHashtag,
+  HiOutlineLocationMarker,
+  HiOutlineBell,
+} from "react-icons/hi";
 
 const CreateItem = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Styles
+  const baseInputClass =
+    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
+  const labelClass = "text-sm font-semibold text-gray-700 ml-0.5";
+
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
-      <div className="px-4 md:px-0 md:col-span-1">
-        <div className="px-4 md:px-0 md:col-span-1 -mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">
-            Шинэ бараа бүртгэх
-          </h3>
-          <p className="mt-1 text-gray-600">
-            Шинэ бүртгэл үүсгэхийн тулд доорх формыг бөглөнө үү.
+    <div className="md:flex-1 md:px-6 py-8 md:p-10 bg-gray-50 min-h-screen">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="px-4 md:px-0 mb-8">
+          <div className="flex items-center gap-2 mb-1">
+            <HiOutlineCube className="w-6 h-6 text-blue-600" />
+            <h3 className="text-2xl font-bold text-gray-900">
+              Шинэ бараа бүртгэх
+            </h3>
+          </div>
+          <p className="mt-1 text-sm text-gray-500">
+            Системд шинэ бараа материал, бүтээгдэхүүн нэмэх.
           </p>
         </div>
-      </div>
-      <div className="mt-6">
-        <form>
-          <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
-            <div className="grid gap-6">
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col lg:flex-row gap-6">
-                  {/* Зүүн тал */}
-                  <div className="flex flex-col gap-6 w-full lg:w-1/2">
-                    <div className="col-span-6 sm:col-span-4 relative mb-2">
-                      <label className="font-medium text-gray-700">
-                        <span>Нэр</span>
-                      </label>
-                      <input
-                        placeholder="Барааны нэр"
-                        type="text"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
 
-                    <div className="col-span-6 sm:col-span-4 relative mb-2">
-                      <label className="font-medium text-gray-700">
-                        <span>Код</span>
-                      </label>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="p-6 md:p-8 space-y-8">
+              {/* Primary Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left Side */}
+                <div className="space-y-6">
+                  <div>
+                    <label className={labelClass}>Барааны нэр</label>
+                    <input
+                      placeholder="Жишээ: Моторны тос 5W-30"
+                      type="text"
+                      className={baseInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Дотоод код</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineHashtag className="w-4 h-4" />
+                      </div>
                       <input
-                        placeholder="Барааны код"
+                        placeholder="ITEM-0001"
                         type="text"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div className="col-span-6 sm:col-span-4 relative mb-2">
-                      <label className="font-medium text-gray-700">
-                        <span>Баркодны тэмдэглэгээ (Symbology)</span>
-                      </label>
-                      <input
-                        placeholder="Жишээ: CODE128, EAN13"
-                        type="text"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div className="col-span-6 sm:col-span-4 relative mb-2">
-                      <label className="font-medium text-gray-700">
-                        <span>SKU</span>
-                      </label>
-                      <input
-                        placeholder="Сонголттой код (SKU)"
-                        type="text"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
+                        className={`${baseInputClass} pl-10`}
                       />
                     </div>
                   </div>
 
-                  {/* Баруун тал */}
-                  <div className="flex flex-col gap-6 w-full lg:w-1/2">
-                    <div className="col-span-6 sm:col-span-4 relative mb-2">
-                      <label className="font-medium text-gray-700">
-                        <span>Ангилал</span>
-                      </label>
-                      <input
-                        placeholder="Барааны ангилал сонгох"
-                        type="text"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
+                  <div>
+                    <label className={labelClass}>
+                      Баркодны төрөл (Symbology)
+                    </label>
+                    <select className={baseInputClass}>
+                      <option value="CODE128">CODE128</option>
+                      <option value="EAN13">EAN13</option>
+                      <option value="UPC">UPC</option>
+                      <option value="QR">QR Code</option>
+                    </select>
+                  </div>
 
-                    <div className="col-span-6 sm:col-span-4 relative mb-2">
-                      <label className="font-medium text-gray-700">
-                        <span>Хэмжих нэгж</span>
-                      </label>
+                  <div>
+                    <label className={labelClass}>SKU (Нэгж бүрийн код)</label>
+                    <input
+                      placeholder="SKU-XXXX-XXXX"
+                      type="text"
+                      className={baseInputClass}
+                    />
+                  </div>
+                </div>
+
+                {/* Right Side */}
+                <div className="space-y-6">
+                  <div>
+                    <label className={labelClass}>Ангилал</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineTag className="w-4 h-4" />
+                      </div>
+                      <select className={`${baseInputClass} pl-10`}>
+                        <option value="">Ангилал сонгох</option>
+                        <option value="parts">Сэлбэг хэрэгсэл</option>
+                        <option value="fluids">Шингэн зүйлс</option>
+                        <option value="electronics">Цахим төхөөрөмж</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Хэмжих нэгж</label>
+                    <select className={baseInputClass}>
+                      <option value="pcs">Ширхэг (pcs)</option>
+                      <option value="kg">Киллограмм (kg)</option>
+                      <option value="liter">Литр (l)</option>
+                      <option value="meter">Метр (m)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Тавиурын байршил</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineLocationMarker className="w-4 h-4" />
+                      </div>
                       <input
-                        placeholder="Ширхэг, кг, литр г.м"
+                        placeholder="Жишээ: A-12-03"
                         type="text"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
+                        className={`${baseInputClass} pl-10`}
                       />
                     </div>
-                    <div className="col-span-6 sm:col-span-4 relative mb-2">
-                      <label className="font-medium text-gray-700">
-                        <span>Тавиурын байршил</span>
-                      </label>
-                      <input
-                        placeholder="Агуулах дахь байршил"
-                        type="text"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div className="col-span-6 sm:col-span-4 relative mb-2">
-                      <label className="font-medium text-gray-700">
-                        <span>Зураг</span>
-                      </label>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Барааны зураг</label>
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="mt-1.5 flex items-center justify-center border-2 border-dashed border-gray-200 bg-gray-50 rounded-md p-2 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2 py-0.5">
+                        <HiOutlinePhotograph className="w-5 h-5 text-gray-400 group-hover:text-blue-600" />
+                        <span className="text-xs text-gray-500 font-medium">
+                          Зураг сонгох
+                        </span>
+                      </div>
                       <input
                         type="file"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm text-gray-500 file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
                       />
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="col-span-6 sm:col-span-4">
-                  <label className="font-medium text-gray-700">
-                    <span>Дэлгэрэнгүй мэдээлэл</span>
-                  </label>
-                  <textarea
-                    placeholder="Тайлбар..."
-                    className="w-full mt-1 px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                    rows={3}
-                  ></textarea>
-                </div>
+              {/* Description */}
+              <div className="pt-4 border-t border-gray-100">
+                <label className={labelClass}>Дэлгэрэнгүй мэдээлэл</label>
+                <textarea
+                  className={`${baseInputClass} resize-none`}
+                  rows={4}
+                  placeholder="Барааны шинж чанар, техникийн үзүүлэлт..."
+                ></textarea>
+              </div>
 
-                <div className="space-y-3">
-                  <div className="flex">
-                    <label className="flex items-center cursor-pointer">
+              {/* Inventory Control Options */}
+              <div className="bg-blue-50/50 p-6 rounded-lg space-y-4 border border-blue-100">
+                <h4 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">
+                  Бараа материалын хяналт
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="flex items-center cursor-pointer group">
                       <input
                         type="checkbox"
-                        className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer"
                       />
-                      <span className="ml-2 text-gray-700">Жингээр хянах</span>
+                      <span className="ml-2 text-sm text-gray-700 group-hover:text-gray-900">
+                        Жингээр хянах
+                      </span>
                     </label>
-                  </div>
-                  <div className="flex">
-                    <label className="flex items-center cursor-pointer">
+                    <label className="flex items-center cursor-pointer group">
                       <input
                         type="checkbox"
-                        className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer"
                       />
-                      <span className="ml-2 text-gray-700">
+                      <span className="ml-2 text-sm text-gray-700 group-hover:text-gray-900">
                         Тоо ширхэгээр хянах
                       </span>
                     </label>
                   </div>
-                </div>
 
-                <div className="col-span-6 sm:col-span-4 relative">
-                  <label className="font-medium text-gray-700">
-                    <span>Үлдэгдэл багасах үед мэдэгдэх</span>
-                  </label>
-                  <input
-                    placeholder="Доод хязгаарыг оруулна уу"
-                    type="number"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex">
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
-                      />
-                      <span className="ml-2 text-gray-600 font-medium">
-                        Хувилбаруудыг хянах (Жишээ нь: Хэмжээ эсвэл Өнгө)
-                      </span>
+                  <div>
+                    <label className={labelClass}>
+                      Доод хязгаар (Stock Alert)
                     </label>
-                  </div>
-                  <p className="ml-6 mt-1 text-sm text-yellow-600">
-                    Анхаар: Үлдэгдэл бүртгэгдсэний дараа хувилбарыг өөрчлөх нь
-                    үлдэгдлийн тооцоолол зөрөхөд хүргэж болзошгүй.
-                  </p>
-                  <div className="mt-6 border-t pt-4">
-                    <div className="font-bold text-gray-800">
-                      Агуулах дахь байршил (Warehouse Racks)
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-red-500 transition-colors">
+                        <HiOutlineBell className="w-4 h-4" />
+                      </div>
+                      <input
+                        placeholder="Үлдэгдэл багасах үед мэдэгдэх тоо"
+                        type="number"
+                        className={`${baseInputClass} pl-10 border-blue-200`}
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
-            <button
-              type="button"
-              className="relative flex items-center justify-center px-8 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 transition-all duration-150"
-            >
-              Хадгалах
-            </button>
+            {/* Actions */}
+            <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-4">
+              <button
+                type="button"
+                className="px-6 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                Цуцлах
+              </button>
+              <button
+                type="submit"
+                className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-bold text-sm shadow-none transition-all active:scale-95"
+              >
+                Бүртгэл хадгалах
+              </button>
+            </div>
           </div>
         </form>
       </div>

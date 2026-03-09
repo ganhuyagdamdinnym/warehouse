@@ -43,6 +43,11 @@ import Forgot from "./pages/login/forgot";
 import CheckinEdit from "./pages/checkin/edit";
 import CheckoutEdit from "./pages/checkout/edit";
 import AdjustmentEdit from "./pages/adjustment/edit";
+import TransferEdit from "./pages/transfer/edit";
+import EditItem from "./pages/items/edit";
+import CreateUnit from "./pages/unit/create";
+import EditUnit from "./pages/unit/unit";
+import ItemTrail from "./pages/items/trail";
 
 function App() {
   const [isOpenSidebar, setIsOpenSideBar] = useState<boolean>(false);
@@ -105,8 +110,14 @@ function App() {
                           path="/transfer/create"
                           element={<CreateTransfer />}
                         />
+                        <Route
+                          path="/transfer/:id/edit"
+                          element={<TransferEdit />}
+                        />
                         <Route path="/items" element={<Items />} />
                         <Route path="/items/create" element={<CreateItem />} />
+                        <Route path="/item/:id/edit" element={<EditItem />} />
+                        <Route path="/item/:id/trail" element={<ItemTrail />} />
                         <Route path="/contacts" element={<Contacts />} />
                         <Route
                           path="/contacts/:id/edit"
@@ -126,6 +137,8 @@ function App() {
                           element={<CreateCategorie />}
                         />
                         <Route path="/units" element={<Units />} />
+                        <Route path="units/create" element={<CreateUnit />} />
+                        <Route path="/units/:id/edit" element={<EditUnit />} />
                         <Route path="/warehouses" element={<Warehouses />} />
                         <Route
                           path="/warehouses/:id/edit"

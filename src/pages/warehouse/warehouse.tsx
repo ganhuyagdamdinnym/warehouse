@@ -1,24 +1,37 @@
 import React, { useState, useRef } from "react";
+import { Confirmation } from "../../components/confirmation";
 
 const Warehouse = () => {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
+      reader.onloadend = () => setLogoPreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
+  const handleDelete = () => {
+    console.log("Устгасан");
+    setShowConfirm(false);
+  };
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => setShowConfirm(false)}
+          onConfirm={handleDelete}
+          title="Агуулахыг устгах уу?"
+          description="Та энэ агуулахыг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+        />
+      )}
+
       <div>
-        {/* Breadcrumb Header */}
         <div className="px-4 md:px-0">
           <h3 className="text-lg font-semibold text-gray-900">
             <div className="flex items-center">
@@ -40,7 +53,6 @@ const Warehouse = () => {
             onSubmit={(e) => e.preventDefault()}
           >
             <div className="px-4 py-5 md:p-6 space-y-6">
-              {/* Top Row: Code and Name */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1">
@@ -64,7 +76,6 @@ const Warehouse = () => {
                 </div>
               </div>
 
-              {/* Second Row: Phone and Email */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1">
@@ -88,7 +99,6 @@ const Warehouse = () => {
                 </div>
               </div>
 
-              {/* --- LOGO UPLOAD SECTION --- */}
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-2">
                   Лого
@@ -107,7 +117,6 @@ const Warehouse = () => {
                       </span>
                     )}
                   </div>
-
                   <div className="flex flex-col gap-2">
                     <input
                       type="file"
@@ -136,7 +145,6 @@ const Warehouse = () => {
                 </div>
               </div>
 
-              {/* Address Section */}
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-1">
                   Хаяг
@@ -145,10 +153,9 @@ const Warehouse = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                   rows={3}
                   defaultValue="Улаанбаатар хот, Баянзүрх дүүрэг, 14-р хороо"
-                ></textarea>
+                />
               </div>
 
-              {/* Active Status */}
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -165,10 +172,10 @@ const Warehouse = () => {
               </div>
             </div>
 
-            {/* Form Actions Footer */}
             <div className="px-4 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
               <button
                 type="button"
+                onClick={() => setShowConfirm(true)}
                 className="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-2 rounded-md transition-colors"
               >
                 Агуулах устгах

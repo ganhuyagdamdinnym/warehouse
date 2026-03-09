@@ -73,7 +73,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "List All Items", href: "/items" },
       { name: "Create New Item", href: "/items/create" },
-      { name: "Import Items", href: "/items/import" },
+      // { name: "Import Items", href: "/items/import" },
     ],
   },
   {
@@ -83,7 +83,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "List All Contacts", href: "/contacts" },
       { name: "Create New Contact", href: "/contacts/create" },
-      { name: "Import Contacts", href: "/contacts/import" },
+      //  { name: "Import Contacts", href: "/contacts/import" },
     ],
   },
   {
@@ -93,7 +93,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "List All Categories", href: "/categories" },
       { name: "Create New Category", href: "/categories/create" },
-      { name: "Import Categories", href: "/categories/import" },
+      // { name: "Import Categories", href: "/categories/import" },
     ],
   },
   {
@@ -103,7 +103,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "List All Units", href: "/units" },
       { name: "Create New Unit", href: "/units/create" },
-      { name: "Import Units", href: "/units/import" },
+      // { name: "Import Units", href: "/units/import" },
     ],
   },
   {
@@ -113,7 +113,7 @@ const navigation: NavItem[] = [
     children: [
       { name: "List All Warehouses", href: "/warehouses" },
       { name: "Create New Warehouse", href: "/warehouses/create" },
-      { name: "Import Warehouses", href: "/warehouses/import" },
+      // { name: "Import Warehouses", href: "/warehouses/import" },
     ],
   },
   {

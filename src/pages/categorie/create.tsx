@@ -1,7 +1,13 @@
 import { useState } from "react";
+import {
+  HiOutlineTag,
+  HiOutlineHashtag,
+  HiOutlineFolderOpen,
+  HiChevronDown,
+  HiOutlinePlusCircle,
+} from "react-icons/hi";
 
 const CreateCategory = () => {
-  // Эцэг ангиллыг удирдах төлөв
   const [parentCategory, setParentCategory] = useState("");
 
   const categories = [
@@ -11,56 +17,81 @@ const CreateCategory = () => {
     { id: "4", name: "Ерөнхий" },
   ];
 
+  // Styles
+  const baseInputClass =
+    "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
+  const labelClass = "text-sm font-semibold text-gray-700";
+
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
+    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/30">
       <div>
-        <div className="px-4 md:px-0 md:col-span-1">
-          <h3 className="text-lg font-semibold text-gray-900">
-            <div className="flex items-center">Шинэ ангилал үүсгэх</div>
-          </h3>
-          <p className="mt-1 text-gray-600">
-            Доорх формын дагуу мэдээллийг бөглөж бүртгэлийг үүсгэнэ үү
-          </p>
+        {/* Header */}
+        <div className="px-4 md:px-0 md:col-span-1 border-b border-gray-100 pb-6">
+          <div className="flex items-center gap-3">
+            <HiOutlinePlusCircle className="w-7 h-7 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Шинэ ангилал үүсгэх
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Доорх формын дагуу мэдээллийг бөглөж бүртгэлийг үүсгэнэ үү
+              </p>
+            </div>
+          </div>
         </div>
+
         <div className="mt-6">
-          <form>
-            <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
+          <form onSubmit={(e) => e.preventDefault()}>
+            <div className="px-4 py-6 bg-white border border-gray-200 md:p-8 md:rounded-t-md">
               <div className="grid gap-6">
                 <div className="flex flex-col gap-y-6">
                   {/* Нэр */}
-                  <div className="col-span-6 sm:col-span-4 relative mb-2">
-                    <label className="text-gray-700 font-medium">
-                      <span>Нэр</span>
+                  <div className="col-span-6 sm:col-span-4 relative">
+                    <label className={labelClass}>
+                      <span>Ангиллын нэр</span>
                     </label>
-                    <input
-                      type="text"
-                      placeholder="Ангиллын нэр оруулна уу"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                        <HiOutlineTag className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Ангиллын нэр оруулна уу"
+                        className={`${baseInputClass} pl-10`}
+                      />
+                    </div>
                   </div>
 
                   {/* Код */}
-                  <div className="col-span-6 sm:col-span-4 relative mb-2">
-                    <label className="text-gray-700 font-medium">
+                  <div className="col-span-6 sm:col-span-4 relative">
+                    <label className={labelClass}>
                       <span>Код</span>
                     </label>
-                    <input
-                      type="text"
-                      placeholder="Жишээ: CAT01"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                        <HiOutlineHashtag className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Жишээ: CAT01"
+                        className={`${baseInputClass} pl-10`}
+                      />
+                    </div>
                   </div>
 
-                  {/* --- Эцэг ангилал сонгох --- */}
-                  <div className="col-span-6 sm:col-span-4 relative mb-2">
-                    <label className="text-gray-700 font-medium">
+                  {/* Эцэг ангилал */}
+                  <div className="col-span-6 sm:col-span-4 relative">
+                    <label className={labelClass}>
                       <span>Харьяалагдах ангилал</span>
                     </label>
-                    <div className="relative">
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                        <HiOutlineFolderOpen className="w-4 h-4" />
+                      </div>
                       <select
                         value={parentCategory}
                         onChange={(e) => setParentCategory(e.target.value)}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 shadow-xs rounded-md focus:outline-none focus:ring-indigo-500 focus:border-blue-500 sm:text-sm bg-white appearance-none"
+                        className={`${baseInputClass} pl-10 appearance-none cursor-pointer bg-white`}
                       >
                         <option value="">Эцэг ангиллыг сонгоно уу</option>
                         {categories.map((cat) => (
@@ -69,33 +100,32 @@ const CreateCategory = () => {
                           </option>
                         ))}
                       </select>
-                      {/* Сумны дүрс (Chevron) */}
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                        <svg
-                          className="fill-current h-4 w-4"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                        </svg>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 group-focus-within:text-blue-600">
+                        <HiChevronDown className="h-4 w-4" />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Хадгалах хэсэг */}
-              <div className="flex items-center justify-end px-4 py-3 text-right md:px-6 md:rounded-bl-md md:rounded-br-md mt-4">
-                <div className="w-full flex items-center justify-between">
-                  <div></div>
-                  <div className="flex items-center">
-                    <button
-                      type="submit"
-                      className="relative flex items-center justify-center px-6 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150"
-                    >
-                      Хадгалах
-                    </button>
-                  </div>
+            {/* Хадгалах хэсэг */}
+            <div className="flex items-center justify-end px-4 py-4 bg-gray-50 border-x border-b border-gray-200 md:px-8 md:rounded-b-md">
+              <div className="w-full flex items-center justify-between max-w-4xl">
+                <div></div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="text-gray-500 hover:text-gray-700 font-semibold text-sm px-4"
+                  >
+                    Цуцлах
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center justify-center px-10 py-2.5 bg-blue-600 border border-transparent rounded-md font-bold text-sm text-white uppercase tracking-wider hover:bg-blue-700 active:scale-95 transition-all"
+                  >
+                    Хадгалах
+                  </button>
                 </div>
               </div>
             </div>

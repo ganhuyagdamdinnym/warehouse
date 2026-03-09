@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { HiChevronDown } from "react-icons/hi";
+import { Confirmation } from "../../components/confirmation";
 
 const CheckinEdit = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
-  // Dummy data for select options
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
   const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
   const items = [
@@ -21,7 +23,6 @@ const CheckinEdit = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Гадна дарахад хаах
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -35,8 +36,22 @@ const CheckinEdit = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleDelete = () => {
+    console.log("Устгасан");
+    setShowConfirm(false);
+  };
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => setShowConfirm(false)}
+          onConfirm={handleDelete}
+          title="Орлогыг устгах уу?"
+          description="Та энэ орлогыг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+        />
+      )}
+
       <div>
         <div className="px-4 md:px-0 md:col-span-1">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -52,6 +67,7 @@ const CheckinEdit = () => {
             Доорх формын дагуу мэдээллийг өөрчлөн бүртгэлийг шинэчилнэ үү
           </p>
         </div>
+
         <div className="mt-6">
           <form>
             <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
@@ -111,6 +127,7 @@ const CheckinEdit = () => {
                       </div>
                     </div>
                   </div>
+
                   <div className="p-4 md:px-6 bg-gray-50 -mx-4 md:-mx-6">
                     <div
                       className="col-span-6 sm:col-span-4 relative mb-2"
@@ -124,7 +141,6 @@ const CheckinEdit = () => {
                             />
                           </div>
                         </label>
-
                         <input
                           type="text"
                           value={
@@ -139,8 +155,6 @@ const CheckinEdit = () => {
                           className="pr-8 mt-1 border rounded-md shadow-xs py-2 pl-4 text-base border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none block w-full transition-all"
                         />
                       </div>
-
-                      {/* Dropdown жагсаалт */}
                       {isOpen && (
                         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
                           {filteredItems.length > 0 ? (
@@ -172,13 +186,13 @@ const CheckinEdit = () => {
                             <th className="px-2 lg:pl-6 py-4 w-4"></th>
                             <th className="px-2 lg:px-6 py-4">Бараа</th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Жин</span>
+                              Жин
                             </th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Тоо ширхэг</span>
+                              Тоо ширхэг
                             </th>
                             <th className="px-2 lg:px-6 py-4 text-center w-32 xl:w-56">
-                              <span>Нэгж</span>
+                              Нэгж
                             </th>
                           </tr>
                         </thead>
@@ -196,6 +210,7 @@ const CheckinEdit = () => {
                       </table>
                     </div>
                   </div>
+
                   <div>
                     <label className="font-medium text-gray-700">
                       Хавсралт файлууд
@@ -206,14 +221,13 @@ const CheckinEdit = () => {
                           <p className="pl-1">эсвэл чирч оруулна уу</p>
                         </div>
                         <div className="text-sm text-gray-700">
-                          <div>
-                            Та .png, .jpg, .pdf, .docx, .xlsx болон .zip файлууд
-                            сонгох боломжтой.
-                          </div>
+                          Та .png, .jpg, .pdf, .docx, .xlsx болон .zip файлууд
+                          сонгох боломжтой.
                         </div>
                       </div>
                     </div>
                   </div>
+
                   <div className="col-span-6 sm:col-span-4">
                     <label className="font-medium text-gray-700">
                       <span>Дэлгэрэнгүй</span>
@@ -222,8 +236,9 @@ const CheckinEdit = () => {
                       className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       rows={3}
                       placeholder="Энд дэлгэрэнгүй мэдээллийг оруулна уу..."
-                    ></textarea>
+                    />
                   </div>
+
                   <div className="flex mb-2">
                     <label className="flex items-center">
                       <input
@@ -239,14 +254,23 @@ const CheckinEdit = () => {
                 </div>
               </div>
             </div>
+
+            {/* Footer */}
             <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
               <div className="w-full flex items-center justify-between">
-                <div></div>
-                <div className="flex items-center">
-                  <button className="relative flex items-center justify-center px-4 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150">
-                    Хадгалах
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(true)}
+                  className="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-2 rounded-md transition-colors"
+                >
+                  Бүртгэлийг устгах
+                </button>
+                <button
+                  type="submit"
+                  className="relative flex items-center justify-center px-4 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150"
+                >
+                  Хадгалах
+                </button>
               </div>
             </div>
           </form>
