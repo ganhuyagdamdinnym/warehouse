@@ -23,25 +23,28 @@ const TotalRecords = () => {
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
-        {/* Total Records */}
-        <div className="-mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Нийт бүртгэл</h3>
-          <p className="mt-1 text-gray-600">
+        {/* Header */}
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+            Нийт бүртгэл
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
             Нийт бүртгэлийн мэдээллийг доороос хянана уу
           </p>
         </div>
 
-        <section className="mb-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Stats Grid */}
+        <section className="mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {data.map((item, index) => (
               <div
                 key={index}
-                className="p-4 rounded-xl shadow-sm bg-white border border-gray-100"
+                className="p-4 rounded-xl bg-white border border-gray-200 hover:border-gray-300 transition-colors"
               >
                 <h2 className="mb-1 text-2xl font-bold leading-none text-gray-900">
                   {item.count}
                 </h2>
-                <p className="text-sm leading-none text-gray-500">
+                <p className="text-sm leading-none text-gray-500 mt-1.5">
                   {item.name}
                 </p>
               </div>
@@ -49,21 +52,24 @@ const TotalRecords = () => {
           </div>
         </section>
 
-        {/* Report Links */}
-        <div className="-mx-4 md:mx-0 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">
+        {/* Reports Header */}
+        <div className="mb-5">
+          <h3 className="text-xl font-bold text-gray-900 tracking-tight">
             Тайлангийн холбоосууд
           </h3>
-          <p className="mt-1 text-gray-600">Тайланг үзэхийн тулд дарна уу</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Тайланг үзэхийн тулд дарна уу
+          </p>
         </div>
 
+        {/* Report Links */}
         <section className="mb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {reports.map((report) => (
               <a
                 key={report.href}
                 href={report.href}
-                className="p-4 rounded-xl shadow-sm bg-gray-700 hover:bg-gray-600 transition-colors active:bg-gray-800"
+                className="p-4 rounded-xl bg-gray-900 hover:bg-gray-700 transition-colors border border-gray-800"
               >
                 <p className="text-sm font-medium leading-none text-gray-100">
                   {report.label}

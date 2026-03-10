@@ -158,7 +158,7 @@ const Checkins: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200/60 rounded-lg text-sm text-gray-600 font-medium hover:bg-gray-50 transition-colors"
               >
                 Шүүлтүүр
                 <HiChevronDown
@@ -166,7 +166,7 @@ const Checkins: React.FC = () => {
                 />
               </button>
               {isFilterOpen && (
-                <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-100 rounded-xl z-10 p-1.5 overflow-hidden">
+                <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-100 rounded-xl z-10 p-1.5">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1.5 uppercase tracking-wider">
                     Төлөв
                   </p>
@@ -196,7 +196,7 @@ const Checkins: React.FC = () => {
             </div>
 
             {/* Search */}
-            <div className="flex items-center flex-1 bg-white border border-gray-200 rounded-lg px-3 gap-2 hover:border-gray-300 transition-colors">
+            <div className="flex items-center flex-1 bg-white border border-gray-200/60 rounded-lg px-3 gap-2 hover:border-gray-300 transition-colors">
               <HiOutlineSearch className="text-gray-400 w-4 h-4 shrink-0" />
               <input
                 type="text"
@@ -231,11 +231,11 @@ const Checkins: React.FC = () => {
           </button>
         </div>
 
-        {/* Table */}
-        <div className="hidden md:block bg-white border border-gray-200 rounded-xl overflow-hidden">
+        {/* Desktop Table */}
+        <div className="hidden md:block bg-white border border-gray-200/60 rounded-xl overflow-hidden">
           <table className="w-full whitespace-nowrap">
             <thead>
-              <tr className="text-left border-b border-gray-100">
+              <tr className="text-left border-b border-gray-200/60">
                 <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Орлого
                 </th>
@@ -250,7 +250,7 @@ const Checkins: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-100/80">
               {currentItems.map((item) => (
                 <tr
                   key={item.id}
@@ -297,24 +297,24 @@ const Checkins: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div
-                      className="inline-flex rounded-lg border border-gray-100 overflow-hidden"
+                      className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
                         onClick={() => navigate(`/checkin/${item.id}/edit`)}
-                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-100 transition-colors"
+                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
                         title="Засах"
                       >
                         <HiOutlinePencilAlt className="w-4 h-4" />
                       </button>
                       <button
-                        className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-100 transition-colors"
+                        className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
                         title="Чат"
                       >
                         <HiOutlineChatAlt2 className="w-4 h-4" />
                       </button>
                       <button
-                        className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-100 transition-colors"
+                        className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
                         title="Түүх"
                       >
                         <HiOutlineClipboardList className="w-4 h-4" />
@@ -350,7 +350,7 @@ const Checkins: React.FC = () => {
             <div
               key={item.id}
               onClick={() => handleSelectItem(item)}
-              className="bg-white border border-gray-100 rounded-xl p-4 cursor-pointer hover:border-gray-200 transition-colors"
+              className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
@@ -377,28 +377,28 @@ const Checkins: React.FC = () => {
                   <span className="text-gray-700">{item.warehouse}</span>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-gray-400 italic line-clamp-1">
+              <p className="mt-3 text-xs text-gray-400 line-clamp-1">
                 {item.details}
               </p>
               <div
-                className="inline-flex rounded-lg border border-gray-100 overflow-hidden mt-2"
+                className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden mt-3"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
                   onClick={() => navigate(`/checkin/${item.id}/edit`)}
-                  className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-100 transition-colors"
+                  className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
                   title="Засах"
                 >
                   <HiOutlinePencilAlt className="w-4 h-4" />
                 </button>
                 <button
-                  className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-100 transition-colors"
+                  className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
                   title="Чат"
                 >
                   <HiOutlineChatAlt2 className="w-4 h-4" />
                 </button>
                 <button
-                  className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-100 transition-colors"
+                  className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
                   title="Түүх"
                 >
                   <HiOutlineClipboardList className="w-4 h-4" />

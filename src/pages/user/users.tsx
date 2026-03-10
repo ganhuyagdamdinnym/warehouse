@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HiChevronDown } from "react-icons/hi";
-import { TfiMenuAlt } from "react-icons/tfi";
+import {
+  HiChevronDown,
+  HiOutlineSearch,
+  HiOutlinePlus,
+  HiOutlinePencilAlt,
+  HiOutlineTrash,
+} from "react-icons/hi";
 
 interface UserData {
   id: string;
@@ -42,15 +47,10 @@ const usersList: UserData[] = [
   },
 ];
 
-const roleBadgeClass = (role: string) => {
-  switch (role) {
-    case "Super Admin":
-      return "bg-purple-100 text-purple-800";
-    case "Admin":
-      return "bg-blue-100 text-blue-800";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
+const roleConfig: Record<string, string> = {
+  "Super Admin": "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
+  Admin: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+  User: "bg-gray-50 text-gray-700 ring-1 ring-gray-200",
 };
 
 const Users: React.FC = () => {
@@ -84,31 +84,35 @@ const Users: React.FC = () => {
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
-        <div className="mb-6 flex justify-between items-end">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Хэрэглэгчид</h3>
-            <p className="mt-1 text-gray-600 text-sm">
-              Системийн хэрэглэгчдийн мэдээллийг доорх хүснэгтээс хянана уу
-            </p>
-          </div>
-          <button className="bg-[#1e293b] text-white px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 uppercase tracking-wider shadow-sm hover:bg-slate-700 transition">
-            <span className="text-lg">+</span>
-            <span className="hidden lg:inline">Шинэ хэрэглэгч үүсгэх</span>
-          </button>
+        {/* Header */}
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+            Хэрэглэгчид
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Системийн хэрэглэгчдийн мэдээллийг доорх хүснэгтээс хянана уу
+          </p>
         </div>
 
-        {/* Search & Filter */}
-        <div className="mb-6 flex flex-wrap gap-4 justify-between items-center print:hidden">
+        {/* Toolbar */}
+        <div className="mb-5 flex gap-3 justify-between items-center print:hidden">
           <div className="flex items-center gap-2 w-full max-w-2xl">
+            {/* Filter */}
             <div className="relative">
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700 font-medium text-sm"
+                className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 font-medium hover:bg-gray-50 transition-colors"
               >
-                Шүүлтүүр <HiChevronDown className="ml-2 w-4 h-4" />
+                Шүүлтүүр
+                <HiChevronDown
+                  className={`w-4 h-4 transition-transform ${isFilterOpen ? "rotate-180" : ""}`}
+                />
               </button>
               {isFilterOpen && (
-                <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
+                <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-300 rounded-xl z-10 p-1.5">
+                  <p className="text-xs font-semibold text-gray-400 px-2 py-1.5 uppercase tracking-wider">
+                    Эрх
+                  </p>
                   {[
                     { val: "All", lab: "Бүгд" },
                     { val: "Super Admin", lab: "Супер Админ" },
@@ -121,7 +125,11 @@ const Users: React.FC = () => {
                         setRoleFilter(role.val);
                         setIsFilterOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-md ${roleFilter === role.val ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                        roleFilter === role.val
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
                     >
                       {role.lab}
                     </button>
@@ -130,136 +138,186 @@ const Users: React.FC = () => {
               )}
             </div>
 
-            <div className="flex items-center flex-1 bg-white shadow-sm rounded-md border border-gray-300 px-3">
+            {/* Search */}
+            <div className="flex items-center flex-1 bg-white border border-gray-200 rounded-lg px-3 gap-2 hover:border-gray-300 transition-colors">
+              <HiOutlineSearch className="text-gray-400 w-4 h-4 shrink-0" />
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-2 py-2 border-0 focus:ring-0 outline-none text-sm"
-                placeholder="Хайх (Нэр, и-мэйл)"
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full py-2 text-sm border-0 focus:ring-0 outline-none text-gray-700 placeholder-gray-400"
+                placeholder="Хайх (Нэр, и-мэйл)..."
               />
-              {searchTerm && (
-                <span
-                  className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
-                  onClick={() => setSearchTerm("")}
+              {(searchTerm || roleFilter !== "All") && (
+                <button
+                  onClick={() => {
+                    setSearchTerm("");
+                    setRoleFilter("All");
+                  }}
+                  className="text-xs text-gray-400 hover:text-gray-600 shrink-0 transition-colors"
                 >
                   Цэвэрлэх
-                </span>
+                </button>
               )}
             </div>
           </div>
 
-          <button className="p-2.5 bg-[#1e293b] text-white rounded-md hover:bg-slate-700 transition">
-            <TfiMenuAlt className="w-4 h-4" />
+          <button
+            onClick={() => navigate("create")}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 rounded-lg text-sm font-semibold text-white hover:bg-gray-700 transition-colors"
+          >
+            <HiOutlinePlus className="w-4 h-4" />
+            <span className="hidden lg:block">Шинэ хэрэглэгч үүсгэх</span>
           </button>
         </div>
 
-        {/* ── Desktop Table ── */}
-        <div className="hidden md:block bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse">
+        {/* Desktop Table */}
+        <div className="hidden md:block bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <table className="w-full whitespace-nowrap">
             <thead>
-              <tr className="border-b border-gray-200 bg-white">
-                <th className="px-6 py-4 font-bold text-gray-900">Нэр</th>
-                <th className="px-6 py-4 font-bold text-gray-900">
+              <tr className="text-left border-b border-gray-200/60">
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Нэр
+                </th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   И-мэйл хаяг
                 </th>
-                <th className="px-6 py-4 font-bold text-gray-900">Эрх</th>
-                <th className="px-6 py-4"></th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Утас
+                </th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Эрх
+                </th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right pr-6">
+                  Үйлдэл
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100/80">
               {currentItems.map((user) => (
                 <tr
                   key={user.id}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors group"
+                  className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
                   onClick={() => handleSelectItem(user)}
                 >
-                  <td className="px-6 py-5 text-sm text-gray-800 font-medium">
-                    {user.name}
+                  <td className="px-6 py-4">
+                    <div className="font-semibold text-gray-900 text-sm">
+                      {user.name}
+                    </div>
                   </td>
-                  <td className="px-6 py-5 text-sm text-gray-800">
-                    {user.email}
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-600">{user.email}</div>
                   </td>
-                  <td className="px-6 py-5 text-sm">
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-600">{user.phone}</div>
+                  </td>
+                  <td className="px-6 py-4">
                     <span
-                      className={`px-2 py-1 rounded text-xs font-semibold ${roleBadgeClass(user.role)}`}
+                      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${roleConfig[user.role] ?? roleConfig["User"]}`}
                     >
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-6 py-5 text-right text-gray-400">
-                    <span className="text-xl group-hover:text-gray-600 transition-colors">
-                      ›
-                    </span>
+                  <td className="px-6 py-4 text-right">
+                    <div
+                      className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => navigate(`/users/${user.id}/edit`)}
+                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
+                        title="Засах"
+                      >
+                        <HiOutlinePencilAlt className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                        title="Устгах"
+                      >
+                        <HiOutlineTrash className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
+
+              {currentItems.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Өгөгдөл олдсонгүй
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* ── Mobile Cards ── */}
-        <div className="flex flex-col gap-3 md:hidden">
+        {/* Mobile Cards */}
+        <div className="flex flex-col gap-2 md:hidden">
           {currentItems.map((user) => (
             <div
               key={user.id}
               onClick={() => handleSelectItem(user)}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 cursor-pointer active:bg-gray-50"
+              className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <div className="font-semibold text-gray-900 text-base">
+                  <div className="font-semibold text-gray-900 text-sm">
                     {user.name}
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">
                     {user.email}
                   </div>
                 </div>
-                <span className="text-xl text-gray-300">›</span>
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${roleConfig[user.role] ?? roleConfig["User"]}`}
+                >
+                  {user.role}
+                </span>
               </div>
-
-              <div className="text-sm text-gray-600 mb-3">
-                <span className="text-gray-400 text-xs">Утас: </span>
-                {user.phone}
+              <div className="flex gap-2 text-sm mt-2">
+                <span className="text-gray-400 text-xs w-16 shrink-0">
+                  Утас
+                </span>
+                <span className="text-gray-700">{user.phone}</span>
               </div>
-
-              <span
-                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${roleBadgeClass(user.role)}`}
-              >
-                {user.role}
-              </span>
             </div>
           ))}
         </div>
 
         {/* Pagination */}
-        <div className="mt-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
-            <div className="flex items-center">
-              <span className="mr-2">Харуулах</span>
+        <div className="mt-5">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <span>Харуулах</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="border-gray-300 rounded-md text-sm p-1 outline-none focus:ring-1 focus:ring-blue-500"
+                className="border border-gray-200 rounded-lg text-sm px-2 py-1 outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
                 <option value={20}>20</option>
               </select>
-              <span className="ml-2">
-                Нийт {totalItems} бичлэгээс {displayFrom}-{displayTo} харуулж
-                байна
+              <span className="text-gray-400">
+                {displayFrom}–{displayTo} / {totalItems}
               </span>
             </div>
 
-            <div className="flex space-x-1">
+            <div className="flex gap-1">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:opacity-50 text-xs font-medium"
+                className="px-3 py-1.5 border border-gray-200 rounded-lg bg-white text-sm hover:bg-gray-50 disabled:opacity-40 transition-colors"
               >
                 Өмнөх
               </button>
@@ -267,7 +325,11 @@ const Users: React.FC = () => {
                 <button
                   key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-1.5 border rounded-md text-xs font-medium transition-colors ${currentPage === i + 1 ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+                  className={`px-3 py-1.5 border rounded-lg text-sm transition-colors ${
+                    currentPage === i + 1
+                      ? "bg-gray-900 text-white border-gray-900"
+                      : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                  }`}
                 >
                   {i + 1}
                 </button>
@@ -277,7 +339,7 @@ const Users: React.FC = () => {
                   setCurrentPage((p) => Math.min(p + 1, totalPages))
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="px-3 py-1.5 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:opacity-50 text-xs font-medium"
+                className="px-3 py-1.5 border border-gray-200 rounded-lg bg-white text-sm hover:bg-gray-50 disabled:opacity-40 transition-colors"
               >
                 Дараах
               </button>
