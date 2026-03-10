@@ -8,12 +8,13 @@ import {
   type Dispatch,
 } from "react"; // Added useEffect and useRef
 import { LuWarehouse } from "react-icons/lu";
-
+import { useNavigate } from "react-router-dom";
 type Props = {
   setIsOpenSidebar: Dispatch<SetStateAction<boolean>>;
   isOpenSidebar: boolean;
 };
 export const Header = (props: Props) => {
+  const navigate = useNavigate();
   const { setIsOpenSidebar, isOpenSidebar } = props;
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null); // Create a reference for the dropdown
@@ -83,7 +84,13 @@ export const Header = (props: Props) => {
         </div>
         <div className="flex items-center gap-x-3">
           <div className="px-4 flex gap-x-3 items-center">
-            <button className="inline-flex items-center justify-center p-2 bg-white text-gray-700 hover:text-white hover:bg-blue-700 rounded-sm font-bold focus:outline-hidden">
+            <button className="inline-flex items-center justify-center p-2 bg-white text-gray-700 hover:text-white hover:bg-blue-700 rounded-sm font-bold">
+              <HiOutlineCog className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => navigate("/notifications")}
+              className="inline-flex items-center justify-center p-2 bg-white text-gray-700 hover:text-white hover:bg-blue-700 rounded-sm font-bold focus:outline-hidden"
+            >
               <HiOutlineBell className="w-5 h-5" />
             </button>
           </div>
@@ -109,7 +116,7 @@ export const Header = (props: Props) => {
                     href="/profile"
                     className="block px-4 py-2 leading-5 text-gray-700 hover:bg-gray-100 cursor-pointer transition duration-150 ease-in-out"
                   >
-                    Профайл
+                    Пропайл
                   </a>
                   <div className="border-t border-gray-100"></div>
                   <button className="block w-full px-4 py-2 leading-5 text-gray-700 text-left hover:bg-gray-100 focus:outline-hidden transition duration-150 ease-in-out">
