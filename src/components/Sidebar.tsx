@@ -1,22 +1,23 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  AiFillHome,
-  AiOutlineArrowLeft,
-  AiOutlineArrowRight,
-  AiOutlineControl,
-  AiOutlineTruck,
-  AiOutlineHeart,
-  AiOutlineTeam,
-  AiOutlineDatabase,
-  AiOutlineCi,
-  AiOutlineBank,
-  AiOutlineUsergroupAdd,
-  AiOutlineLineChart,
-  AiOutlineLink,
-} from "react-icons/ai";
-import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-import { RxActivityLog } from "react-icons/rx";
+  LayoutDashboard,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  SlidersHorizontal,
+  Truck,
+  Package,
+  Users,
+  Tag,
+  Ruler,
+  Warehouse,
+  UserCog,
+  BarChart3,
+  Activity,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+} from "lucide-react";
 
 interface SubMenuItem {
   name: string;
@@ -34,7 +35,7 @@ const navigation: NavItem[] = [
   {
     name: "Орлого",
     href: "/checkins",
-    icon: AiOutlineArrowLeft,
+    icon: ArrowDownToLine,
     children: [
       { name: "Бүх орлогын жагсаалт", href: "/checkin" },
       { name: "Шинэ орлого бүртгэх", href: "/checkin/create" },
@@ -43,7 +44,7 @@ const navigation: NavItem[] = [
   {
     name: "Зарлага",
     href: "/checkouts",
-    icon: AiOutlineArrowRight,
+    icon: ArrowUpFromLine,
     children: [
       { name: "Бүх зарлагын жагсаалт", href: "/checkout" },
       { name: "Шинэ зарлага бүртгэх", href: "/checkout/create" },
@@ -52,7 +53,7 @@ const navigation: NavItem[] = [
   {
     name: "Өөрчлөлт",
     href: "/adjustments",
-    icon: AiOutlineControl,
+    icon: SlidersHorizontal,
     children: [
       { name: "Өөрчлөлтийн жагсаалт", href: "/adjustment" },
       { name: "Шинэ өөрчлөлт хийх", href: "/adjustment/create" },
@@ -61,7 +62,7 @@ const navigation: NavItem[] = [
   {
     name: "Шилжүүлэг",
     href: "/transfers",
-    icon: AiOutlineTruck,
+    icon: Truck,
     children: [
       { name: "Шилжүүлгийн жагсаалт", href: "/transfer" },
       { name: "Шинэ шилжүүлэг хийх", href: "/transfer/create" },
@@ -70,57 +71,52 @@ const navigation: NavItem[] = [
   {
     name: "Бараа",
     href: "/items",
-    icon: AiOutlineHeart,
+    icon: Package,
     children: [
       { name: "Бүх барааны жагсаалт", href: "/items" },
       { name: "Шинэ бараа нэмэх", href: "/items/create" },
-      // { name: "Бараа импортлох", href: "/items/import" },
     ],
   },
   {
     name: "Харилцагч",
     href: "/contacts",
-    icon: AiOutlineTeam,
+    icon: Users,
     children: [
       { name: "Бүх харилцагч", href: "/contacts" },
       { name: "Шинэ харилцагч нэмэх", href: "/contacts/create" },
-      // { name: "Харилцагч импортлох", href: "/contacts/import" },
     ],
   },
   {
     name: "Ангилал",
     href: "/categories",
-    icon: AiOutlineDatabase,
+    icon: Tag,
     children: [
       { name: "Бүх ангилал", href: "/categories" },
       { name: "Шинэ ангилал үүсгэх", href: "/categories/create" },
-      // { name: "Ангилал импортлох", href: "/categories/import" },
     ],
   },
   {
     name: "Нэгж",
     href: "/units",
-    icon: AiOutlineCi,
+    icon: Ruler,
     children: [
       { name: "Бүх нэгж", href: "/units" },
       { name: "Шинэ нэгж үүсгэх", href: "/units/create" },
-      //{ name: "Нэгж импортлох", href: "/units/import" },
     ],
   },
   {
     name: "Агуулах",
     href: "/warehouses",
-    icon: AiOutlineBank,
+    icon: Warehouse,
     children: [
       { name: "Бүх агуулах", href: "/warehouses" },
       { name: "Шинэ агуулах нэмэх", href: "/warehouses/create" },
-      //{ name: "Агуулах импортлох", href: "/warehouses/import" },
     ],
   },
   {
     name: "Хэрэглэгч",
     href: "/users",
-    icon: AiOutlineUsergroupAdd,
+    icon: UserCog,
     children: [
       { name: "Бүх хэрэглэгч", href: "/users" },
       { name: "Хэрэглэгчийн эрхүүд", href: "/roles" },
@@ -131,13 +127,13 @@ const navigation: NavItem[] = [
   {
     name: "Тайлан",
     href: "/reports",
-    icon: AiOutlineLineChart,
+    icon: BarChart3,
     children: [
       { name: "Нийт бүртгэл", href: "/reports" },
       { name: "Орлогын тайлан", href: "/reports/checkin" },
       { name: "Зарлагын тайлан", href: "/reports/checkout" },
       { name: "Шилжүүлгийн тайлан", href: "/reports/transfer" },
-      { name: "Засварын тайлан", href: "/reports/adjustment" },
+      { name: "Өөрчлөлтийн тайлан", href: "/reports/adjustment" },
     ],
   },
 ];
@@ -173,7 +169,7 @@ export const Sidebar: React.FC = () => {
               : "hover:bg-blue-700 hover:text-white"
           }`}
         >
-          <AiFillHome className="w-4 h-4 mr-3" />
+          <LayoutDashboard className="w-4 h-4 mr-3" />
           <span className="grow font-medium">Хянах самбар</span>
         </Link>
 
@@ -198,12 +194,12 @@ export const Sidebar: React.FC = () => {
 
                 {item.children ? (
                   isMenuOpen ? (
-                    <IoIosArrowUp className="w-3 h-3" />
+                    <ChevronUp className="w-3 h-3" />
                   ) : (
-                    <IoIosArrowDown className="w-3 h-3" />
+                    <ChevronDown className="w-3 h-3" />
                   )
                 ) : (
-                  <IoIosArrowDown className="w-3 h-3 text-gray-500/50" />
+                  <ChevronDown className="w-3 h-3 text-gray-500/50" />
                 )}
               </div>
 
@@ -219,7 +215,7 @@ export const Sidebar: React.FC = () => {
                           : "text-gray-400 hover:text-white hover:bg-gray-700"
                       }`}
                     >
-                      <AiOutlineLink className="w-3 h-3 mr-2 opacity-50" />
+                      <ExternalLink className="w-3 h-3 mr-2 opacity-50" />
                       {child.name}
                     </Link>
                   ))}
@@ -228,21 +224,6 @@ export const Sidebar: React.FC = () => {
             </div>
           );
         })}
-        <div className="hidden md:block mt-1 font-bold text-xs text-gray-600 px-4 py-2">
-          Misc
-        </div>
-        <a
-          onClick={() => setIsActivity("activity")}
-          href="/activity"
-          className={`cursor-pointer border-b border-white/10 flex items-center px-4 py-4 md:py-3 text-sm font-medium transition-all duration-200 ${
-            isActivity === "activity"
-              ? "bg-blue-600 text-white"
-              : "text-gray-300 hover:bg-blue-700 hover:text-white"
-          }`}
-        >
-          <RxActivityLog className="w-4 h-4 mr-3" />
-          Activity
-        </a>
       </div>
     </div>
   );

@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+body {
+    font-family: "Commissioner", sans-serif;
+    letter-spacing: -1;
+  }

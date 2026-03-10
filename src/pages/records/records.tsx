@@ -7,7 +7,7 @@ const TotalRecords = () => {
     { name: "Орлого (Checkins)", count: 200 },
     { name: "Зарлага (Checkouts)", count: 180 },
     { name: "Шилжүүлэг", count: 50 },
-    { name: "Залруулга", count: 30 },
+    { name: "Өөрчлөлт", count: 30 },
     { name: "Хэмжих нэгж", count: 15 },
     { name: "Хэрэглэгчид", count: 25 },
     { name: "Эрхүүд", count: 5 },
@@ -17,7 +17,7 @@ const TotalRecords = () => {
     { label: "Орлогын тайлан", href: "/reports/checkin" },
     { label: "Зарлагын тайлан", href: "/reports/checkout" },
     { label: "Шилжүүлгийн тайлан", href: "/reports/transfer" },
-    { label: "Залруулгын тайлан", href: "/reports/adjustment" },
+    { label: "Өөрчлөлтийн тайлан", href: "/reports/adjustment" },
   ];
 
   return (

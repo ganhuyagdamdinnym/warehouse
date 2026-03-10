@@ -232,7 +232,7 @@ const Dashboard = () => {
       sub: "Энэ сар",
     },
     {
-      label: "Залруулга",
+      label: "Өөрчлөлт",
       value: 95,
       growth: "-4.5%",
       up: false,
@@ -294,7 +294,7 @@ const Dashboard = () => {
                   Жилийн үзүүлэлт
                 </h3>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Орлого, зарлага, шилжүүлэг, залруулга
+                  Орлого, зарлага, шилжүүлэг, өөрчлөлт
                 </p>
               </div>
               <div className="flex gap-2">
@@ -387,7 +387,7 @@ const Dashboard = () => {
                   />
                   <Bar
                     dataKey="adjustments"
-                    name="Залруулга"
+                    name="Өөрчлөлт"
                     fill="#ef4444"
                     radius={[3, 3, 0, 0]}
                     barSize={8}

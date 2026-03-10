@@ -62,7 +62,7 @@ const CreateAdjustment = () => {
 
   // Reusable Styles
   const baseInputClass =
-    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
+    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
   const tableInputClass =
     "w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none";
 

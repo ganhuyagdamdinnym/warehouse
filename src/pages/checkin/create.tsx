@@ -85,18 +85,17 @@ const CreateCheckIn = () => {
 
   // Modern Blue Input Style
   const inputClass =
-    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
+    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/30">
-      <div className="">
-        {/* Title Section */}
-        <div className="px-4 md:px-0 mb-6">
-          <h3 className="text-xl font-bold text-gray-900">
-            Шинэ орлого бүртгэх
+      <div className="max-w-5xl mx-auto">
+        <div className="px-4 md:px-0 mb-8">
+          <h3 className="text-2xl font-bold text-gray-900">
+            Шинэ орлого үүсгэх
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            Доорх формыг бөглөж шинэ бүртгэл нэмнэ үү.
+            Бараа материалын зарлагын баримт шинээр үүсгэх.
           </p>
         </div>
 

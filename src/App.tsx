@@ -48,6 +48,7 @@ import EditItem from "./pages/items/edit";
 import CreateUnit from "./pages/unit/create";
 import EditUnit from "./pages/unit/unit";
 import ItemTrail from "./pages/items/trail";
+import Notifications from "./pages/settings/notification";
 
 function App() {
   const [isOpenSidebar, setIsOpenSideBar] = useState<boolean>(false);
@@ -172,7 +173,10 @@ function App() {
                           element={<TransferReport />}
                         />
                         <Route path="/profile" element={<Profile />} />
-                        <Route path="/activity" element={<Activities />} />
+                        <Route
+                          path="/notifications"
+                          element={<Notifications />}
+                        />
 
                         {/* 404 Catch-all (Optional) */}
                         <Route

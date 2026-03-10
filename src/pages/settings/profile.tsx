@@ -4,18 +4,23 @@ import React, {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import {
+  HiOutlineUserCircle,
+  HiOutlineMail,
+  HiOutlineLockClosed,
+  HiOutlineCamera,
+  HiOutlineSave,
+  HiOutlineTrash,
+  HiOutlineKey,
+} from "react-icons/hi";
 
 const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // State for the preview URL
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
-  // Handle file selection with TypeScript ChangeEvent
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Create a temporary URL for the preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhotoPreview(e.target?.result as string);
@@ -24,180 +29,210 @@ const Profile = () => {
     }
   };
 
-  const handleSelectPhoto = (): void => {
-    fileInputRef.current?.click();
-  };
+  const handleSelectPhoto = (): void => fileInputRef.current?.click();
 
   const handleRemovePhoto = (): void => {
     setPhotoPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // Reset the actual input
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSubmit = (e: FormEvent): void => {
-    e.preventDefault();
-    // Handle form logic here
-  };
+  const handleSubmit = (e: FormEvent): void => e.preventDefault();
+
+  // Consistent Styles
+  const baseInputClass =
+    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
+  const labelClass = "text-sm font-semibold text-gray-700 ml-0.5";
+  const sectionTitleClass =
+    "text-xl font-bold text-gray-900 flex items-center gap-2";
+
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
-      <div>
-        <div>
-          <div className="px-4 md:px-0 md:col-span-1">
-            <h3 className="text-lg font-bold text-gray-900">
+    <div className="md:flex-1 md:px-6 py-8 md:p-10 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto space-y-12">
+        {/* Section 1: Profile Information */}
+        <section>
+          <div className="mb-6 px-4 md:px-0">
+            <h3 className={sectionTitleClass}>
+              <HiOutlineUserCircle className="w-6 h-6 text-blue-600" />
               Хэрэглэгчийн мэдээлэл
             </h3>
-            <p className="mt-1 text-gray-600">
-              Та өөрийн бүртгэлийн мэдээлэл болон имэйл хаягаа шинэчилнэ үү.
+            <p className="mt-1 text-sm text-gray-500">
+              Та өөрийн бүртгэлийн мэдээлэл болон профайл зургаа шинэчилнэ үү.
             </p>
           </div>
-          <div className="mt-6">
-            <form onSubmit={handleSubmit}>
-              <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-tl-md md:rounded-tr-md">
-                <div className="grid gap-6">
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="font-medium text-gray-700 block mb-2">
-                      Зураг
-                    </label>
 
-                    {/* Hidden TS-typed File Input */}
-                    <input
-                      type="file"
-                      className="hidden"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      accept="image/*"
-                    />
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+          >
+            <div className="p-6 md:p-8 space-y-8">
+              {/* Avatar Upload */}
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="relative group">
+                  <div className="w-32 h-32 rounded-full border-4 border-gray-50 shadow-inner bg-gray-100 overflow-hidden flex items-center justify-center transition-all group-hover:border-blue-100">
+                    {photoPreview ? (
+                      <img
+                        src={photoPreview}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <HiOutlineUserCircle className="w-20 h-20 text-gray-300" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSelectPhoto}
+                    className="absolute bottom-0 right-0 p-2 bg-white border border-gray-200 rounded-full shadow-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                  >
+                    <HiOutlineCamera className="w-5 h-5" />
+                  </button>
+                </div>
 
-                    {/* Avatar Preview */}
-                    <div className="mt-2">
-                      {photoPreview ? (
-                        <div
-                          className="rounded-full w-20 h-20 bg-cover bg-no-repeat bg-center border border-gray-200"
-                          style={{ backgroundImage: `url(${photoPreview})` }}
-                        />
-                      ) : (
-                        <div className="rounded-full w-20 h-20 bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200">
-                          <span className="text-xs">Зураггүй</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex gap-2 mt-3">
+                <div className="flex flex-col gap-3">
+                  <input
+                    type="file"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSelectPhoto}
+                      className="px-4 py-2 bg-white border border-gray-300 rounded text-xs font-bold uppercase tracking-wider text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+                    >
+                      Зураг солих
+                    </button>
+                    {photoPreview && (
                       <button
                         type="button"
-                        onClick={handleSelectPhoto}
-                        className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none transition"
+                        onClick={handleRemovePhoto}
+                        className="px-4 py-2 bg-red-50 text-red-600 rounded text-xs font-bold uppercase tracking-wider hover:bg-red-100 transition-all"
                       >
-                        Шинэ зураг сонгох
+                        <HiOutlineTrash className="w-4 h-4" />
                       </button>
-
-                      {photoPreview && (
-                        <button
-                          type="button"
-                          onClick={handleRemovePhoto}
-                          className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-red-600 uppercase tracking-widest shadow-sm hover:bg-red-50 focus:outline-none transition"
-                        >
-                          Зургийг устгах
-                        </button>
-                      )}
-                    </div>
+                    )}
                   </div>
+                  <p className="text-[11px] text-gray-400">
+                    Зөвшөөрөгдөх формат: JPG, PNG. Дээд хэмжээ: 5MB
+                  </p>
+                </div>
+              </div>
 
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="block text-md font-medium text-gray-900 mb-1">
-                      Нэр
-                    </label>
+              {/* Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                <div>
+                  <label className={labelClass}>Таны нэр</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                      <HiOutlineUserCircle className="w-4 h-4" />
+                    </div>
                     <input
+                      defaultValue="Sanchir Ganbold"
                       type="text"
-                      defaultValue="Ganaa Daimaa"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                      className={`${baseInputClass} pl-10`}
                     />
                   </div>
+                </div>
 
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="block text-md font-medium text-gray-900 mb-1">
-                      Имэйл
-                    </label>
+                <div>
+                  <label className={labelClass}>Имэйл хаяг</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                      <HiOutlineMail className="w-4 h-4" />
+                    </div>
                     <input
+                      defaultValue="sanchir@infitech.mn"
                       type="email"
-                      defaultValue="ganaa@example.com"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                      className={`${baseInputClass} pl-10`}
                     />
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-slate-800 text-white text-sm font-bold rounded-md hover:bg-slate-700 transition uppercase tracking-wider"
-                >
-                  Хадгалах
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div className="hidden sm:block">
-          <div className="py-8">
-            <div className="border-t border-gray-200"></div>
-          </div>
-        </div>
-        <div className="mt-10 sm:mt-0">
-          <div className="px-4 md:px-0 md:col-span-1">
-            <h3 className="text-lg font-bold text-gray-900">
+            <div className="px-8 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button
+                type="submit"
+                className="flex items-center gap-2 px-8 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95 uppercase tracking-widest"
+              >
+                <HiOutlineSave className="w-4 h-4" />
+                Мэдээлэл хадгалах
+              </button>
+            </div>
+          </form>
+        </section>
+
+        {/* Section 2: Password Update */}
+        <section>
+          <div className="mb-6 px-4 md:px-0">
+            <h3 className={sectionTitleClass}>
+              <HiOutlineLockClosed className="w-6 h-6 text-blue-600" />
               Нууц үг шинэчлэх
             </h3>
-            <p className="mt-1 text-gray-600">
-              Аюулгүй байдлаа хангахын тулд урт бөгөөд санамсаргүй нууц үг
-              ашиглахыг зөвлөж байна.
+            <p className="mt-1 text-sm text-gray-500">
+              Аюулгүй байдлаа хангахын тулд тогтмол нууц үгээ сольж байхыг
+              зөвлөж байна.
             </p>
           </div>
-          <div className="mt-6">
-            <form>
-              <div className="px-4 py-5 bg-white md:p-6 shadow-sm md:rounded-md md:rounded-tr-md">
-                <div className="grid gap-6">
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="block text-md font-medium text-gray-900 mb-1">
-                      Одоогийн нууц үг
-                    </label>
+
+          <form className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 md:p-8 space-y-6 max-w-2xl">
+              <div>
+                <label className={labelClass}>Одоогийн нууц үг</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                    <HiOutlineKey className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className={`${baseInputClass} pl-10`}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className={labelClass}>Шинэ нууц үг</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                      <HiOutlineLockClosed className="w-4 h-4" />
+                    </div>
                     <input
                       type="password"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                      placeholder="••••••••"
+                      className={`${baseInputClass} pl-10`}
                     />
                   </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="block text-md font-medium text-gray-900 mb-1">
-                      Шинэ нууц үг
-                    </label>
+                </div>
+                <div>
+                  <label className={labelClass}>Баталгаажуулах</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                      <HiOutlineLockClosed className="w-4 h-4" />
+                    </div>
                     <input
                       type="password"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                    />
-                  </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="block text-md font-medium text-gray-900 mb-1">
-                      Нууц үг баталгаажуулах
-                    </label>
-                    <input
-                      type="password"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                      placeholder="••••••••"
+                      className={`${baseInputClass} pl-10`}
                     />
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-end px-4 py-3 bg-gray-50 text-right md:px-6 shadow-sm md:rounded-bl-md md:rounded-br-md">
-                <button
-                  type="submit"
-                  className="relative flex items-center justify-center px-4 py-3 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-hidden focus:ring-3 focus:ring-gray-300 focus:shadow-outline-gray transition-all ease-in-out duration-150"
-                >
-                  Хадгалах
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            </div>
+
+            <div className="px-8 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button
+                type="submit"
+                className="flex items-center gap-2 px-8 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95 uppercase tracking-widest"
+              >
+                Нууц үг шинэчлэх
+              </button>
+            </div>
+          </form>
+        </section>
       </div>
     </div>
   );

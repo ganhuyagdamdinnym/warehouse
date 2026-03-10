@@ -1,373 +1,253 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  HiOutlineUserAdd,
+  HiOutlineUser,
+  HiOutlineMail,
+  HiOutlinePhone,
+  HiOutlineLockClosed,
+  HiOutlineOfficeBuilding,
+  HiOutlineShieldCheck,
+  HiOutlineSave,
+  HiOutlineEye,
+  HiOutlineEyeOff,
+} from "react-icons/hi";
 
-interface CheckinData {
-  id: string;
-  code: string;
-  date: string;
-  status: "Draft" | "Completed" | "Pending";
-  contact: string;
-  warehouse: string;
-  user: string;
-  category: string;
-  details: string;
-}
+const CreateUser = () => {
+  const [showPassword, setShowPassword] = useState(false);
 
-const checkinsList: CheckinData[] = [
-  {
-    id: "1",
-    code: "TCI28",
-    date: "2026-03-03",
-    status: "Draft",
-    contact: "Reese Reichert PhD",
-    warehouse: "Warehouse 2",
-    user: "Prof. Merle Bergstrom",
-    category: "Electronics",
-    details:
-      "Qui harum neque vero nam necessitatibus laudantium. Modi soluta inventore id sapiente voluptatem totam.",
-  },
-  {
-    id: "2",
-    code: "TCI27",
-    date: "2026-03-01",
-    status: "Completed",
-    contact: "John Doe",
-    warehouse: "Main WH",
-    user: "Kevin",
-    category: "Food",
-    details: "Labore totam et aut et. Eos molestias qui cumque rerum veniam.",
-  },
-];
-
-const CheckinReport: React.FC = () => {
-  const navigate = useNavigate();
-  const [showForm, setShowForm] = useState(true);
-
-  // 1. Input States (Бичих үед өөрчлөгдөнө)
-  const [inputs, setInputs] = useState({
-    startDate: "",
-    endDate: "",
-    reference: "",
-    contact: "",
-    warehouse: "",
-    user: "",
-    category: "",
-  });
-
-  // 2. Applied Filter States (Submit дарахад хадгалагдана)
-  const [filters, setFilters] = useState({ ...inputs });
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFilters({ ...inputs });
-    setCurrentPage(1);
-  };
-
-  const handleReset = () => {
-    const empty = {
-      startDate: "",
-      endDate: "",
-      reference: "",
-      contact: "",
-      warehouse: "",
-      user: "",
-      category: "",
-    };
-    setInputs(empty);
-    setFilters(empty);
-    setCurrentPage(1);
-  };
-
-  // 3. Filtering Logic
-  const filteredList = checkinsList.filter((item) => {
-    const matchesRef = item.code
-      .toLowerCase()
-      .includes(filters.reference.toLowerCase());
-    const matchesContact = item.contact
-      .toLowerCase()
-      .includes(filters.contact.toLowerCase());
-    const matchesWH =
-      !filters.warehouse || item.warehouse === filters.warehouse;
-    const matchesUser = !filters.user || item.user === filters.user;
-    const matchesCat = !filters.category || item.category === filters.category;
-
-    // Date range logic
-    const itemDate = new Date(item.date).getTime();
-    const start = filters.startDate
-      ? new Date(filters.startDate).getTime()
-      : -Infinity;
-    const end = filters.endDate
-      ? new Date(filters.endDate).getTime()
-      : Infinity;
-
-    return (
-      matchesRef &&
-      matchesContact &&
-      matchesWH &&
-      matchesUser &&
-      matchesCat &&
-      itemDate >= start &&
-      itemDate <= end
-    );
-  });
-
-  const currentItems = filteredList.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
-
-  // Input Class (Дахин ашиглах зорилгоор)
-  const inputStyle =
-    "w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white transition-all";
+  // Consistent Styles
+  const baseInputClass =
+    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
+  const labelClass = "text-sm font-semibold text-gray-700 ml-0.5";
+  const checkboxLabelClass =
+    "ml-2 text-sm text-gray-600 font-medium cursor-pointer select-none";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 font-sans">
-      <div className="max-w-7xl mx-auto">
+    <div className="md:flex-1 md:px-6 py-8 md:p-10 bg-gray-50 min-h-screen">
+      <div className="max-w-5xl mx-auto">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-xl font-bold text-gray-800">Checkin Report</h1>
-            <p className="text-sm text-gray-500">
-              Please review the data in the table below
-            </p>
+        <div className="px-4 md:px-0 mb-8">
+          <div className="flex items-center gap-2 mb-1">
+            <HiOutlineUserAdd className="w-6 h-6 text-blue-600" />
+            <h3 className="text-2xl font-bold text-gray-900">
+              Шинэ хэрэглэгч үүсгэх
+            </h3>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2D3748] text-white text-xs font-bold rounded shadow-sm hover:bg-slate-700 transition-all uppercase tracking-wider"
-          >
-            <span>⇅</span> Toggle Form
-          </button>
+          <p className="mt-1 text-sm text-gray-500">
+            Системд нэвтрэх хэрэглэгчийн бүртгэл болон эрхийг тохируулах.
+          </p>
         </div>
 
-        {/* Filter Form */}
-        {showForm && (
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 md:p-6 mb-8"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-600 uppercase">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={inputs.startDate}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, startDate: e.target.value })
-                  }
-                  className={inputStyle}
-                />
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <div className="p-6 md:p-8 space-y-8">
+              {/* Personal & Account Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  <div>
+                    <label className={labelClass}>Нэр</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineUser className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Нэр оруулна уу"
+                        className={`${baseInputClass} pl-10`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
+                      Хэрэглэгчийн нэр (Username)
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineUser className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Username оруулна уу"
+                        className={`${baseInputClass} pl-10`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Имэйл хаяг</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineMail className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="email"
+                        placeholder="Email оруулна уу"
+                        className={`${baseInputClass} pl-10`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Утасны дугаар</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlinePhone className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Утасны дугаар оруулна уу"
+                        className={`${baseInputClass} pl-10`}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  <div>
+                    <label className={labelClass}>Нууц үг</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineLockClosed className="w-4 h-4" />
+                      </div>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className={`${baseInputClass} pl-10`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-600"
+                      >
+                        {showPassword ? (
+                          <HiOutlineEyeOff className="w-4 h-4" />
+                        ) : (
+                          <HiOutlineEye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Нууц үг баталгаажуулах</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineLockClosed className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        className={`${baseInputClass} pl-10`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Агуулах сонгох</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                        <HiOutlineOfficeBuilding className="w-4 h-4" />
+                      </div>
+                      <select
+                        className={`${baseInputClass} pl-10 appearance-none bg-white cursor-pointer`}
+                      >
+                        <option value="">Агуулах сонгоно уу</option>
+                        <option value="1">Үндсэн агуулах</option>
+                        <option value="2">Салбар агуулах A</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                        <svg
+                          className="fill-current h-4 w-4"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-600 uppercase">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={inputs.endDate}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, endDate: e.target.value })
-                  }
-                  className={inputStyle}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-600 uppercase">
-                  Reference
-                </label>
-                <input
-                  type="text"
-                  placeholder="Reference"
-                  value={inputs.reference}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, reference: e.target.value })
-                  }
-                  className={inputStyle}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-600 uppercase">
-                  Contact
-                </label>
-                <input
-                  type="text"
-                  placeholder="Contact"
-                  value={inputs.contact}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, contact: e.target.value })
-                  }
-                  className={inputStyle}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-600 uppercase">
-                  Warehouse
-                </label>
-                <select
-                  value={inputs.warehouse}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, warehouse: e.target.value })
-                  }
-                  className={inputStyle}
-                >
-                  <option value="">All Warehouses</option>
-                  <option value="Warehouse 2">Warehouse 2</option>
-                  <option value="Main WH">Main WH</option>
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-600 uppercase">
-                  User
-                </label>
-                <select
-                  value={inputs.user}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, user: e.target.value })
-                  }
-                  className={inputStyle}
-                >
-                  <option value="">All Users</option>
-                  <option value="Prof. Merle Bergstrom">
-                    Prof. Merle Bergstrom
-                  </option>
-                  <option value="Kevin">Kevin</option>
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-600 uppercase">
-                  Category
-                </label>
-                <select
-                  value={inputs.category}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, category: e.target.value })
-                  }
-                  className={inputStyle}
-                >
-                  <option value="">All Categories</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Food">Food</option>
-                </select>
+
+              {/* Roles & Permissions */}
+              <div className="pt-8 border-t border-gray-100 space-y-6">
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <HiOutlineShieldCheck className="w-5 h-5 text-blue-600" />
+                    Эрх болон Зөвшөөрөл
+                  </h4>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="super-admin"
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                      <label
+                        htmlFor="super-admin"
+                        className={checkboxLabelClass}
+                      >
+                        Super Admin
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="view-all"
+                          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                        <label
+                          htmlFor="view-all"
+                          className={checkboxLabelClass}
+                        >
+                          Бүх бичлэгийг харах (Can view all record)
+                        </label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="edit-all"
+                          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                        <label
+                          htmlFor="edit-all"
+                          className={checkboxLabelClass}
+                        >
+                          Бүх бичлэгийг засах (Can edit all record)
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-t pt-6">
+            {/* Footer Actions */}
+            <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-4">
               <button
                 type="button"
-                onClick={handleReset}
-                className="w-full sm:w-auto px-6 py-2 bg-gray-100 rounded-md text-sm font-bold text-gray-600 hover:bg-gray-200 uppercase transition-colors"
+                className="px-6 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
               >
-                Reset
+                Цэвэрлэх
               </button>
               <button
                 type="submit"
-                className="w-full sm:w-auto px-10 py-2 bg-[#1A202C] text-white text-xs font-bold rounded-md uppercase tracking-widest hover:bg-black transition-all"
+                className="flex items-center gap-2 px-12 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95"
               >
-                Submit
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* Table Container */}
-        <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[800px]">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">
-                    Checkin
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">
-                    Relations
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">
-                    Details
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {currentItems.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-gray-50/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 align-top">
-                      <div className="font-bold text-blue-600">{item.code}</div>
-                      <div className="text-sm text-gray-500">{item.date}</div>
-                      <div className="text-[10px] mt-1 text-green-600 font-bold uppercase flex items-center gap-1">
-                        <span className="text-sm">✓</span> Draft
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm align-top">
-                      <div className="flex">
-                        <span className="text-gray-400 w-24 shrink-0">
-                          Contact:
-                        </span>{" "}
-                        <span className="text-gray-700">{item.contact}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="text-gray-400 w-24 shrink-0">
-                          Warehouse:
-                        </span>{" "}
-                        <span className="text-gray-700">{item.warehouse}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="text-gray-400 w-24 shrink-0">
-                          User:
-                        </span>{" "}
-                        <span className="text-gray-700">{item.user}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 align-top">
-                      <p className="line-clamp-3 italic leading-relaxed">
-                        {item.details}
-                      </p>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>
-              Showing{" "}
-              {filteredList.length > 0
-                ? (currentPage - 1) * itemsPerPage + 1
-                : 0}{" "}
-              to {Math.min(currentPage * itemsPerPage, filteredList.length)} of{" "}
-              {filteredList.length} entries
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setCurrentPage((p) => p + 1)}
-                disabled={
-                  currentPage >= Math.ceil(filteredList.length / itemsPerPage)
-                }
-                className="px-4 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
+                <HiOutlineSave className="w-4 h-4" />
+                Хадгалах
               </button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
 };
 
-export default CheckinReport;
+export default CreateUser;

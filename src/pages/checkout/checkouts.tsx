@@ -139,7 +139,7 @@ const Checkout: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200/60 rounded-lg text-sm text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 font-medium hover:bg-gray-50 transition-colors"
               >
                 Шүүлтүүр
                 <HiChevronDown
@@ -147,7 +147,7 @@ const Checkout: React.FC = () => {
                 />
               </button>
               {isFilterOpen && (
-                <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-100 rounded-xl z-10 p-1.5">
+                <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-300 rounded-xl z-10 p-1.5">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1.5 uppercase tracking-wider">
                     Төлөв
                   </p>
