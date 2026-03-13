@@ -36,7 +36,7 @@ const EditItem = () => {
         />
       )}
 
-      <div className="max-w-5xl mx-auto">
+      <div className="mx-auto">
         {/* Header */}
         <div className="px-4 md:px-0 mb-8 flex justify-between items-end">
           <div>
@@ -61,7 +61,6 @@ const EditItem = () => {
         <form onSubmit={(e) => e.preventDefault()}>
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <div className="p-6 md:p-8 space-y-8">
-              
               {/* Primary Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Side */}
@@ -90,7 +89,9 @@ const EditItem = () => {
                   </div>
 
                   <div>
-                    <label className={labelClass}>Баркодны төрөл (Symbology)</label>
+                    <label className={labelClass}>
+                      Баркодны төрөл (Symbology)
+                    </label>
                     <select className={baseInputClass} defaultValue="CODE128">
                       <option value="CODE128">CODE128</option>
                       <option value="EAN13">EAN13</option>
@@ -117,7 +118,10 @@ const EditItem = () => {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
                         <HiOutlineTag className="w-4 h-4" />
                       </div>
-                      <select className={`${baseInputClass} pl-10`} defaultValue="fluids">
+                      <select
+                        className={`${baseInputClass} pl-10`}
+                        defaultValue="fluids"
+                      >
                         <option value="parts">Сэлбэг хэрэгсэл</option>
                         <option value="fluids">Шингэн зүйлс</option>
                         <option value="electronics">Цахим төхөөрөмж</option>
@@ -211,7 +215,9 @@ const EditItem = () => {
                   </div>
 
                   <div>
-                    <label className={labelClass}>Доод хязгаар (Stock Alert)</label>
+                    <label className={labelClass}>
+                      Доод хязгаар (Stock Alert)
+                    </label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-red-500 transition-colors">
                         <HiOutlineBell className="w-4 h-4" />

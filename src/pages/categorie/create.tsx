@@ -23,12 +23,16 @@ const CreateCategory = () => {
   const labelClass = "text-sm font-semibold text-gray-700";
 
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/30">
-      <div>
+    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto bg-gray-50/30 flex justify-center">
+      <div className="w-full max-w-5xl">
+        {" "}
+        {/* Reduced width slightly for category forms */}
         {/* Header */}
-        <div className="px-4 md:px-0 md:col-span-1 border-b border-gray-100 pb-6">
+        <div className="px-4 md:px-0 border-b border-gray-100 pb-6">
           <div className="flex items-center gap-3">
-            <HiOutlinePlusCircle className="w-7 h-7 text-blue-600" />
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <HiOutlinePlusCircle className="w-7 h-7 text-blue-600" />
+            </div>
             <div>
               <h3 className="text-lg font-bold text-gray-900">
                 Шинэ ангилал үүсгэх
@@ -39,18 +43,16 @@ const CreateCategory = () => {
             </div>
           </div>
         </div>
-
         <div className="mt-6">
           <form onSubmit={(e) => e.preventDefault()}>
-            <div className="px-4 py-6 bg-white border border-gray-200 md:p-8 md:rounded-t-md">
-              <div className="grid gap-6">
-                <div className="flex flex-col gap-y-6">
+            <div className="px-4 py-6 bg-white border border-gray-200 md:p-8 md:rounded-t-xl shadow-sm">
+              <div className="flex flex-col gap-y-6">
+                {/* Name and Code Row */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Нэр */}
-                  <div className="col-span-6 sm:col-span-4 relative">
-                    <label className={labelClass}>
-                      <span>Ангиллын нэр</span>
-                    </label>
-                    <div className="relative group">
+                  <div className="md:col-span-2 relative">
+                    <label className={labelClass}>Ангиллын нэр</label>
+                    <div className="relative group mt-1">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
                         <HiOutlineTag className="w-4 h-4" />
                       </div>
@@ -63,46 +65,42 @@ const CreateCategory = () => {
                   </div>
 
                   {/* Код */}
-                  <div className="col-span-6 sm:col-span-4 relative">
-                    <label className={labelClass}>
-                      <span>Код</span>
-                    </label>
-                    <div className="relative group">
+                  <div className="relative">
+                    <label className={labelClass}>Код</label>
+                    <div className="relative group mt-1">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
                         <HiOutlineHashtag className="w-4 h-4" />
                       </div>
                       <input
                         type="text"
-                        placeholder="Жишээ: CAT01"
+                        placeholder="CAT01"
                         className={`${baseInputClass} pl-10`}
                       />
                     </div>
                   </div>
+                </div>
 
-                  {/* Эцэг ангилал */}
-                  <div className="col-span-6 sm:col-span-4 relative">
-                    <label className={labelClass}>
-                      <span>Харьяалагдах ангилал</span>
-                    </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
-                        <HiOutlineFolderOpen className="w-4 h-4" />
-                      </div>
-                      <select
-                        value={parentCategory}
-                        onChange={(e) => setParentCategory(e.target.value)}
-                        className={`${baseInputClass} pl-10 appearance-none cursor-pointer bg-white`}
-                      >
-                        <option value="">Эцэг ангиллыг сонгоно уу</option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 group-focus-within:text-blue-600">
-                        <HiChevronDown className="h-4 w-4" />
-                      </div>
+                {/* Эцэг ангилал */}
+                <div className="relative">
+                  <label className={labelClass}>Харьяалагдах ангилал</label>
+                  <div className="relative group mt-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
+                      <HiOutlineFolderOpen className="w-4 h-4" />
+                    </div>
+                    <select
+                      value={parentCategory}
+                      onChange={(e) => setParentCategory(e.target.value)}
+                      className={`${baseInputClass} pl-10 appearance-none cursor-pointer bg-white`}
+                    >
+                      <option value="">Үндсэн (Эцэг ангилал байхгүй)</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 group-focus-within:text-blue-600">
+                      <HiChevronDown className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
@@ -110,23 +108,20 @@ const CreateCategory = () => {
             </div>
 
             {/* Хадгалах хэсэг */}
-            <div className="flex items-center justify-end px-4 py-4 bg-gray-50 border-x border-b border-gray-200 md:px-8 md:rounded-b-md">
-              <div className="w-full flex items-center justify-between max-w-4xl">
-                <div></div>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    className="text-gray-500 hover:text-gray-700 font-semibold text-sm px-4"
-                  >
-                    Цуцлах
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex items-center justify-center px-10 py-2.5 bg-blue-600 border border-transparent rounded-md font-bold text-sm text-white uppercase tracking-wider hover:bg-blue-700 active:scale-95 transition-all"
-                  >
-                    Хадгалах
-                  </button>
-                </div>
+            <div className="flex items-center justify-end px-4 py-4 bg-gray-50 border-x border-b border-gray-200 md:px-8 md:rounded-b-xl">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-gray-700 font-semibold text-sm px-4 py-2"
+                >
+                  Цуцлах
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center justify-center px-10 py-2.5 bg-blue-600 border border-transparent rounded-md font-bold text-sm text-white uppercase tracking-wider hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-100"
+                >
+                  Хадгалах
+                </button>
               </div>
             </div>
           </form>

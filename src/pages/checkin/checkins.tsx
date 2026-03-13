@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HiOutlineSearch,
@@ -11,6 +11,8 @@ import {
 } from "react-icons/hi";
 import { AiOutlineFileText } from "react-icons/ai";
 import { CheckInDetails } from "../../components/details/checkInDetails";
+
+const BASE_URL = "http://localhost:3000/api";
 
 interface CheckinData {
   id: string;
@@ -31,54 +33,6 @@ type Item = {
   weight: string;
   quantity: string;
 };
-
-const checkinsList: CheckinData[] = [
-  {
-    id: "1",
-    code: "TCI28",
-    date: "Feb 23, 2026",
-    status: "Draft",
-    contact: "Marianna Upton",
-    warehouse: "Warehouse 3",
-    user: "Damdinnyam",
-    details: "Барааны орлогын туршилтын тайлбар.",
-    items: [
-      {
-        id: 1,
-        name: "Test Item 01",
-        code: "TI01",
-        weight: "10kg",
-        quantity: "5pc",
-      },
-      {
-        id: 2,
-        name: "Test Item 02",
-        code: "TI02",
-        weight: "2kg",
-        quantity: "10pc",
-      },
-    ],
-  },
-  {
-    id: "2",
-    code: "TCI29",
-    date: "Feb 24, 2026",
-    status: "Completed",
-    contact: "John Doe",
-    warehouse: "Main Warehouse",
-    user: "Kevin",
-    details: "Агуулахад бараа орсон тухай мэдээлэл.",
-    items: [
-      {
-        id: 3,
-        name: "Bulk Cargo",
-        code: "BC01",
-        weight: "500kg",
-        quantity: "1pc",
-      },
-    ],
-  },
-];
 
 const statusConfig = {
   Draft: {
@@ -105,31 +59,56 @@ const Checkins: React.FC = () => {
   const [isOpenDetails, setIsOpenDetails] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
+  // API state
+  const [checkinsList, setCheckinsList] = useState<CheckinData[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch data
+  const fetchCheckins = async () => {
+    try {
+      setLoading(true);
+      const query = new URLSearchParams({
+        search: searchTerm,
+        status: statusFilter,
+        page: String(currentPage),
+        limit: String(itemsPerPage),
+      });
+      const res = await fetch(`${BASE_URL}/checkins?${query}`);
+      const data = await res.json();
+      setCheckinsList(data.data);
+      setTotalItems(data.total);
+    } catch (err) {
+      console.error("Өгөгдөл татахад алдаа гарлаа:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCheckins();
+  }, [searchTerm, statusFilter, currentPage, itemsPerPage]);
+
+  // Delete
+  const handleDelete = async (id: string) => {
+    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
+    try {
+      await fetch(`${BASE_URL}/checkins/${id}`, { method: "DELETE" });
+      fetchCheckins();
+    } catch (err) {
+      console.error("Устгахад алдаа гарлаа:", err);
+    }
+  };
+
   const handleSelectItem = (item: CheckinData) => {
     setSelectedItem(item);
     setIsOpenDetails(true);
   };
 
-  const filteredList = checkinsList.filter((item) => {
-    const matchesSearch =
-      item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.contact.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "All"
-        ? true
-        : statusFilter === "Draft"
-          ? item.status === "Draft"
-          : item.status !== "Draft";
-    return matchesSearch && matchesStatus;
-  });
-
-  const totalItems = filteredList.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
-  const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
-  const displayTo = Math.min(indexOfLastItem, totalItems);
+  const displayFrom =
+    totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const displayTo = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
@@ -249,86 +228,16 @@ const Checkins: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/80">
-              {currentItems.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
-                  onClick={() => handleSelectItem(item)}
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-blue-600 text-sm">
-                      {item.code}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {item.date}
-                    </div>
-                    <span
-                      className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
-                    >
-                      <AiOutlineFileText className="w-3 h-3" />
-                      {statusConfig[item.status].label}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      {[
-                        { label: "Харилцагч", value: item.contact },
-                        { label: "Агуулах", value: item.warehouse },
-                        { label: "Хэрэглэгч", value: item.user },
-                      ].map(({ label, value }) => (
-                        <div
-                          key={label}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <span className="text-gray-400 text-xs w-20 shrink-0">
-                            {label}
-                          </span>
-                          <span className="text-gray-700">{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 max-w-xs">
-                    <p className="text-sm text-gray-500 line-clamp-2">
-                      {item.details}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div
-                      className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => navigate(`/checkin/${item.id}/edit`)}
-                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
-                        title="Засах"
-                      >
-                        <HiOutlinePencilAlt className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
-                        title="Чат"
-                      >
-                        <HiOutlineChatAlt2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
-                        title="Түүх"
-                      >
-                        <HiOutlineClipboardList className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
-                        title="Устгах"
-                      >
-                        <HiOutlineTrash className="w-4 h-4" />
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Уншиж байна...
                   </td>
                 </tr>
-              ))}
-
-              {currentItems.length === 0 && (
+              ) : checkinsList.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
@@ -337,6 +246,86 @@ const Checkins: React.FC = () => {
                     Өгөгдөл олдсонгүй
                   </td>
                 </tr>
+              ) : (
+                checkinsList.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
+                    onClick={() => handleSelectItem(item)}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-blue-600 text-sm">
+                        {item.code}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {item.date}
+                      </div>
+                      <span
+                        className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
+                      >
+                        <AiOutlineFileText className="w-3 h-3" />
+                        {statusConfig[item.status].label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        {[
+                          { label: "Харилцагч", value: item.contact },
+                          { label: "Агуулах", value: item.warehouse },
+                          { label: "Хэрэглэгч", value: item.user },
+                        ].map(({ label, value }) => (
+                          <div
+                            key={label}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <span className="text-gray-400 text-xs w-20 shrink-0">
+                              {label}
+                            </span>
+                            <span className="text-gray-700">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 max-w-xs">
+                      <p className="text-sm text-gray-500 line-clamp-2">
+                        {item.details}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div
+                        className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => navigate(`/checkin/${item.id}/edit`)}
+                          className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
+                          title="Засах"
+                        >
+                          <HiOutlinePencilAlt className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
+                          title="Чат"
+                        >
+                          <HiOutlineChatAlt2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
+                          title="Түүх"
+                        >
+                          <HiOutlineClipboardList className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                          title="Устгах"
+                        >
+                          <HiOutlineTrash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -344,72 +333,81 @@ const Checkins: React.FC = () => {
 
         {/* Mobile Cards */}
         <div className="flex flex-col gap-2 md:hidden">
-          {currentItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleSelectItem(item)}
-              className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="font-semibold text-blue-600 text-sm">
-                    {item.code}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {item.date}
-                  </div>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
-                >
-                  {statusConfig[item.status].label}
-                </span>
-              </div>
-              <div className="space-y-1 text-sm">
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-20">Харилцагч</span>
-                  <span className="text-gray-700">{item.contact}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-20">Агуулах</span>
-                  <span className="text-gray-700">{item.warehouse}</span>
-                </div>
-              </div>
-              <p className="mt-3 text-xs text-gray-400 line-clamp-1">
-                {item.details}
-              </p>
-              <div
-                className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden mt-3"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => navigate(`/checkin/${item.id}/edit`)}
-                  className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
-                  title="Засах"
-                >
-                  <HiOutlinePencilAlt className="w-4 h-4" />
-                </button>
-                <button
-                  className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
-                  title="Чат"
-                >
-                  <HiOutlineChatAlt2 className="w-4 h-4" />
-                </button>
-                <button
-                  className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
-                  title="Түүх"
-                >
-                  <HiOutlineClipboardList className="w-4 h-4" />
-                </button>
-                <button
-                  className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
-                  title="Устгах"
-                >
-                  <HiOutlineTrash className="w-4 h-4" />
-                </button>
-              </div>
+          {loading ? (
+            <div className="text-center text-sm text-gray-400 py-8">
+              Уншиж байна...
             </div>
-          ))}
+          ) : (
+            checkinsList.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleSelectItem(item)}
+                className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="font-semibold text-blue-600 text-sm">
+                      {item.code}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {item.date}
+                    </div>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
+                  >
+                    {statusConfig[item.status].label}
+                  </span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-20">
+                      Харилцагч
+                    </span>
+                    <span className="text-gray-700">{item.contact}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-20">Агуулах</span>
+                    <span className="text-gray-700">{item.warehouse}</span>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-gray-400 line-clamp-1">
+                  {item.details}
+                </p>
+                <div
+                  className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden mt-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => navigate(`/checkin/${item.id}/edit`)}
+                    className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
+                    title="Засах"
+                  >
+                    <HiOutlinePencilAlt className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
+                    title="Чат"
+                  >
+                    <HiOutlineChatAlt2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
+                    title="Түүх"
+                  >
+                    <HiOutlineClipboardList className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                    title="Устгах"
+                  >
+                    <HiOutlineTrash className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Pagination */}
