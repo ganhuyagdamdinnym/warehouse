@@ -34,7 +34,6 @@ import TotalRecords from "./pages/records/records";
 import CheckinReport from "./pages/records/checkInReport";
 import { MobileSidebar } from "./components/mobileSidebar";
 import Profile from "./pages/settings/profile";
-import Activities from "./pages/settings/activity";
 import Login from "./pages/login/login";
 import CheckoutReport from "./pages/records/checkoutReport";
 import AdjustmentReport from "./pages/records/adjustmentReport";
@@ -178,7 +177,6 @@ function App() {
                           element={<Notifications />}
                         />
 
-                        {/* 404 Catch-all (Optional) */}
                         <Route
                           path="*"
                           element={<div className="p-8">Page Not Found</div>}

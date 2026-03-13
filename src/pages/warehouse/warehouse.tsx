@@ -8,7 +8,6 @@ import {
   HiOutlinePhotograph,
   HiOutlineTrash,
   HiOutlineSave,
-  HiOutlineCheckCircle,
 } from "react-icons/hi";
 import { Confirmation } from "../../components/confirmation";
 
@@ -53,7 +52,9 @@ const Warehouse = () => {
           <div className="flex items-center gap-2 mb-1">
             <HiOutlineOfficeBuilding className="w-6 h-6 text-blue-600" />
             <h3 className="text-2xl font-bold text-gray-900">
-              <span className="text-blue-600/60 font-medium">Агуулахууд / </span>
+              <span className="text-blue-600/60 font-medium">
+                Агуулахууд /{" "}
+              </span>
               Агуулах засах
             </h3>
           </div>
@@ -65,7 +66,6 @@ const Warehouse = () => {
         <form onSubmit={(e) => e.preventDefault()}>
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <div className="p-6 md:p-8 space-y-8">
-              
               {/* Top Section: Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
@@ -100,18 +100,24 @@ const Warehouse = () => {
 
                 {/* Logo Upload Area */}
                 <div className="bg-gray-50/50 p-4 rounded-lg border border-dashed border-gray-300">
-                  <label className={`${labelClass} mb-3 block`}>Байгууллагын лого</label>
+                  <label className={`${labelClass} mb-3 block`}>
+                    Байгууллагын лого
+                  </label>
                   <div className="flex items-start gap-5">
                     <div className="relative h-24 w-24 flex-shrink-0 border-2 border-white shadow-md rounded-lg bg-gray-200 overflow-hidden group">
                       {logoPreview ? (
-                        <img src={logoPreview} alt="Preview" className="h-full w-full object-cover" />
+                        <img
+                          src={logoPreview}
+                          alt="Preview"
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100">
                           <HiOutlinePhotograph className="w-8 h-8" />
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex flex-col gap-2 pt-1">
                       <input
                         type="file"
@@ -163,9 +169,15 @@ const Warehouse = () => {
 
                   <div className="flex items-center gap-3 pt-2">
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input
+                        type="checkbox"
+                        defaultChecked
+                        className="sr-only peer"
+                      />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      <span className="ml-3 text-sm font-semibold text-gray-700">Идэвхтэй төлөв</span>
+                      <span className="ml-3 text-sm font-semibold text-gray-700">
+                        Идэвхтэй төлөв
+                      </span>
                     </label>
                   </div>
                 </div>

@@ -1,5 +1,3 @@
-import React from "react";
-
 type Item = {
   id: string | number;
   name: string;
@@ -154,7 +152,6 @@ export const CheckoutDetails = ({ onClose, items }: Props) => {
           </div>
         </div>
 
-        {/* Footer Actions - Optional but good for UX */}
         <div className="flex justify-end gap-3 border-t bg-white px-6 py-4 print:hidden">
           <button
             onClick={() => window.print()}

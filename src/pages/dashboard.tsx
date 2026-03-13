@@ -9,8 +9,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  LineChart,
-  Line,
   AreaChart,
   Area,
 } from "recharts";

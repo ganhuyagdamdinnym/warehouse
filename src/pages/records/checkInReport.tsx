@@ -311,7 +311,6 @@ const CheckinReport: React.FC = () => {
           </form>
         )}
 
-        {/* ── Desktop Table ── */}
         <div className="hidden md:block bg-white rounded-sm shadow-sm border border-gray-200 overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -402,7 +401,6 @@ const CheckinReport: React.FC = () => {
           </div>
         </div>
 
-        {/* ── Mobile Cards ── */}
         <div className="flex flex-col gap-3 md:hidden">
           {currentItems.map((item) => (
             <div

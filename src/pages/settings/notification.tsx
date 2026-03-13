@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   HiOutlineBell,
   HiOutlineCheckCircle,
   HiOutlineExclamationCircle,
   HiOutlineInformationCircle,
-  HiOutlineTrash,
   HiOutlineClock,
 } from "react-icons/hi";
 

@@ -1,9 +1,4 @@
-import React, {
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   HiOutlineUserCircle,
   HiOutlineMail,

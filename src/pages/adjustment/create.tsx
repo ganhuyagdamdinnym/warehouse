@@ -5,14 +5,13 @@ import {
   HiOutlineSearch,
   HiOutlineTrash,
   HiOutlinePaperClip,
-  HiX,
 } from "react-icons/hi";
 
 const CreateAdjustment = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItemsList, setSelectedItemsList] = useState<any[]>([]);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  // const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

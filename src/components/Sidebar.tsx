@@ -13,7 +13,6 @@ import {
   Warehouse,
   UserCog,
   BarChart3,
-  Activity,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -140,7 +139,6 @@ const navigation: NavItem[] = [
 
 export const Sidebar: React.FC = () => {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
-  const [isActivity, setIsActivity] = useState<string>("");
   const location = useLocation();
 
   const toggleMenu = (name: string) => {

@@ -1,10 +1,4 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  type ChangeEvent,
-  type DragEvent,
-} from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import {
   HiChevronDown,
   HiOutlineTrash,

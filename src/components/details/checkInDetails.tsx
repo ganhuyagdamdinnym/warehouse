@@ -1,4 +1,3 @@
-import type { ItemDetailData } from "../../pages/items/items";
 type Item = {
   id: string | number;
   name: string;

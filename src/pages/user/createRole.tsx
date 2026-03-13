@@ -1,9 +1,7 @@
-import React from "react";
 import {
   HiOutlineShieldCheck,
   HiOutlineKey,
   HiOutlineSave,
-  HiOutlineCheck,
 } from "react-icons/hi";
 
 const CreateRole = () => {
