@@ -116,7 +116,7 @@ const CreateCheckOut = () => {
       const res = await createCheckout(payload);
       if (res?.id) {
         alert("Зарлага амжилттай үүслээ!");
-        navigate(-1);
+        navigate("/checkout");
       }
     } catch (err) {
       console.error("Хадгалахад алдаа гарлаа:", err);
