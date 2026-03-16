@@ -1,10 +1,5 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  type ChangeEvent,
-  type DragEvent,
-} from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   HiChevronDown,
   HiOutlineTrash,
@@ -13,12 +8,24 @@ import {
   HiOutlineSearch,
   HiOutlineCalendar,
 } from "react-icons/hi";
+import { createCheckout } from "../../api/checkout/checkout_api";
 
 const CreateCheckOut = () => {
+  const navigate = useNavigate();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItemsList, setSelectedItemsList] = useState<any[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Form state
+  const [date, setDate] = useState("");
+  const [reference, setReference] = useState("");
+  const [contact, setContact] = useState("");
+  const [warehouse, setWarehouse] = useState("");
+  const [details, setDetails] = useState("");
+  const [isDraft, setIsDraft] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -66,6 +73,16 @@ const CreateCheckOut = () => {
     setSelectedItemsList(selectedItemsList.filter((item) => item.id !== id));
   };
 
+  const updateItem = (
+    id: number,
+    field: "weight" | "quantity" | "unit",
+    value: string | number,
+  ) => {
+    setSelectedItemsList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+    );
+  };
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -73,7 +90,42 @@ const CreateCheckOut = () => {
     }
   };
 
-  // Reusable Blue Input Style
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!date || !contact || !warehouse) {
+      alert("Огноо, харилцагч, агуулахыг заавал бөглөнө үү!");
+      return;
+    }
+    try {
+      setLoading(true);
+      const payload = {
+        code: reference || `TCO${Date.now()}`,
+        date,
+        status: isDraft ? ("Draft" as const) : ("Pending" as const),
+        contact,
+        warehouse,
+        user: "Admin",
+        details,
+        items: selectedItemsList.map((item) => ({
+          name: item.name,
+          code: item.name.slice(0, 5).toUpperCase(),
+          weight: `${item.weight}kg`,
+          quantity: `${item.quantity}${item.unit}`,
+        })),
+      };
+      const res = await createCheckout(payload);
+      if (res?.id) {
+        alert("Зарлага амжилттай үүслээ!");
+        navigate(-1);
+      }
+    } catch (err) {
+      console.error("Хадгалахад алдаа гарлаа:", err);
+      alert("Сервертэй холбогдоход алдаа гарлаа.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const baseInputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
   const tableInputClass =
@@ -93,7 +145,7 @@ const CreateCheckOut = () => {
         </div>
 
         <div className="mt-6">
-          <form onSubmit={(e) => e.preventDefault()}>
+          <form onSubmit={handleSubmit}>
             <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
               <div className="p-6 md:p-8 space-y-8">
                 {/* Main Fields Group */}
@@ -109,6 +161,8 @@ const CreateCheckOut = () => {
                         </div>
                         <input
                           type="date"
+                          value={date}
+                          onChange={(e) => setDate(e.target.value)}
                           className={`${baseInputClass} pl-10 accent-blue-600 cursor-pointer`}
                         />
                       </div>
@@ -120,6 +174,8 @@ const CreateCheckOut = () => {
                       <input
                         placeholder="Дугаар оруулна уу"
                         type="text"
+                        value={reference}
+                        onChange={(e) => setReference(e.target.value)}
                         className={baseInputClass}
                       />
                     </div>
@@ -130,7 +186,11 @@ const CreateCheckOut = () => {
                       <label className="text-sm font-semibold text-gray-700 ml-0.5">
                         Харилцагч
                       </label>
-                      <select className={baseInputClass}>
+                      <select
+                        value={contact}
+                        onChange={(e) => setContact(e.target.value)}
+                        className={baseInputClass}
+                      >
                         <option value="">Харилцагч сонгох</option>
                         {contacts.map((c) => (
                           <option key={c} value={c}>
@@ -143,7 +203,11 @@ const CreateCheckOut = () => {
                       <label className="text-sm font-semibold text-gray-700 ml-0.5">
                         Агуулах
                       </label>
-                      <select className={baseInputClass}>
+                      <select
+                        value={warehouse}
+                        onChange={(e) => setWarehouse(e.target.value)}
+                        className={baseInputClass}
+                      >
                         <option value="">Агуулах сонгох</option>
                         {warehouses.map((wh) => (
                           <option key={wh} value={wh}>
@@ -245,6 +309,13 @@ const CreateCheckOut = () => {
                                 <input
                                   type="number"
                                   defaultValue={row.weight}
+                                  onChange={(e) =>
+                                    updateItem(
+                                      row.id,
+                                      "weight",
+                                      Number(e.target.value),
+                                    )
+                                  }
                                   className={tableInputClass}
                                 />
                               </td>
@@ -252,12 +323,23 @@ const CreateCheckOut = () => {
                                 <input
                                   type="number"
                                   defaultValue={row.quantity}
+                                  onChange={(e) =>
+                                    updateItem(
+                                      row.id,
+                                      "quantity",
+                                      Number(e.target.value),
+                                    )
+                                  }
                                   className={tableInputClass}
                                 />
                               </td>
                               <td className="px-4 py-3">
                                 <div className="relative group">
                                   <select
+                                    defaultValue={row.unit}
+                                    onChange={(e) =>
+                                      updateItem(row.id, "unit", e.target.value)
+                                    }
                                     className={`${tableInputClass} appearance-none pr-8 cursor-pointer`}
                                   >
                                     <option>Хайрцаг (Box)</option>
@@ -310,7 +392,6 @@ const CreateCheckOut = () => {
                         className="hidden"
                       />
                     </div>
-
                     <div className="mt-4 flex flex-wrap gap-2">
                       {uploadedFiles.map((file, idx) => (
                         <div
@@ -338,6 +419,8 @@ const CreateCheckOut = () => {
                       Дэлгэрэнгүй тайлбар
                     </label>
                     <textarea
+                      value={details}
+                      onChange={(e) => setDetails(e.target.value)}
                       className={`${baseInputClass} resize-none`}
                       rows={5}
                       placeholder="Нэмэлт тэмдэглэл..."
@@ -349,6 +432,8 @@ const CreateCheckOut = () => {
                   <label className="flex items-center cursor-pointer select-none">
                     <input
                       type="checkbox"
+                      checked={isDraft}
+                      onChange={(e) => setIsDraft(e.target.checked)}
                       className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all"
                     />
                     <span className="ml-2 text-sm text-gray-600">
@@ -362,15 +447,17 @@ const CreateCheckOut = () => {
               <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-4">
                 <button
                   type="button"
+                  onClick={() => navigate(-1)}
                   className="px-6 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
                 >
                   Цуцлах
                 </button>
                 <button
                   type="submit"
-                  className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-bold text-sm shadow-md shadow-blue-100 transition-all active:scale-95"
+                  disabled={loading}
+                  className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-md font-bold text-sm shadow-md shadow-blue-100 transition-all active:scale-95"
                 >
-                  Хадгалах
+                  {loading ? "Хадгалж байна..." : "Хадгалах"}
                 </button>
               </div>
             </div>

@@ -1,10 +1,5 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  type ChangeEvent,
-  type DragEvent,
-} from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   HiChevronDown,
   HiOutlineTrash,
@@ -12,37 +7,49 @@ import {
   HiX,
   HiOutlineSearch,
 } from "react-icons/hi";
+import { createCheckin } from "../../api";
+import type { CheckinItem } from "../../models/types/checkin";
 
-// TypeScript interface
 interface SelectedItem {
   id: number;
   name: string;
-  weight: number;
-  quantity: number;
+  code: string;
+  weight: string;
+  quantity: string;
   unit: string;
 }
 
+const contacts = ["Марианна Аптон", "Дон Дое", "Алис Смит", "Боб Браун"];
+const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Төв агуулах"];
+const itemOptions = [
+  "Бүтээгдэхүүн 1 - Агуулах A",
+  "Бүтээгдэхүүн 2 - Агуулах B",
+  "Бараа 3 - Хадгалах C",
+  "Сэлбэг хэрэгсэл 4",
+];
+
 const CreateCheckIn = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItemsList, setSelectedItemsList] = useState<SelectedItem[]>(
     [],
   );
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [date, setDate] = useState("");
+  const [code, setCode] = useState("");
+  const [contact, setContact] = useState("");
+  const [warehouse, setWarehouse] = useState("");
+  const [details, setDetails] = useState("");
+  const [isDraft, setIsDraft] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const contacts = ["Марианна Аптон", "Дон Дое", "Алис Смит", "Боб Браун"];
-  const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Төв агуулах"];
-  const items = [
-    "Бүтээгдэхүүн 1 - Агуулах A",
-    "Бүтээгдэхүүн 2 - Агуулах B",
-    "Бараа 3 - Хадгалах C",
-    "Сэлбэг хэрэгсэл 4",
-  ];
-
-  const filteredItems = items.filter((item) =>
+  const filteredItems = itemOptions.filter((item) =>
     item.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
@@ -59,31 +66,72 @@ const CreateCheckIn = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectItem = (item: string) => {
+  const handleSelectItem = (itemName: string) => {
     const newItem: SelectedItem = {
       id: Date.now(),
-      name: item,
-      weight: 1,
-      quantity: 1,
+      name: itemName,
+      code: itemName.slice(0, 20) || "ITEM",
+      weight: "1",
+      quantity: "1",
       unit: "Хайрцаг",
     };
-    setSelectedItemsList([...selectedItemsList, newItem]);
+    setSelectedItemsList((prev) => [...prev, newItem]);
     setSearchTerm("");
     setIsOpen(false);
   };
 
   const removeItem = (id: number) => {
-    setSelectedItemsList(selectedItemsList.filter((item) => item.id !== id));
+    setSelectedItemsList((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updateItem = (
+    id: number,
+    field: "weight" | "quantity",
+    value: string,
+  ) => {
+    setSelectedItemsList((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+    );
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setUploadedFiles((prev) => [...prev, ...newFiles]);
+      setUploadedFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
     }
   };
 
-  // Modern Blue Input Style
+  const handleSubmit = async () => {
+    setError(null);
+    if (!date || !code.trim() || !contact || !warehouse) {
+      setError("Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө.");
+      return;
+    }
+    const itemsForApi: CheckinItem[] = selectedItemsList.map((row) => ({
+      name: row.name,
+      code: row.code,
+      weight: row.weight,
+      quantity: row.quantity,
+    }));
+    try {
+      setSaving(true);
+      await createCheckin({
+        code: code.trim(),
+        date,
+        status: isDraft ? "Draft" : "Pending",
+        contact,
+        warehouse,
+        user: contact,
+        details: details.trim(),
+        items: itemsForApi,
+      });
+      navigate("/checkin", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const inputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
 
@@ -104,13 +152,23 @@ const CreateCheckIn = () => {
             <div className="bg-white shadow-sm border border-gray-200 rounded-t-lg overflow-hidden">
               <div className="p-6 md:p-8 space-y-8">
                 {/* Top Fields */}
+                {error && (
+                  <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                    {error}
+                  </p>
+                )}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
                   <div className="space-y-6">
                     <div>
                       <label className="text-sm font-semibold text-gray-700">
                         Огноо
                       </label>
-                      <input type="date" className={inputClass} />
+                      <input
+                        type="date"
+                        className={inputClass}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="text-sm font-semibold text-gray-700">
@@ -120,6 +178,8 @@ const CreateCheckIn = () => {
                         placeholder="Дугаар оруулна уу"
                         type="text"
                         className={inputClass}
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
                       />
                     </div>
                   </div>
@@ -128,7 +188,11 @@ const CreateCheckIn = () => {
                       <label className="text-sm font-semibold text-gray-700">
                         Харилцагч
                       </label>
-                      <select className={inputClass}>
+                      <select
+                        className={inputClass}
+                        value={contact}
+                        onChange={(e) => setContact(e.target.value)}
+                      >
                         <option value="">Харилцагч сонгох</option>
                         {contacts.map((c) => (
                           <option key={c} value={c}>
@@ -141,7 +205,11 @@ const CreateCheckIn = () => {
                       <label className="text-sm font-semibold text-gray-700">
                         Агуулах
                       </label>
-                      <select className={inputClass}>
+                      <select
+                        className={inputClass}
+                        value={warehouse}
+                        onChange={(e) => setWarehouse(e.target.value)}
+                      >
                         <option value="">Агуулах сонгох</option>
                         {warehouses.map((wh) => (
                           <option key={wh} value={wh}>
@@ -239,16 +307,26 @@ const CreateCheckIn = () => {
                               </td>
                               <td className="px-4 py-3">
                                 <input
-                                  type="number"
-                                  defaultValue={row.weight}
+                                  type="text"
+                                  value={row.weight}
+                                  onChange={(e) =>
+                                    updateItem(row.id, "weight", e.target.value)
+                                  }
                                   placeholder="0.00"
                                   className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
                                 />
                               </td>
                               <td className="px-4 py-3">
                                 <input
-                                  type="number"
-                                  defaultValue={row.quantity}
+                                  type="text"
+                                  value={row.quantity}
+                                  onChange={(e) =>
+                                    updateItem(
+                                      row.id,
+                                      "quantity",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="0"
                                   className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
                                 />
@@ -335,7 +413,9 @@ const CreateCheckIn = () => {
                       className={`${inputClass} resize-none`}
                       rows={4}
                       placeholder="Энд дэлгэрэнгүй мэдээлэл оруулна уу..."
-                    ></textarea>
+                      value={details}
+                      onChange={(e) => setDetails(e.target.value)}
+                    />
                   </div>
                 </div>
 
@@ -343,6 +423,8 @@ const CreateCheckIn = () => {
                   <label className="flex items-center cursor-pointer select-none">
                     <input
                       type="checkbox"
+                      checked={isDraft}
+                      onChange={(e) => setIsDraft(e.target.checked)}
                       className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-600">
@@ -356,15 +438,18 @@ const CreateCheckIn = () => {
               <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
                 <button
                   type="button"
+                  onClick={() => navigate("/checkin")}
                   className="px-6 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Цуцлах
                 </button>
                 <button
-                  type="submit"
-                  className="px-8 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-md font-bold text-sm shadow-sm transition-all active:translate-y-0.5"
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={saving}
+                  className="px-8 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-60 text-white rounded-md font-bold text-sm shadow-sm transition-all active:translate-y-0.5"
                 >
-                  Хадгалах
+                  {saving ? "Хадгалагдаж байна..." : "Хадгалах"}
                 </button>
               </div>
             </div>

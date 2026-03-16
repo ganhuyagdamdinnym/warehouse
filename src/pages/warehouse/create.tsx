@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   HiOutlineHashtag,
   HiOutlinePhone,
@@ -7,22 +8,56 @@ import {
   HiOutlinePlusCircle,
 } from "react-icons/hi";
 import { HiOutlineHomeModern, HiOutlineMapPin } from "react-icons/hi2";
+import { createWarehouse } from "../../api/warehouse/warehouse";
+
 const CreateWarehouse = () => {
+  const navigate = useNavigate();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [isActive, setIsActive] = useState(true);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
+      reader.onloadend = () => setLogoPreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  // Styles
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!code.trim() || !name.trim()) {
+      setError("Код болон нэр заавал бөглөнө.");
+      return;
+    }
+    try {
+      setSaving(true);
+      await createWarehouse({
+        code: code.trim(),
+        name: name.trim(),
+        phone: phone.trim() || undefined,
+        email: email.trim() || undefined,
+        address: address.trim() || undefined,
+        is_active: isActive ? 1 : 0,
+      });
+      navigate("/warehouses", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const baseInputClass =
     "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
   const labelClass = "text-sm font-semibold text-gray-700";
@@ -48,10 +83,16 @@ const CreateWarehouse = () => {
         <div className="mt-6">
           <form
             className="bg-white border border-gray-200 md:rounded-md overflow-hidden"
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleSubmit}
           >
             <div className="px-4 py-6 md:p-8 space-y-6 max-w-5xl">
-              {/* Top Row: Code and Name */}
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                  {error}
+                </p>
+              )}
+
+              {/* Код & Нэр */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="relative group">
                   <label className={labelClass}>Код</label>
@@ -63,6 +104,8 @@ const CreateWarehouse = () => {
                       type="text"
                       placeholder="Агуулахын код"
                       className={`${baseInputClass} pl-10`}
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
                     />
                   </div>
                 </div>
@@ -76,12 +119,14 @@ const CreateWarehouse = () => {
                       type="text"
                       placeholder="Агуулахын нэр"
                       className={`${baseInputClass} pl-10`}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Second Row: Phone and Email */}
+              {/* Утас & И-мэйл */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="relative group">
                   <label className={labelClass}>Утас</label>
@@ -93,6 +138,8 @@ const CreateWarehouse = () => {
                       type="text"
                       placeholder="Утасны дугаар"
                       className={`${baseInputClass} pl-10`}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                     />
                   </div>
                 </div>
@@ -106,12 +153,14 @@ const CreateWarehouse = () => {
                       type="email"
                       placeholder="И-мэйл хаяг"
                       className={`${baseInputClass} pl-10`}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* LOGO UPLOAD SECTION */}
+              {/* Лого */}
               <div className="group">
                 <label className={labelClass}>Лого</label>
                 <div className="mt-2 flex items-center gap-5">
@@ -126,7 +175,6 @@ const CreateWarehouse = () => {
                       <HiOutlinePhotograph className="w-8 h-8 text-gray-300" />
                     )}
                   </div>
-
                   <div className="flex flex-col gap-2">
                     <input
                       type="file"
@@ -155,7 +203,7 @@ const CreateWarehouse = () => {
                 </div>
               </div>
 
-              {/* Address Section */}
+              {/* Хаяг */}
               <div className="relative group">
                 <label className={labelClass}>Хаяг</label>
                 <div className="relative mt-1">
@@ -166,20 +214,21 @@ const CreateWarehouse = () => {
                     className={`${baseInputClass} pl-10 resize-none`}
                     rows={3}
                     placeholder="Агуулахын байршил, дэлгэрэнгүй хаяг..."
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
                   ></textarea>
                 </div>
               </div>
 
-              {/* Active Status */}
+              {/* Идэвхтэй төлөв */}
               <div className="flex items-center gap-3 p-3 bg-blue-50/50 rounded-lg w-fit pr-6 border border-blue-100/50">
-                <div className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    id="active"
-                    defaultChecked
-                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer transition-all"
-                  />
-                </div>
+                <input
+                  type="checkbox"
+                  id="active"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer transition-all"
+                />
                 <label
                   htmlFor="active"
                   className="text-sm text-gray-700 font-bold cursor-pointer"
@@ -189,20 +238,22 @@ const CreateWarehouse = () => {
               </div>
             </div>
 
-            {/* Form Actions Footer */}
+            {/* Footer */}
             <div className="px-4 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end md:px-8">
               <div className="flex items-center gap-4">
                 <button
                   type="button"
+                  onClick={() => navigate("/warehouse")}
                   className="text-gray-500 hover:text-gray-700 font-semibold text-sm px-4"
                 >
                   Цуцлах
                 </button>
                 <button
                   type="submit"
-                  className="px-10 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 active:scale-95 transition-all shadow-blue-100 uppercase tracking-wider"
+                  disabled={saving}
+                  className="px-10 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 disabled:opacity-60 active:scale-95 transition-all shadow-blue-100 uppercase tracking-wider"
                 >
-                  Хадгалах
+                  {saving ? "Хадгалж байна..." : "Хадгалах"}
                 </button>
               </div>
             </div>

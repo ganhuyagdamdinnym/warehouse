@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   HiChevronDown,
   HiOutlineCalendar,
@@ -9,30 +10,89 @@ import {
   HiOutlineDocumentText,
   HiOutlineTrash,
 } from "react-icons/hi";
-
 import { HiOutlineHomeModern } from "react-icons/hi2";
 import { Confirmation } from "../../components/confirmation";
+import { getCheckin, updateCheckin, deleteCheckin } from "../../api";
+import type { CheckinItem } from "../../models/types/checkin";
+
+interface LineRow {
+  id: number;
+  name: string;
+  code: string;
+  weight: string;
+  quantity: string;
+}
+
+const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
+const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
+const itemOptions = [
+  "Бүтээгдэхүүн 1 - Агуулах А",
+  "Бүтээгдэхүүн 2 - Агуулах Б",
+  "Бараа 3 - Хадгалах C",
+  "Сэлбэг хэрэгсэл 4",
+  "Цахим төхөөрөмж 5",
+];
 
 const CheckinEdit = () => {
+  const { id } = useParams<{ id: string }>();
+  console.log("id", id);
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
-  const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
-  const items = [
-    "Бүтээгдэхүүн 1 - Агуулах А",
-    "Бүтээгдэхүүн 2 - Агуулах Б",
-    "Бараа 3 - Хадгалах C",
-    "Сэлбэг хэрэгсэл 4",
-    "Цахим төхөөрөмж 5",
-  ];
-  const filteredItems = items.filter((item) =>
+  const [date, setDate] = useState("");
+  const [code, setCode] = useState("");
+  const [contact, setContact] = useState("");
+  const [warehouse, setWarehouse] = useState("");
+  const [details, setDetails] = useState("");
+  const [isDraft, setIsDraft] = useState(true);
+  const [lineItems, setLineItems] = useState<LineRow[]>([]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const filteredItems = itemOptions.filter((item) =>
     item.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await getCheckin(id);
+        if (cancelled) return;
+        setDate(data.date || "");
+        setCode(data.code || "");
+        setContact(data.contact || "");
+        setWarehouse(data.warehouse || "");
+        setDetails(data.details || "");
+        setIsDraft(data.status === "Draft");
+        setLineItems(
+          (data.items || []).map((it, i) => ({
+            id: i + 1,
+            name: it.name,
+            code: it.code,
+            weight: it.weight,
+            quantity: it.quantity,
+          })),
+        );
+      } catch (e) {
+        if (!cancelled)
+          setError(e instanceof Error ? e.message : "Өгөгдөл ачаалахад алдаа.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,14 +107,89 @@ const CheckinEdit = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleDelete = () => {
-    console.log("Устгасан");
-    setShowConfirm(false);
+  const addItem = (itemName: string) => {
+    const newRow: LineRow = {
+      id: Date.now(),
+      name: itemName,
+      code: itemName.slice(0, 20) || "ITEM",
+      weight: "1",
+      quantity: "1",
+    };
+    setLineItems((prev) => [...prev, newRow]);
+    setSearchTerm("");
+    setSelectedValue("");
+    setIsOpen(false);
+  };
+
+  const removeLineItem = (rowId: number) => {
+    setLineItems((prev) => prev.filter((r) => r.id !== rowId));
+  };
+
+  const updateLineItem = (
+    rowId: number,
+    field: keyof LineRow,
+    value: string,
+  ) => {
+    setLineItems((prev) =>
+      prev.map((r) => (r.id === rowId ? { ...r, [field]: value } : r)),
+    );
+  };
+
+  const handleSubmit = async () => {
+    if (!id) return;
+    setError(null);
+    if (!date || !code.trim() || !contact || !warehouse) {
+      setError("Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө.");
+      return;
+    }
+    const itemsForApi: CheckinItem[] = lineItems.map((row) => ({
+      name: row.name,
+      code: row.code,
+      weight: row.weight,
+      quantity: row.quantity,
+    }));
+    try {
+      setSaving(true);
+      await updateCheckin(id, {
+        code: code.trim(),
+        date,
+        status: isDraft ? "Draft" : "Pending",
+        contact,
+        warehouse,
+        user: contact,
+        details: details.trim(),
+        items: itemsForApi,
+      });
+      navigate("/checkin", { replace: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Шинэчлэхэд алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    try {
+      await deleteCheckin(id);
+      setShowConfirm(false);
+      navigate("/checkin", { replace: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Устгахад алдаа гарлаа.");
+    }
   };
 
   const baseInputClass =
     "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
   const labelClass = "text-sm font-semibold text-gray-700";
+
+  if (loading) {
+    return (
+      <div className="md:flex-1 md:px-4 py-8 md:p-8 flex items-center justify-center">
+        <p className="text-gray-500">Уншиж байна...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto bg-gray-50/30">
@@ -68,13 +203,16 @@ const CheckinEdit = () => {
       )}
 
       <div>
-        {/* Header */}
         <div className="px-4 md:px-0 border-b border-gray-100 pb-6">
           <h3 className="text-lg font-bold text-gray-900">
             <div className="flex items-center gap-2">
-              <a href="#" className="text-blue-600 hover:underline">
+              <button
+                type="button"
+                onClick={() => navigate("/checkin")}
+                className="text-blue-600 hover:underline"
+              >
                 Орлого
-              </a>
+              </button>
               <span className="text-gray-400 font-light">/</span>
               <span className="text-gray-500">Засах</span>
             </div>
@@ -87,9 +225,12 @@ const CheckinEdit = () => {
         <div className="mt-6">
           <form onSubmit={(e) => e.preventDefault()}>
             <div className="px-4 py-6 bg-white border border-gray-200 md:p-8 md:rounded-t-md space-y-8">
-              {/* Top Info Grid */}
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                  {error}
+                </p>
+              )}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Side */}
                 <div className="space-y-6">
                   <div className="relative group">
                     <label className={labelClass}>Огноо</label>
@@ -100,10 +241,11 @@ const CheckinEdit = () => {
                       <input
                         type="date"
                         className={`${baseInputClass} pl-10`}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
                       />
                     </div>
                   </div>
-
                   <div className="relative group">
                     <label className={labelClass}>Лавлах дугаар</label>
                     <div className="relative mt-1">
@@ -114,12 +256,12 @@ const CheckinEdit = () => {
                         type="text"
                         placeholder="Дугаар оруулна уу"
                         className={`${baseInputClass} pl-10`}
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
                       />
                     </div>
                   </div>
                 </div>
-
-                {/* Right Side */}
                 <div className="space-y-6">
                   <div className="relative group">
                     <label className={labelClass}>Харилцагч</label>
@@ -129,18 +271,19 @@ const CheckinEdit = () => {
                       </div>
                       <select
                         className={`${baseInputClass} pl-10 appearance-none bg-white cursor-pointer`}
+                        value={contact}
+                        onChange={(e) => setContact(e.target.value)}
                       >
                         <option value="">Харилцагч сонгох</option>
-                        {contacts.map((contact) => (
-                          <option key={contact} value={contact}>
-                            {contact}
+                        {contacts.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
                           </option>
                         ))}
                       </select>
                       <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     </div>
                   </div>
-
                   <div className="relative group">
                     <label className={labelClass}>Агуулах</label>
                     <div className="relative mt-1">
@@ -149,6 +292,8 @@ const CheckinEdit = () => {
                       </div>
                       <select
                         className={`${baseInputClass} pl-10 appearance-none bg-white cursor-pointer`}
+                        value={warehouse}
+                        onChange={(e) => setWarehouse(e.target.value)}
                       >
                         <option value="">Агуулах сонгох</option>
                         {warehouses.map((wh) => (
@@ -163,7 +308,6 @@ const CheckinEdit = () => {
                 </div>
               </div>
 
-              {/* Item Search & Table Section */}
               <div className="pt-6 border-t border-gray-100">
                 <label className={labelClass}>Бараа материалын жагсаалт</label>
                 <div className="mt-3 bg-gray-50/50 p-4 rounded-xl border border-gray-200/60">
@@ -189,21 +333,16 @@ const CheckinEdit = () => {
                         className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
                       />
                     </div>
-
                     {isOpen && (
-                      <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
                         {filteredItems.length > 0 ? (
-                          filteredItems.map((item, index) => (
+                          filteredItems.map((itemName, index) => (
                             <div
                               key={index}
                               className="px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 flex items-center justify-between border-b border-gray-50 last:border-none"
-                              onClick={() => {
-                                setSelectedValue(item);
-                                setSearchTerm(item);
-                                setIsOpen(false);
-                              }}
+                              onClick={() => addItem(itemName)}
                             >
-                              <span>{item}</span>
+                              <span>{itemName}</span>
                               <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded uppercase font-bold text-gray-400">
                                 Сонгох
                               </span>
@@ -217,7 +356,6 @@ const CheckinEdit = () => {
                       </div>
                     )}
                   </div>
-
                   <div className="mt-4 bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
@@ -225,19 +363,70 @@ const CheckinEdit = () => {
                           <th className="px-6 py-4 w-10 text-center">#</th>
                           <th className="px-6 py-4">Барааны мэдээлэл</th>
                           <th className="px-6 py-4 text-center">Тоо ширхэг</th>
-                          <th className="px-6 py-4 text-center">Нэгж</th>
+                          <th className="px-6 py-4 text-center w-24"></th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td
-                            colSpan={5}
-                            className="px-6 py-12 text-center text-gray-400 italic"
-                          >
-                            Жагсаалт хоосон байна. Дээрх хайлтаар бараа нэмнэ
-                            үү.
-                          </td>
-                        </tr>
+                        {lineItems.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="px-6 py-12 text-center text-gray-400 italic"
+                            >
+                              Жагсаалт хоосон байна. Дээрх хайлтаар бараа нэмнэ
+                              үү.
+                            </td>
+                          </tr>
+                        ) : (
+                          lineItems.map((row) => (
+                            <tr
+                              key={row.id}
+                              className="border-b border-gray-100"
+                            >
+                              <td className="px-6 py-3 text-center text-gray-400">
+                                {row.id}
+                              </td>
+                              <td className="px-6 py-3">
+                                <input
+                                  type="text"
+                                  value={row.name}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "name",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <input
+                                  type="text"
+                                  value={row.quantity}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "quantity",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm text-center"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => removeLineItem(row.id)}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                  title="Устгах"
+                                >
+                                  <HiOutlineTrash className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -271,6 +460,8 @@ const CheckinEdit = () => {
                       className={`${baseInputClass} pl-10 resize-none h-full`}
                       rows={4}
                       placeholder="Энд дэлгэрэнгүй мэдээллийг оруулна уу..."
+                      value={details}
+                      onChange={(e) => setDetails(e.target.value)}
                     />
                   </div>
                 </div>
@@ -281,6 +472,8 @@ const CheckinEdit = () => {
                 <input
                   type="checkbox"
                   id="draft"
+                  checked={isDraft}
+                  onChange={(e) => setIsDraft(e.target.checked)}
                   className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded cursor-pointer"
                 />
                 <label
@@ -306,15 +499,18 @@ const CheckinEdit = () => {
               <div className="flex items-center gap-4">
                 <button
                   type="button"
+                  onClick={() => navigate("/checkin")}
                   className="text-gray-500 hover:text-gray-700 font-bold text-sm"
                 >
                   Цуцлах
                 </button>
                 <button
-                  type="submit"
-                  className="px-10 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 active:scale-95 transition-all uppercase tracking-wider shadow-lg shadow-blue-200"
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={saving}
+                  className="px-10 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 disabled:opacity-60 active:scale-95 transition-all uppercase tracking-wider shadow-lg shadow-blue-200"
                 >
-                  Шинэчлэх
+                  {saving ? "Хадгалагдаж байна..." : "Шинэчлэх"}
                 </button>
               </div>
             </div>

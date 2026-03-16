@@ -11,28 +11,8 @@ import {
 } from "react-icons/hi";
 import { AiOutlineFileText } from "react-icons/ai";
 import { CheckInDetails } from "../../components/details/checkInDetails";
-
-const BASE_URL = "http://localhost:3000/api";
-
-interface CheckinData {
-  id: string;
-  code: string;
-  date: string;
-  status: "Draft" | "Completed" | "Pending";
-  contact: string;
-  warehouse: string;
-  user: string;
-  details: string;
-  items: Item[];
-}
-
-type Item = {
-  id: string | number;
-  name: string;
-  code: string;
-  weight: string;
-  quantity: string;
-};
+import { getCheckins, deleteCheckin } from "../../api";
+import type { Checkin } from "../../models/types/checkin";
 
 const statusConfig = {
   Draft: {
@@ -60,22 +40,19 @@ const Checkins: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   // API state
-  const [checkinsList, setCheckinsList] = useState<CheckinData[]>([]);
+  const [checkinsList, setCheckinsList] = useState<Checkin[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Fetch data
   const fetchCheckins = async () => {
     try {
       setLoading(true);
-      const query = new URLSearchParams({
+      const data = await getCheckins({
         search: searchTerm,
         status: statusFilter,
-        page: String(currentPage),
-        limit: String(itemsPerPage),
+        page: currentPage,
+        limit: itemsPerPage,
       });
-      const res = await fetch(`${BASE_URL}/checkins?${query}`);
-      const data = await res.json();
       setCheckinsList(data.data);
       setTotalItems(data.total);
     } catch (err) {
@@ -89,18 +66,17 @@ const Checkins: React.FC = () => {
     fetchCheckins();
   }, [searchTerm, statusFilter, currentPage, itemsPerPage]);
 
-  // Delete
   const handleDelete = async (id: string) => {
     if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
     try {
-      await fetch(`${BASE_URL}/checkins/${id}`, { method: "DELETE" });
+      await deleteCheckin(id);
       fetchCheckins();
     } catch (err) {
       console.error("Устгахад алдаа гарлаа:", err);
     }
   };
 
-  const handleSelectItem = (item: CheckinData) => {
+  const handleSelectItem = (item: Checkin) => {
     setSelectedItem(item);
     setIsOpenDetails(true);
   };

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   HiChevronDown,
   HiOutlineCalendar,
@@ -7,28 +8,94 @@ import {
   HiOutlineSearch,
   HiOutlineCloudUpload,
   HiOutlineDocumentText,
+  HiOutlineTrash,
 } from "react-icons/hi";
 import { HiOutlineHomeModern, HiOutlineArrowUpTray } from "react-icons/hi2";
+import { Confirmation } from "../../components/confirmation";
+import {
+  getCheckout,
+  updateCheckout,
+  deleteCheckout,
+} from "../../api/checkout/checkout_api";
+import type { CheckoutItem } from "../../models/types/checkout";
+
+interface LineRow {
+  id: number;
+  name: string;
+  code: string;
+  weight: string;
+  quantity: string;
+}
+
+const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
+const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
+const itemOptions = [
+  "Бүтээгдэхүүн 1 - Агуулах А",
+  "Бүтээгдэхүүн 2 - Агуулах Б",
+  "Бараа 3 - Хадгалах C",
+  "Сэлбэг хэрэгсэл 4",
+  "Цахим төхөөрөмж 5",
+];
+
 const CheckoutEdit = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
-  const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
-  const items = [
-    "Бүтээгдэхүүн 1 - Агуулах А",
-    "Бүтээгдэхүүн 2 - Агуулах Б",
-    "Бараа 3 - Хадгалах C",
-    "Сэлбэг хэрэгсэл 4",
-    "Цахим төхөөрөмж 5",
-  ];
+  const [date, setDate] = useState("");
+  const [code, setCode] = useState("");
+  const [contact, setContact] = useState("");
+  const [warehouse, setWarehouse] = useState("");
+  const [details, setDetails] = useState("");
+  const [isDraft, setIsDraft] = useState(true);
+  const [lineItems, setLineItems] = useState<LineRow[]>([]);
 
-  const filteredItems = items.filter((item) =>
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const filteredItems = itemOptions.filter((item) =>
     item.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await getCheckout(id);
+        if (cancelled) return;
+        setDate(data.date || "");
+        setCode(data.code || "");
+        setContact(data.contact || "");
+        setWarehouse(data.warehouse || "");
+        setDetails(data.details || "");
+        setIsDraft(data.status === "Draft");
+        setLineItems(
+          (data.items || []).map((it: CheckoutItem, i: number) => ({
+            id: i + 1,
+            name: it.name,
+            code: it.code,
+            weight: it.weight,
+            quantity: it.quantity,
+          })),
+        );
+      } catch (e) {
+        if (!cancelled)
+          setError(e instanceof Error ? e.message : "Өгөгдөл ачаалахад алдаа.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -43,22 +110,114 @@ const CheckoutEdit = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const addItem = (itemName: string) => {
+    const newRow: LineRow = {
+      id: Date.now(),
+      name: itemName,
+      code: itemName.slice(0, 20) || "ITEM",
+      weight: "1",
+      quantity: "1",
+    };
+    setLineItems((prev) => [...prev, newRow]);
+    setSearchTerm("");
+    setSelectedValue("");
+    setIsOpen(false);
+  };
+
+  const removeLineItem = (rowId: number) => {
+    setLineItems((prev) => prev.filter((r) => r.id !== rowId));
+  };
+
+  const updateLineItem = (
+    rowId: number,
+    field: keyof LineRow,
+    value: string,
+  ) => {
+    setLineItems((prev) =>
+      prev.map((r) => (r.id === rowId ? { ...r, [field]: value } : r)),
+    );
+  };
+
+  const handleSubmit = async () => {
+    if (!id) return;
+    setError(null);
+    if (!date || !code.trim() || !contact || !warehouse) {
+      setError("Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө.");
+      return;
+    }
+    const itemsForApi: CheckoutItem[] = lineItems.map((row) => ({
+      name: row.name,
+      code: row.code,
+      weight: row.weight,
+      quantity: row.quantity,
+    }));
+    try {
+      setSaving(true);
+      await updateCheckout(id, {
+        code: code.trim(),
+        date,
+        status: isDraft ? "Draft" : "Pending",
+        contact,
+        warehouse,
+        user: contact,
+        details: details.trim(),
+        items: itemsForApi,
+      });
+      navigate("/checkout", { replace: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Шинэчлэхэд алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    try {
+      await deleteCheckout(id);
+      setShowConfirm(false);
+      navigate("/checkout", { replace: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Устгахад алдаа гарлаа.");
+    }
+  };
+
   const baseInputClass =
     "mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
   const labelClass = "text-sm font-semibold text-gray-700";
 
+  if (loading) {
+    return (
+      <div className="md:flex-1 md:px-4 py-8 md:p-8 flex items-center justify-center">
+        <p className="text-gray-500">Уншиж байна...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto bg-gray-50/30">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => setShowConfirm(false)}
+          onConfirm={handleDelete}
+          title="Зарлагыг устгах уу?"
+          description="Та энэ зарлагыг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+        />
+      )}
+
       <div>
-        {/* Header */}
         <div className="px-4 md:px-0 border-b border-gray-100 pb-6">
           <h3 className="text-lg font-bold text-gray-900">
             <div className="flex items-center gap-2">
-              <a href="#" className="text-blue-600 hover:underline">
+              <button
+                type="button"
+                onClick={() => navigate("/checkout")}
+                className="text-blue-600 hover:underline"
+              >
                 Зарлага
-              </a>
+              </button>
               <span className="text-gray-400 font-light">/</span>
-              <span className="text-gray-500 font-medium">Засах</span>
+              <span className="text-gray-500">Засах</span>
             </div>
           </h3>
           <p className="mt-1 text-sm text-gray-500">
@@ -70,9 +229,14 @@ const CheckoutEdit = () => {
         <div className="mt-6">
           <form onSubmit={(e) => e.preventDefault()}>
             <div className="px-4 py-6 bg-white border border-gray-200 md:p-8 md:rounded-t-xl space-y-8 shadow-sm">
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                  {error}
+                </p>
+              )}
+
               {/* Primary Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Side */}
                 <div className="space-y-6">
                   <div className="relative group">
                     <label className={labelClass}>Огноо</label>
@@ -83,6 +247,8 @@ const CheckoutEdit = () => {
                       <input
                         type="date"
                         className={`${baseInputClass} pl-10`}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
                       />
                     </div>
                   </div>
@@ -97,12 +263,13 @@ const CheckoutEdit = () => {
                         type="text"
                         placeholder="Жишээ: INV-2024-001"
                         className={`${baseInputClass} pl-10`}
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Right Side */}
                 <div className="space-y-6">
                   <div className="relative group">
                     <label className={labelClass}>
@@ -114,11 +281,13 @@ const CheckoutEdit = () => {
                       </div>
                       <select
                         className={`${baseInputClass} pl-10 appearance-none bg-white cursor-pointer`}
+                        value={contact}
+                        onChange={(e) => setContact(e.target.value)}
                       >
                         <option value="">Харилцагч сонгох</option>
-                        {contacts.map((contact) => (
-                          <option key={contact} value={contact}>
-                            {contact}
+                        {contacts.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
                           </option>
                         ))}
                       </select>
@@ -134,6 +303,8 @@ const CheckoutEdit = () => {
                       </div>
                       <select
                         className={`${baseInputClass} pl-10 appearance-none bg-white cursor-pointer`}
+                        value={warehouse}
+                        onChange={(e) => setWarehouse(e.target.value)}
                       >
                         <option value="">Агуулах сонгох</option>
                         {warehouses.map((wh) => (
@@ -176,17 +347,13 @@ const CheckoutEdit = () => {
                     </div>
 
                     {isOpen && (
-                      <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                      <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
                         {filteredItems.length > 0 ? (
                           filteredItems.map((item, index) => (
                             <div
                               key={index}
                               className="px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 flex items-center justify-between border-b border-gray-50 last:border-none transition-colors"
-                              onClick={() => {
-                                setSelectedValue(item);
-                                setSearchTerm(item);
-                                setIsOpen(false);
-                              }}
+                              onClick={() => addItem(item)}
                             >
                               <span>{item}</span>
                               <span className="text-[10px] bg-blue-100 px-2 py-1 rounded text-blue-600 font-bold uppercase">
@@ -215,17 +382,82 @@ const CheckoutEdit = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b border-gray-50 last:border-none">
-                          <td colSpan={5} className="px-6 py-14 text-center">
-                            <div className="flex flex-col items-center gap-2 text-gray-400">
-                              <HiOutlineArrowUpTray className="w-6 h-6 opacity-20" />
-                              <span className="italic">
-                                Зарлага болгох бараагаа дээрх талбараар хайж
-                                нэмнэ үү
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
+                        {lineItems.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-14 text-center">
+                              <div className="flex flex-col items-center gap-2 text-gray-400">
+                                <HiOutlineArrowUpTray className="w-6 h-6 opacity-20" />
+                                <span className="italic">
+                                  Зарлага болгох бараагаа дээрх талбараар хайж
+                                  нэмнэ үү
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          lineItems.map((row) => (
+                            <tr
+                              key={row.id}
+                              className="border-b border-gray-100 last:border-none"
+                            >
+                              <td className="px-6 py-3 text-center text-gray-400">
+                                {row.id}
+                              </td>
+                              <td className="px-6 py-3">
+                                <input
+                                  type="text"
+                                  value={row.name}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "name",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <input
+                                  type="text"
+                                  value={row.weight}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "weight",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm text-center"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <input
+                                  type="text"
+                                  value={row.quantity}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "quantity",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm text-center"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => removeLineItem(row.id)}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                  title="Устгах"
+                                >
+                                  <HiOutlineTrash className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -234,7 +466,6 @@ const CheckoutEdit = () => {
 
               {/* Attachments & Notes */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-                {/* Left Column: File Upload */}
                 <div className="flex flex-col">
                   <label className={labelClass}>Хавсралт файлууд</label>
                   <div className="mt-2 group cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-8 transition-all hover:bg-blue-50/30 hover:border-blue-300 flex flex-col items-center justify-center text-center h-full">
@@ -248,7 +479,6 @@ const CheckoutEdit = () => {
                   </div>
                 </div>
 
-                {/* Right Column: Textarea */}
                 <div className="relative group flex flex-col">
                   <label className={labelClass}>Дэлгэрэнгүй тайлбар</label>
                   <div className="relative mt-1 flex-grow">
@@ -259,6 +489,8 @@ const CheckoutEdit = () => {
                       className={`${baseInputClass} pl-10 resize-none h-full`}
                       rows={4}
                       placeholder="Энд дэлгэрэнгүй мэдээллийг оруулна уу..."
+                      value={details}
+                      onChange={(e) => setDetails(e.target.value)}
                     />
                   </div>
                 </div>
@@ -269,6 +501,8 @@ const CheckoutEdit = () => {
                 <input
                   type="checkbox"
                   id="draft"
+                  checked={isDraft}
+                  onChange={(e) => setIsDraft(e.target.checked)}
                   className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer transition-all"
                 />
                 <label
@@ -284,17 +518,30 @@ const CheckoutEdit = () => {
             <div className="flex items-center justify-between px-4 py-5 bg-gray-50 border-x border-b border-gray-200 md:px-8 md:rounded-b-xl shadow-inner">
               <button
                 type="button"
-                className="text-gray-500 hover:text-red-500 font-bold text-xs uppercase tracking-widest transition-colors"
+                onClick={() => setShowConfirm(true)}
+                className="flex items-center gap-2 text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-widest transition-colors"
               >
-                Өөрчлөлтийг цуцлах
+                <HiOutlineTrash className="w-4 h-4" />
+                Бүртгэлийг устгах
               </button>
 
-              <button
-                type="submit"
-                className="flex items-center gap-2 px-12 py-3 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-blue-600 active:scale-95 transition-all uppercase tracking-[2px] shadow-lg shadow-gray-200"
-              >
-                Хадгалах
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => navigate("/checkout")}
+                  className="text-gray-500 hover:text-gray-700 font-bold text-sm"
+                >
+                  Цуцлах
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-12 py-3 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-blue-600 disabled:opacity-60 active:scale-95 transition-all uppercase tracking-[2px] shadow-lg shadow-gray-200"
+                >
+                  {saving ? "Хадгалагдаж байна..." : "Хадгалах"}
+                </button>
+              </div>
             </div>
           </form>
         </div>

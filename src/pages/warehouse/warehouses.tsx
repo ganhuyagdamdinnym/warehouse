@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HiChevronDown,
@@ -8,93 +8,63 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi";
 import { IoCheckmark } from "react-icons/io5";
-
-interface WarehouseData {
-  id: string;
-  name: string;
-  code: string;
-  phone: string;
-  email: string;
-  address: string;
-  active: boolean;
-  status: "Draft" | "Completed" | "Pending";
-}
-
-const warehousesList: WarehouseData[] = [
-  {
-    id: "4",
-    name: "Агуулах 4",
-    code: "WH4",
-    phone: "+976 99114455",
-    email: "robel.maverick@example.com",
-    address: "Улаанбаатар, Баянзүрх дүүрэг, 14-р хороо",
-    active: true,
-    status: "Completed",
-  },
-  {
-    id: "3",
-    name: "Агуулах 3",
-    code: "WH3",
-    phone: "+976 88112233",
-    email: "enos72@example.net",
-    address: "Улаанбаатар, Хан-Уул дүүрэг, Үйлдвэр комбинат",
-    active: true,
-    status: "Completed",
-  },
-  {
-    id: "2",
-    name: "Агуулах 2",
-    code: "WH2",
-    phone: "+976 95152535",
-    email: "arne83@example.com",
-    address: "Дархан хот, 2-р баг, Үйлдвэрийн бүс",
-    active: true,
-    status: "Completed",
-  },
-  {
-    id: "1",
-    name: "Агуулах 1",
-    code: "WH1",
-    phone: "+976 91910011",
-    email: "rath.waino@example.org",
-    address: "Эрдэнэт хот, Баян-Өндөр сум",
-    active: false,
-    status: "Completed",
-  },
-];
+import { getWarehouses, deleteWarehouse } from "../../api/warehouse/warehouse";
+import type { Warehouse } from "../../models/types/warehouse";
 
 const Warehouses: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [activeFilter, setActiveFilter] = useState<string>("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const handleSelectItem = (item: WarehouseData) => {
-    navigate(`/warehouses/${item.id}/edit`);
+  const [warehousesList, setWarehousesList] = useState<Warehouse[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const fetchWarehouses = async () => {
+    try {
+      setLoading(true);
+      const res = await getWarehouses({
+        search: searchTerm,
+        page: currentPage,
+        limit: itemsPerPage,
+      });
+      // Filter by active status on client side
+      let data = res.data as Warehouse[];
+      if (activeFilter === "Active") {
+        data = data.filter((w) => w.is_active === 1);
+      } else if (activeFilter === "Inactive") {
+        data = data.filter((w) => w.is_active === 0);
+      }
+      setWarehousesList(data);
+      setTotalItems(activeFilter === "All" ? res.total : data.length);
+    } catch (err) {
+      console.error("Өгөгдөл татахад алдаа гарлаа:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredList = warehousesList.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "All"
-        ? true
-        : statusFilter === "Draft"
-          ? item.status === "Draft"
-          : item.status !== "Draft";
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    fetchWarehouses();
+  }, [searchTerm, activeFilter, currentPage, itemsPerPage]);
 
-  const totalItems = filteredList.length;
+  const handleDelete = async (id: string) => {
+    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
+    try {
+      await deleteWarehouse(id);
+      fetchWarehouses();
+    } catch (err) {
+      console.error("Устгахад алдаа гарлаа:", err);
+    }
+  };
+
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
-  const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
-  const displayTo = Math.min(indexOfLastItem, totalItems);
+  const displayFrom =
+    totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const displayTo = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
@@ -130,16 +100,18 @@ const Warehouses: React.FC = () => {
                   </p>
                   {[
                     { value: "All", label: "Бүгд" },
-                    { value: "Draft", label: "Ноорог" },
+                    { value: "Active", label: "Идэвхтэй" },
+                    { value: "Inactive", label: "Идэвхгүй" },
                   ].map((f) => (
                     <button
                       key={f.value}
                       onClick={() => {
-                        setStatusFilter(f.value);
+                        setActiveFilter(f.value);
                         setIsFilterOpen(false);
+                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                        statusFilter === f.value
+                        activeFilter === f.value
                           ? "bg-blue-50 text-blue-600 font-medium"
                           : "text-gray-700 hover:bg-gray-50"
                       }`}
@@ -164,11 +136,12 @@ const Warehouses: React.FC = () => {
                 className="w-full py-2 text-sm border-0 focus:ring-0 outline-none text-gray-700 placeholder-gray-400"
                 placeholder="Хайх (Нэр, и-мэйл)..."
               />
-              {(searchTerm || statusFilter !== "All") && (
+              {(searchTerm || activeFilter !== "All") && (
                 <button
                   onClick={() => {
                     setSearchTerm("");
-                    setStatusFilter("All");
+                    setActiveFilter("All");
+                    setCurrentPage(1);
                   }}
                   className="text-xs text-gray-400 hover:text-gray-600 shrink-0 transition-colors"
                 >
@@ -210,68 +183,16 @@ const Warehouses: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/80">
-              {currentItems.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
-                  onClick={() => handleSelectItem(item)}
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-gray-900 text-sm">
-                      {item.name}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {item.code}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-700">{item.phone}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {item.email}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 max-w-xs">
-                    <p className="text-sm text-gray-500 line-clamp-2 whitespace-normal">
-                      {item.address}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4">
-                    {item.active == true ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
-                        <IoCheckmark className="w-3 h-3" />
-                        Идэвхтэй
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-red-50 text-red-700 ring-1 ring-red-200">
-                        <IoCheckmark className="w-3 h-3" />
-                        Идэвхгүй
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div
-                      className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => navigate(`/warehouses/${item.id}/edit`)}
-                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
-                        title="Засах"
-                      >
-                        <HiOutlinePencilAlt className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
-                        title="Устгах"
-                      >
-                        <HiOutlineTrash className="w-4 h-4" />
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Уншиж байна...
                   </td>
                 </tr>
-              ))}
-
-              {currentItems.length === 0 && (
+              ) : warehousesList.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -280,6 +201,70 @@ const Warehouses: React.FC = () => {
                     Өгөгдөл олдсонгүй
                   </td>
                 </tr>
+              ) : (
+                warehousesList.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
+                    onClick={() => navigate(`/warehouses/${item.id}/edit`)}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-gray-900 text-sm">
+                        {item.name}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {item.code}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-700">{item.phone}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {item.email}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 max-w-xs">
+                      <p className="text-sm text-gray-500 line-clamp-2 whitespace-normal">
+                        {item.address}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4">
+                      {item.is_active === 1 ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                          <IoCheckmark className="w-3 h-3" />
+                          Идэвхтэй
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-red-50 text-red-700 ring-1 ring-red-200">
+                          <IoCheckmark className="w-3 h-3" />
+                          Идэвхгүй
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div
+                        className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() =>
+                            navigate(`/warehouses/${item.id}/edit`)
+                          }
+                          className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
+                          title="Засах"
+                        >
+                          <HiOutlinePencilAlt className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                          title="Устгах"
+                        >
+                          <HiOutlineTrash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -287,55 +272,66 @@ const Warehouses: React.FC = () => {
 
         {/* Mobile Cards */}
         <div className="flex flex-col gap-2 md:hidden">
-          {currentItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleSelectItem(item)}
-              className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="font-semibold text-gray-900 text-sm">
-                    {item.name}
+          {loading ? (
+            <div className="text-center text-sm text-gray-400 py-8">
+              Уншиж байна...
+            </div>
+          ) : (
+            warehousesList.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => navigate(`/warehouses/${item.id}/edit`)}
+                className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="font-semibold text-gray-900 text-sm">
+                      {item.name}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      Код:{" "}
+                      <span className="font-medium text-gray-600">
+                        {item.code}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    Код:{" "}
-                    <span className="font-medium text-gray-600">
-                      {item.code}
+                  {item.is_active === 1 ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                      <IoCheckmark className="w-3 h-3" />
+                      Идэвхтэй
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-red-50 text-red-700 ring-1 ring-red-200">
+                      <IoCheckmark className="w-3 h-3" />
+                      Идэвхгүй
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-16 shrink-0">
+                      Утас
+                    </span>
+                    <span className="text-gray-700">{item.phone}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-16 shrink-0">
+                      И-мэйл
+                    </span>
+                    <span className="text-gray-700 truncate">{item.email}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-16 shrink-0">
+                      Хаяг
+                    </span>
+                    <span className="text-gray-600 text-xs leading-relaxed">
+                      {item.address}
                     </span>
                   </div>
                 </div>
-                {item.active && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
-                    <IoCheckmark className="w-3 h-3" />
-                    Идэвхтэй
-                  </span>
-                )}
               </div>
-              <div className="space-y-1 text-sm">
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Утас
-                  </span>
-                  <span className="text-gray-700">{item.phone}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    И-мэйл
-                  </span>
-                  <span className="text-gray-700 truncate">{item.email}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Хаяг
-                  </span>
-                  <span className="text-gray-600 text-xs leading-relaxed">
-                    {item.address}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Pagination */}

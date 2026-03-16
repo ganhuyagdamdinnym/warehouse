@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HiOutlineSearch,
@@ -11,6 +11,7 @@ import {
 } from "react-icons/hi";
 import { AiOutlineFileText } from "react-icons/ai";
 import { CheckoutDetails } from "../../components/details/checkoutDetails";
+import { getCheckouts, deleteCheckout } from "../../api/checkout/checkout_api";
 
 interface CheckoutData {
   id: string;
@@ -31,35 +32,6 @@ type Item = {
   weight: string;
   quantity: string;
 };
-
-const checkoutsList: CheckoutData[] = [
-  {
-    id: "1",
-    code: "TCI28",
-    date: "2026-02-23",
-    status: "Draft",
-    contact: "Марианна Аптон",
-    warehouse: "Агуулах 3",
-    user: "Дамдинням",
-    details: "Барааны тайлбар хэсэг энд харагдана.",
-    items: [
-      {
-        id: 1,
-        name: "Тест бараа 01",
-        code: "TI01",
-        weight: "10кг",
-        quantity: "5ш",
-      },
-      {
-        id: 2,
-        name: "Тест бараа 02",
-        code: "TI02",
-        weight: "2кг",
-        quantity: "10ш",
-      },
-    ],
-  },
-];
 
 const statusConfig = {
   Draft: {
@@ -86,31 +58,52 @@ const Checkout: React.FC = () => {
   const [isOpenDetails, setIsOpenDetails] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CheckoutData | null>(null);
 
+  // API state
+  const [checkoutsList, setCheckoutsList] = useState<CheckoutData[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const fetchCheckouts = async () => {
+    try {
+      setLoading(true);
+      const res = await getCheckouts({
+        search: searchTerm,
+        status: statusFilter,
+        page: currentPage,
+        limit: itemsPerPage,
+      });
+      setCheckoutsList(res.data as CheckoutData[]);
+      setTotalItems(res.total);
+    } catch (err) {
+      console.error("Өгөгдөл татахад алдаа гарлаа:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCheckouts();
+  }, [searchTerm, statusFilter, currentPage, itemsPerPage]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
+    try {
+      await deleteCheckout(id);
+      fetchCheckouts();
+    } catch (err) {
+      console.error("Устгахад алдаа гарлаа:", err);
+    }
+  };
+
   const handleSelectItem = (item: CheckoutData) => {
     setSelectedItem(item);
     setIsOpenDetails(true);
   };
 
-  const filteredList = checkoutsList.filter((item) => {
-    const matchesSearch =
-      item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.contact.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "All"
-        ? true
-        : statusFilter === "Draft"
-          ? item.status === "Draft"
-          : item.status !== "Draft";
-    return matchesSearch && matchesStatus;
-  });
-
-  const totalItems = filteredList.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
-  const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
-  const displayTo = Math.min(indexOfLastItem, totalItems);
+  const displayFrom =
+    totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const displayTo = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
@@ -232,86 +225,16 @@ const Checkout: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/80">
-              {currentItems.map((item) => (
-                <tr
-                  key={item.id}
-                  onClick={() => handleSelectItem(item)}
-                  className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-blue-600 text-sm">
-                      {item.code}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {item.date}
-                    </div>
-                    <span
-                      className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
-                    >
-                      <AiOutlineFileText className="w-3 h-3" />
-                      {statusConfig[item.status].label}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      {[
-                        { label: "Харилцагч", value: item.contact },
-                        { label: "Агуулах", value: item.warehouse },
-                        { label: "Бүртгэсэн", value: item.user },
-                      ].map(({ label, value }) => (
-                        <div
-                          key={label}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <span className="text-gray-400 text-xs w-20 shrink-0">
-                            {label}
-                          </span>
-                          <span className="text-gray-700">{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 max-w-xs">
-                    <p className="text-sm text-gray-500 line-clamp-2">
-                      {item.details}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div
-                      className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => navigate(`/checkout/${item.id}/edit`)}
-                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
-                        title="Засах"
-                      >
-                        <HiOutlinePencilAlt className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
-                        title="Чат"
-                      >
-                        <HiOutlineChatAlt2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
-                        title="Бүртгэл"
-                      >
-                        <HiOutlineClipboardList className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
-                        title="Устгах"
-                      >
-                        <HiOutlineTrash className="w-4 h-4" />
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Уншиж байна...
                   </td>
                 </tr>
-              ))}
-
-              {currentItems.length === 0 && (
+              ) : checkoutsList.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
@@ -320,6 +243,86 @@ const Checkout: React.FC = () => {
                     Өгөгдөл олдсонгүй
                   </td>
                 </tr>
+              ) : (
+                checkoutsList.map((item) => (
+                  <tr
+                    key={item.id}
+                    onClick={() => handleSelectItem(item)}
+                    className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-blue-600 text-sm">
+                        {item.code}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {item.date}
+                      </div>
+                      <span
+                        className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
+                      >
+                        <AiOutlineFileText className="w-3 h-3" />
+                        {statusConfig[item.status].label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        {[
+                          { label: "Харилцагч", value: item.contact },
+                          { label: "Агуулах", value: item.warehouse },
+                          { label: "Бүртгэсэн", value: item.user },
+                        ].map(({ label, value }) => (
+                          <div
+                            key={label}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <span className="text-gray-400 text-xs w-20 shrink-0">
+                              {label}
+                            </span>
+                            <span className="text-gray-700">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 max-w-xs">
+                      <p className="text-sm text-gray-500 line-clamp-2">
+                        {item.details}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div
+                        className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => navigate(`/checkout/${item.id}/edit`)}
+                          className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
+                          title="Засах"
+                        >
+                          <HiOutlinePencilAlt className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
+                          title="Чат"
+                        >
+                          <HiOutlineChatAlt2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
+                          title="Бүртгэл"
+                        >
+                          <HiOutlineClipboardList className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                          title="Устгах"
+                        >
+                          <HiOutlineTrash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -327,46 +330,56 @@ const Checkout: React.FC = () => {
 
         {/* Mobile Cards */}
         <div className="flex flex-col gap-2 md:hidden">
-          {currentItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleSelectItem(item)}
-              className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="font-semibold text-blue-600 text-sm">
-                    {item.code}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {item.date}
-                  </div>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
-                >
-                  {statusConfig[item.status].label}
-                </span>
-              </div>
-              <div className="space-y-1 text-sm">
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-20">Харилцагч</span>
-                  <span className="text-gray-700">{item.contact}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-20">Агуулах</span>
-                  <span className="text-gray-700">{item.warehouse}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-20">Бүртгэсэн</span>
-                  <span className="text-gray-700">{item.user}</span>
-                </div>
-              </div>
-              <p className="mt-3 text-xs text-gray-400 line-clamp-1">
-                {item.details}
-              </p>
+          {loading ? (
+            <div className="text-center text-sm text-gray-400 py-8">
+              Уншиж байна...
             </div>
-          ))}
+          ) : (
+            checkoutsList.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleSelectItem(item)}
+                className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="font-semibold text-blue-600 text-sm">
+                      {item.code}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {item.date}
+                    </div>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
+                  >
+                    {statusConfig[item.status].label}
+                  </span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-20">
+                      Харилцагч
+                    </span>
+                    <span className="text-gray-700">{item.contact}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-20">Агуулах</span>
+                    <span className="text-gray-700">{item.warehouse}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-20">
+                      Бүртгэсэн
+                    </span>
+                    <span className="text-gray-700">{item.user}</span>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-gray-400 line-clamp-1">
+                  {item.details}
+                </p>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Pagination */}
