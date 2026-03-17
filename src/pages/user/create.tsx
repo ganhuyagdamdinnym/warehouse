@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   HiOutlineUserAdd,
   HiOutlineUser,
@@ -11,11 +12,85 @@ import {
   HiOutlineEye,
   HiOutlineEyeOff,
 } from "react-icons/hi";
+import { createUser } from "../../api/user/user_api";
+import type { UserPermission } from "../../models/types/user";
 
 const CreateUser = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Consistent Styles
+  // Form state
+  const [name, setName] = useState("");
+  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [warehouse, setWarehouse] = useState("");
+  const [superAdmin, setSuperAdmin] = useState(false);
+  const [canView, setCanView] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
+
+  const handleClear = () => {
+    setName("");
+    setUserName("");
+    setEmail("");
+    setPhone("");
+    setPassword("");
+    setConfirmPassword("");
+    setWarehouse("");
+    setSuperAdmin(false);
+    setCanView(false);
+    setCanEdit(false);
+    setError(null);
+  };
+
+  const getPermission = (): UserPermission => {
+    if (canEdit) return "canEdit";
+    if (canView) return "canView";
+    return "nothing";
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!name.trim() || !userName.trim() || !password || !warehouse) {
+      // console.log("test", name, userName, password, warehouse);
+      setError("Нэр, хэрэглэгчийн нэр, нууц үг, агуулах заавал бөглөнө.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Нууц үг таарахгүй байна.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await createUser({
+        name: name.trim(),
+        userName: userName.trim(),
+        password,
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+        warehouse,
+        superAdmin,
+        permission: getPermission(),
+      });
+      navigate("/users", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const baseInputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
   const labelClass = "text-sm font-semibold text-gray-700 ml-0.5";
@@ -38,9 +113,15 @@ const CreateUser = () => {
           </p>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={handleSubmit}>
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <div className="p-6 md:p-8 space-y-8">
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                  {error}
+                </p>
+              )}
+
               {/* Personal & Account Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 {/* Left Column */}
@@ -55,6 +136,8 @@ const CreateUser = () => {
                         type="text"
                         placeholder="Нэр оруулна уу"
                         className={`${baseInputClass} pl-10`}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                       />
                     </div>
                   </div>
@@ -71,6 +154,8 @@ const CreateUser = () => {
                         type="text"
                         placeholder="Username оруулна уу"
                         className={`${baseInputClass} pl-10`}
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
                       />
                     </div>
                   </div>
@@ -85,6 +170,8 @@ const CreateUser = () => {
                         type="email"
                         placeholder="Email оруулна уу"
                         className={`${baseInputClass} pl-10`}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                   </div>
@@ -99,6 +186,8 @@ const CreateUser = () => {
                         type="text"
                         placeholder="Утасны дугаар оруулна уу"
                         className={`${baseInputClass} pl-10`}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                       />
                     </div>
                   </div>
@@ -116,6 +205,8 @@ const CreateUser = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className={`${baseInputClass} pl-10`}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                       <button
                         type="button"
@@ -141,6 +232,8 @@ const CreateUser = () => {
                         type="password"
                         placeholder="••••••••"
                         className={`${baseInputClass} pl-10`}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                       />
                     </div>
                   </div>
@@ -153,10 +246,14 @@ const CreateUser = () => {
                       </div>
                       <select
                         className={`${baseInputClass} pl-10 appearance-none bg-white cursor-pointer`}
+                        value={warehouse}
+                        onChange={(e) => setWarehouse(e.target.value)}
                       >
                         <option value="">Агуулах сонгоно уу</option>
-                        <option value="1">Үндсэн агуулах</option>
-                        <option value="2">Салбар агуулах A</option>
+                        <option value="Үндсэн агуулах">Үндсэн агуулах</option>
+                        <option value="Салбар агуулах A">
+                          Салбар агуулах A
+                        </option>
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                         <svg
@@ -184,6 +281,8 @@ const CreateUser = () => {
                       <input
                         type="checkbox"
                         id="super-admin"
+                        checked={superAdmin}
+                        onChange={(e) => setSuperAdmin(e.target.checked)}
                         className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                       />
                       <label
@@ -199,6 +298,8 @@ const CreateUser = () => {
                         <input
                           type="checkbox"
                           id="view-all"
+                          checked={canView}
+                          onChange={(e) => setCanView(e.target.checked)}
                           className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                         />
                         <label
@@ -212,6 +313,8 @@ const CreateUser = () => {
                         <input
                           type="checkbox"
                           id="edit-all"
+                          checked={canEdit}
+                          onChange={(e) => setCanEdit(e.target.checked)}
                           className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                         />
                         <label
@@ -231,16 +334,18 @@ const CreateUser = () => {
             <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-4">
               <button
                 type="button"
+                onClick={handleClear}
                 className="px-6 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
               >
                 Цэвэрлэх
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-2 px-12 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95"
+                disabled={saving}
+                className="flex items-center gap-2 px-12 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:opacity-60 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95"
               >
                 <HiOutlineSave className="w-4 h-4" />
-                Хадгалах
+                {saving ? "Хадгалж байна..." : "Хадгалах"}
               </button>
             </div>
           </div>
