@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HiOutlineUserAdd,
@@ -13,6 +13,7 @@ import {
   HiOutlineEyeOff,
 } from "react-icons/hi";
 import { createUser } from "../../api/user/user_api";
+import { getWarehouses } from "../../api/warehouse/warehouse_api";
 import type { UserPermission } from "../../models/types/user";
 
 const CreateUser = () => {
@@ -21,6 +22,9 @@ const CreateUser = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
   // Form state
   const [name, setName] = useState("");
   const [userName, setUserName] = useState("");
@@ -90,6 +94,18 @@ const CreateUser = () => {
       setSaving(false);
     }
   };
+
+  useEffect(() => {
+    const fetchWarehouses = async () => {
+      try {
+        const res = await getWarehouses({ limit: 100 });
+        setWarehouseList(res.data);
+      } catch (err) {
+        console.error("Агуулах татахад алдаа:", err);
+      }
+    };
+    fetchWarehouses();
+  }, []);
 
   const baseInputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
@@ -250,10 +266,11 @@ const CreateUser = () => {
                         onChange={(e) => setWarehouse(e.target.value)}
                       >
                         <option value="">Агуулах сонгоно уу</option>
-                        <option value="Үндсэн агуулах">Үндсэн агуулах</option>
-                        <option value="Салбар агуулах A">
-                          Салбар агуулах A
-                        </option>
+                        {warehouseList.map((wh) => (
+                          <option key={wh.id} value={wh.name}>
+                            {wh.name}
+                          </option>
+                        ))}
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                         <svg

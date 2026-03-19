@@ -13,6 +13,9 @@ import {
 import { HiOutlineHomeModern } from "react-icons/hi2";
 import { Confirmation } from "../../components/confirmation";
 import { getCheckin, updateCheckin, deleteCheckin } from "../../api";
+import { getContacts } from "../../api/contact/contact";
+import { getWarehouses } from "../../api/warehouse/warehouse_api";
+import { getItems } from "../../api/item/item";
 import type { CheckinItem } from "../../models/types/checkin";
 
 interface LineRow {
@@ -23,19 +26,8 @@ interface LineRow {
   quantity: string;
 }
 
-const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
-const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
-const itemOptions = [
-  "Бүтээгдэхүүн 1 - Агуулах А",
-  "Бүтээгдэхүүн 2 - Агуулах Б",
-  "Бараа 3 - Хадгалах C",
-  "Сэлбэг хэрэгсэл 4",
-  "Цахим төхөөрөмж 5",
-];
-
 const CheckinEdit = () => {
   const { id } = useParams<{ id: string }>();
-  console.log("id", id);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -53,12 +45,28 @@ const CheckinEdit = () => {
   const [isDraft, setIsDraft] = useState(true);
   const [lineItems, setLineItems] = useState<LineRow[]>([]);
 
+  // Real data from API
+  const [contactList, setContactList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [itemOptions, setItemOptions] = useState<
+    { id: string; name: string; internalCode?: string }[]
+  >([]);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const filteredItems = itemOptions.filter((item) =>
-    item.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredItems = itemOptions.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.internalCode ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
   );
 
+  // Fetch checkin data
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
@@ -94,6 +102,28 @@ const CheckinEdit = () => {
     };
   }, [id]);
 
+  // Fetch contacts, warehouses, items
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [contactRes, warehouseRes, itemRes] = await Promise.all([
+          getContacts({ limit: 100 }),
+          getWarehouses({ limit: 100 }),
+          getItems({ limit: 100 }),
+        ]);
+        setContactList(contactRes.data as { id: string; name: string }[]);
+        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        setItemOptions(
+          itemRes.data as { id: string; name: string; internalCode?: string }[],
+        );
+      } catch (err) {
+        console.error("Өгөгдөл татахад алдаа:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Click outside close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -107,11 +137,15 @@ const CheckinEdit = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const addItem = (itemName: string) => {
+  const addItem = (item: {
+    id: string;
+    name: string;
+    internalCode?: string;
+  }) => {
     const newRow: LineRow = {
       id: Date.now(),
-      name: itemName,
-      code: itemName.slice(0, 20) || "ITEM",
+      name: item.name,
+      code: item.internalCode || item.name.slice(0, 20) || "ITEM",
       weight: "1",
       quantity: "1",
     };
@@ -230,6 +264,7 @@ const CheckinEdit = () => {
                   {error}
                 </p>
               )}
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div className="relative group">
@@ -262,6 +297,7 @@ const CheckinEdit = () => {
                     </div>
                   </div>
                 </div>
+
                 <div className="space-y-6">
                   <div className="relative group">
                     <label className={labelClass}>Харилцагч</label>
@@ -275,9 +311,9 @@ const CheckinEdit = () => {
                         onChange={(e) => setContact(e.target.value)}
                       >
                         <option value="">Харилцагч сонгох</option>
-                        {contacts.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
+                        {contactList.map((c) => (
+                          <option key={c.id} value={c.name}>
+                            {c.name}
                           </option>
                         ))}
                       </select>
@@ -296,9 +332,9 @@ const CheckinEdit = () => {
                         onChange={(e) => setWarehouse(e.target.value)}
                       >
                         <option value="">Агуулах сонгох</option>
-                        {warehouses.map((wh) => (
-                          <option key={wh} value={wh}>
-                            {wh}
+                        {warehouseList.map((wh) => (
+                          <option key={wh.id} value={wh.name}>
+                            {wh.name}
                           </option>
                         ))}
                       </select>
@@ -308,6 +344,7 @@ const CheckinEdit = () => {
                 </div>
               </div>
 
+              {/* Items Section */}
               <div className="pt-6 border-t border-gray-100">
                 <label className={labelClass}>Бараа материалын жагсаалт</label>
                 <div className="mt-3 bg-gray-50/50 p-4 rounded-xl border border-gray-200/60">
@@ -336,16 +373,18 @@ const CheckinEdit = () => {
                     {isOpen && (
                       <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
                         {filteredItems.length > 0 ? (
-                          filteredItems.map((itemName, index) => (
+                          filteredItems.map((item) => (
                             <div
-                              key={index}
+                              key={item.id}
                               className="px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 flex items-center justify-between border-b border-gray-50 last:border-none"
-                              onClick={() => addItem(itemName)}
+                              onClick={() => addItem(item)}
                             >
-                              <span>{itemName}</span>
-                              <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded uppercase font-bold text-gray-400">
-                                Сонгох
-                              </span>
+                              <span>{item.name}</span>
+                              {item.internalCode && (
+                                <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded uppercase font-bold text-gray-400">
+                                  {item.internalCode}
+                                </span>
+                              )}
                             </div>
                           ))
                         ) : (
@@ -356,6 +395,7 @@ const CheckinEdit = () => {
                       </div>
                     )}
                   </div>
+
                   <div className="mt-4 bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
@@ -435,7 +475,6 @@ const CheckinEdit = () => {
 
               {/* Attachments & Details */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-                {/* Left Column: File Upload */}
                 <div className="flex flex-col">
                   <label className={labelClass}>Хавсралт файлууд</label>
                   <div className="mt-2 group cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-8 transition-all hover:bg-blue-50/30 hover:border-blue-300 flex flex-col items-center justify-center text-center h-full">
@@ -449,7 +488,6 @@ const CheckinEdit = () => {
                   </div>
                 </div>
 
-                {/* Right Column: Textarea */}
                 <div className="relative group flex flex-col">
                   <label className={labelClass}>Дэлгэрэнгүй тайлбар</label>
                   <div className="relative mt-1 flex-grow">

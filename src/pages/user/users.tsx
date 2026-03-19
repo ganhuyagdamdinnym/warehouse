@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HiChevronDown,
@@ -7,45 +7,14 @@ import {
   HiOutlinePencilAlt,
   HiOutlineTrash,
 } from "react-icons/hi";
+import { getUsers, deleteUser } from "../../api/user/user_api";
+import type { User } from "../../models/types/user";
 
-interface UserData {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: string;
-}
-
-const usersList: UserData[] = [
-  {
-    id: "1",
-    name: "Ибрахим Уотерс",
-    email: "enola47@example.org",
-    phone: "(567) 288-6529",
-    role: "Super Admin",
-  },
-  {
-    id: "2",
-    name: "Эуна Виман",
-    email: "hhermiston@example.net",
-    phone: "+1-484-894-9068",
-    role: "Admin",
-  },
-  {
-    id: "3",
-    name: "Роза Миллер",
-    email: "roslyn.jacobson@example.org",
-    phone: "1-931-900-1350",
-    role: "User",
-  },
-  {
-    id: "4",
-    name: "Андреан Хөгэр",
-    email: "admin@tecdiary.com",
-    phone: "+1-234-567-890",
-    role: "Super Admin",
-  },
-];
+const getRoleLabel = (user: User): string => {
+  if (user.superAdmin) return "Super Admin";
+  if (user.permission === "canEdit") return "Admin";
+  return "User";
+};
 
 const roleConfig: Record<string, string> = {
   "Super Admin": "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
@@ -61,25 +30,51 @@ const Users: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const handleSelectItem = (item: UserData) => {
-    navigate(`/users/${item.id}/edit`);
+  const [usersList, setUsersList] = useState<User[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await getUsers({
+        search: searchTerm,
+        role:
+          roleFilter === "Super Admin"
+            ? "SuperAdmin"
+            : roleFilter === "User" || roleFilter === "Admin"
+              ? "User"
+              : "All",
+        page: currentPage,
+        limit: itemsPerPage,
+      });
+      setUsersList(res.data as User[]);
+      setTotalItems(res.total);
+    } catch (err) {
+      console.error("Өгөгдөл татахад алдаа гарлаа:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredList = usersList.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === "All" ? true : item.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
+  useEffect(() => {
+    fetchUsers();
+  }, [searchTerm, roleFilter, currentPage, itemsPerPage]);
 
-  const totalItems = filteredList.length;
+  const handleDelete = async (id: string) => {
+    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
+    try {
+      await deleteUser(id);
+      fetchUsers();
+    } catch (err) {
+      console.error("Устгахад алдаа гарлаа:", err);
+    }
+  };
+
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
-  const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
-  const displayTo = Math.min(indexOfLastItem, totalItems);
+  const displayFrom =
+    totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const displayTo = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
@@ -124,6 +119,7 @@ const Users: React.FC = () => {
                       onClick={() => {
                         setRoleFilter(role.val);
                         setIsFilterOpen(false);
+                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                         roleFilter === role.val
@@ -156,6 +152,7 @@ const Users: React.FC = () => {
                   onClick={() => {
                     setSearchTerm("");
                     setRoleFilter("All");
+                    setCurrentPage(1);
                   }}
                   className="text-xs text-gray-400 hover:text-gray-600 shrink-0 transition-colors"
                 >
@@ -197,54 +194,16 @@ const Users: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/80">
-              {currentItems.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
-                  onClick={() => handleSelectItem(user)}
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-gray-900 text-sm">
-                      {user.name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{user.email}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{user.phone}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${roleConfig[user.role] ?? roleConfig["User"]}`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div
-                      className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => navigate(`/users/${user.id}/edit`)}
-                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
-                        title="Засах"
-                      >
-                        <HiOutlinePencilAlt className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
-                        title="Устгах"
-                      >
-                        <HiOutlineTrash className="w-4 h-4" />
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Уншиж байна...
                   </td>
                 </tr>
-              ))}
-
-              {currentItems.length === 0 && (
+              ) : usersList.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -253,6 +212,61 @@ const Users: React.FC = () => {
                     Өгөгдөл олдсонгүй
                   </td>
                 </tr>
+              ) : (
+                usersList.map((user) => {
+                  const role = getRoleLabel(user);
+                  return (
+                    <tr
+                      key={user.id}
+                      className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
+                      onClick={() => navigate(`/users/${user.id}/edit`)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-gray-900 text-sm">
+                          {user.name}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600">
+                          {user.email}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600">
+                          {user.phone}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${roleConfig[role] ?? roleConfig["User"]}`}
+                        >
+                          {role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div
+                          className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => navigate(`/users/${user.id}/edit`)}
+                            className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
+                            title="Засах"
+                          >
+                            <HiOutlinePencilAlt className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                            title="Устгах"
+                          >
+                            <HiOutlineTrash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -260,35 +274,44 @@ const Users: React.FC = () => {
 
         {/* Mobile Cards */}
         <div className="flex flex-col gap-2 md:hidden">
-          {currentItems.map((user) => (
-            <div
-              key={user.id}
-              onClick={() => handleSelectItem(user)}
-              className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <div className="font-semibold text-gray-900 text-sm">
-                    {user.name}
+          {loading ? (
+            <div className="text-center text-sm text-gray-400 py-8">
+              Уншиж байна...
+            </div>
+          ) : (
+            usersList.map((user) => {
+              const role = getRoleLabel(user);
+              return (
+                <div
+                  key={user.id}
+                  onClick={() => navigate(`/users/${user.id}/edit`)}
+                  className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">
+                        {user.name}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {user.email}
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${roleConfig[role] ?? roleConfig["User"]}`}
+                    >
+                      {role}
+                    </span>
                   </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {user.email}
+                  <div className="flex gap-2 text-sm mt-2">
+                    <span className="text-gray-400 text-xs w-16 shrink-0">
+                      Утас
+                    </span>
+                    <span className="text-gray-700">{user.phone}</span>
                   </div>
                 </div>
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${roleConfig[user.role] ?? roleConfig["User"]}`}
-                >
-                  {user.role}
-                </span>
-              </div>
-              <div className="flex gap-2 text-sm mt-2">
-                <span className="text-gray-400 text-xs w-16 shrink-0">
-                  Утас
-                </span>
-                <span className="text-gray-700">{user.phone}</span>
-              </div>
-            </div>
-          ))}
+              );
+            })
+          )}
         </div>
 
         {/* Pagination */}

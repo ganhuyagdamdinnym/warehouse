@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   HiOutlineCube,
   HiOutlinePhotograph,
@@ -10,20 +11,123 @@ import {
   HiOutlineSave,
 } from "react-icons/hi";
 import { Confirmation } from "../../components/confirmation";
+import { getItem, updateItem, deleteItem } from "../../api/item/item";
 
 const EditItem = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDelete = () => {
-    console.log("Устгасан");
-    setShowConfirm(false);
+  // Form state
+  const [name, setName] = useState("");
+  const [internalCode, setInternalCode] = useState("");
+  const [barcodeType, setBarcodeType] = useState("CODE128");
+  const [sku, setSku] = useState("");
+  const [category, setCategory] = useState("");
+  const [unit, setUnit] = useState("pcs");
+  const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
+  const [trackStock, setTrackStock] = useState(false);
+  const [stockAlert, setStockAlert] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await getItem(id);
+        if (cancelled) return;
+        setName(data.name || "");
+        setInternalCode(data.internalCode || "");
+        setBarcodeType(data.barcodeType || "CODE128");
+        setSku(data.sku || "");
+        setCategory(data.category || "");
+        setUnit(data.unit || "pcs");
+        setLocation(data.location || "");
+        setDescription(data.description || "");
+        setTrackStock(data.trackStock ?? false);
+        setStockAlert(data.stockAlert ? String(data.stockAlert) : "");
+        setImagePreview(data.image || null);
+      } catch (e) {
+        if (!cancelled)
+          setError(e instanceof Error ? e.message : "Өгөгдөл ачаалахад алдаа.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
-  // Styles (Matching CreateItem)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+    setError(null);
+    if (!name.trim()) {
+      setError("Барааны нэр заавал бөглөнө.");
+      return;
+    }
+    try {
+      setSaving(true);
+      await updateItem(id, {
+        name: name.trim(),
+        internalCode: internalCode.trim() || undefined,
+        barcodeType,
+        sku: sku.trim() || undefined,
+        category: category || undefined,
+        unit,
+        location: location.trim() || undefined,
+        description: description.trim() || undefined,
+        image: imagePreview || undefined,
+        trackStock,
+        stockAlert: stockAlert ? Number(stockAlert) : undefined,
+      });
+      navigate("/items", { replace: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Шинэчлэхэд алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    try {
+      await deleteItem(id);
+      setShowConfirm(false);
+      navigate("/items", { replace: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Устгахад алдаа гарлаа.");
+    }
+  };
+
   const baseInputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
   const labelClass = "text-sm font-semibold text-gray-700 ml-0.5";
+
+  if (loading) {
+    return (
+      <div className="md:flex-1 md:px-6 py-8 md:p-10 bg-gray-50 min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Уншиж байна...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="md:flex-1 md:px-6 py-8 md:p-10 bg-gray-50 min-h-screen">
@@ -58,9 +162,15 @@ const EditItem = () => {
           </button>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={handleSubmit}>
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <div className="p-6 md:p-8 space-y-8">
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                  {error}
+                </p>
+              )}
+
               {/* Primary Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Side */}
@@ -68,9 +178,10 @@ const EditItem = () => {
                   <div>
                     <label className={labelClass}>Барааны нэр</label>
                     <input
-                      defaultValue="Моторны тос 5W-30"
                       type="text"
                       className={baseInputClass}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                     />
                   </div>
 
@@ -81,9 +192,10 @@ const EditItem = () => {
                         <HiOutlineHashtag className="w-4 h-4" />
                       </div>
                       <input
-                        defaultValue="ITEM-0001"
                         type="text"
                         className={`${baseInputClass} pl-10`}
+                        value={internalCode}
+                        onChange={(e) => setInternalCode(e.target.value)}
                       />
                     </div>
                   </div>
@@ -92,7 +204,11 @@ const EditItem = () => {
                     <label className={labelClass}>
                       Баркодны төрөл (Symbology)
                     </label>
-                    <select className={baseInputClass} defaultValue="CODE128">
+                    <select
+                      className={baseInputClass}
+                      value={barcodeType}
+                      onChange={(e) => setBarcodeType(e.target.value)}
+                    >
                       <option value="CODE128">CODE128</option>
                       <option value="EAN13">EAN13</option>
                       <option value="UPC">UPC</option>
@@ -103,9 +219,10 @@ const EditItem = () => {
                   <div>
                     <label className={labelClass}>SKU (Нэгж бүрийн код)</label>
                     <input
-                      defaultValue="SKU-2024-001"
                       type="text"
                       className={baseInputClass}
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
                     />
                   </div>
                 </div>
@@ -120,8 +237,10 @@ const EditItem = () => {
                       </div>
                       <select
                         className={`${baseInputClass} pl-10`}
-                        defaultValue="fluids"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
                       >
+                        <option value="">Ангилал сонгох</option>
                         <option value="parts">Сэлбэг хэрэгсэл</option>
                         <option value="fluids">Шингэн зүйлс</option>
                         <option value="electronics">Цахим төхөөрөмж</option>
@@ -131,10 +250,15 @@ const EditItem = () => {
 
                   <div>
                     <label className={labelClass}>Хэмжих нэгж</label>
-                    <select className={baseInputClass} defaultValue="liter">
+                    <select
+                      className={baseInputClass}
+                      value={unit}
+                      onChange={(e) => setUnit(e.target.value)}
+                    >
                       <option value="pcs">Ширхэг (pcs)</option>
                       <option value="kg">Киллограмм (kg)</option>
                       <option value="liter">Литр (l)</option>
+                      <option value="meter">Метр (m)</option>
                     </select>
                   </div>
 
@@ -145,9 +269,10 @@ const EditItem = () => {
                         <HiOutlineLocationMarker className="w-4 h-4" />
                       </div>
                       <input
-                        defaultValue="A-12-03"
                         type="text"
                         className={`${baseInputClass} pl-10`}
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
                       />
                     </div>
                   </div>
@@ -158,19 +283,37 @@ const EditItem = () => {
                       onClick={() => fileInputRef.current?.click()}
                       className="mt-1.5 flex items-center justify-center border-2 border-dashed border-gray-200 bg-gray-50 rounded-md p-2 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group"
                     >
-                      <div className="flex items-center gap-2 py-0.5">
-                        <HiOutlinePhotograph className="w-5 h-5 text-gray-400 group-hover:text-blue-600" />
-                        <span className="text-xs text-gray-500 font-medium">
-                          Зургийг шинэчлэх
-                        </span>
-                      </div>
+                      {imagePreview ? (
+                        <img
+                          src={imagePreview}
+                          alt="preview"
+                          className="h-16 object-contain rounded"
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2 py-0.5">
+                          <HiOutlinePhotograph className="w-5 h-5 text-gray-400 group-hover:text-blue-600" />
+                          <span className="text-xs text-gray-500 font-medium">
+                            Зургийг шинэчлэх
+                          </span>
+                        </div>
+                      )}
                       <input
                         type="file"
                         ref={fileInputRef}
                         className="hidden"
                         accept="image/*"
+                        onChange={handleFileChange}
                       />
                     </div>
+                    {imagePreview && (
+                      <button
+                        type="button"
+                        onClick={() => setImagePreview(null)}
+                        className="mt-1 text-xs text-red-500 hover:underline"
+                      >
+                        Зураг устгах
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -181,7 +324,8 @@ const EditItem = () => {
                 <textarea
                   className={`${baseInputClass} resize-none`}
                   rows={4}
-                  defaultValue="Энэхүү тос нь өвлийн улиралд хөдөлгүүрийг найдвартай хамгаална."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                 ></textarea>
               </div>
 
@@ -190,22 +334,13 @@ const EditItem = () => {
                 <h4 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">
                   Бараа материалын хяналт
                 </h4>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <label className="flex items-center cursor-pointer group">
                       <input
                         type="checkbox"
-                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer"
-                      />
-                      <span className="ml-2 text-sm text-gray-700 group-hover:text-gray-900">
-                        Жингээр хянах
-                      </span>
-                    </label>
-                    <label className="flex items-center cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        defaultChecked
+                        checked={trackStock}
+                        onChange={(e) => setTrackStock(e.target.checked)}
                         className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer"
                       />
                       <span className="ml-2 text-sm text-gray-700 group-hover:text-gray-900">
@@ -223,9 +358,10 @@ const EditItem = () => {
                         <HiOutlineBell className="w-4 h-4" />
                       </div>
                       <input
-                        defaultValue={10}
                         type="number"
                         className={`${baseInputClass} pl-10 border-blue-200`}
+                        value={stockAlert}
+                        onChange={(e) => setStockAlert(e.target.value)}
                       />
                     </div>
                   </div>
@@ -237,16 +373,18 @@ const EditItem = () => {
             <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-4">
               <button
                 type="button"
+                onClick={() => navigate("/items")}
                 className="px-6 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
               >
                 Буцах
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-2 px-10 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95"
+                disabled={saving}
+                className="flex items-center gap-2 px-10 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:opacity-60 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95"
               >
                 <HiOutlineSave className="w-4 h-4" />
-                Өөрчлөлтийг хадгалах
+                {saving ? "Хадгалж байна..." : "Өөрчлөлтийг хадгалах"}
               </button>
             </div>
           </div>

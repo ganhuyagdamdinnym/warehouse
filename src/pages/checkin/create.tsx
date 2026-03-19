@@ -8,6 +8,9 @@ import {
   HiOutlineSearch,
 } from "react-icons/hi";
 import { createCheckin } from "../../api";
+import { getContacts } from "../../api/contact/contact";
+import { getWarehouses } from "../../api/warehouse/warehouse_api";
+import { getItems } from "../../api/item/item";
 import type { CheckinItem } from "../../models/types/checkin";
 
 interface SelectedItem {
@@ -18,15 +21,6 @@ interface SelectedItem {
   quantity: string;
   unit: string;
 }
-
-const contacts = ["Марианна Аптон", "Дон Дое", "Алис Смит", "Боб Браун"];
-const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Төв агуулах"];
-const itemOptions = [
-  "Бүтээгдэхүүн 1 - Агуулах A",
-  "Бүтээгдэхүүн 2 - Агуулах B",
-  "Бараа 3 - Хадгалах C",
-  "Сэлбэг хэрэгсэл 4",
-];
 
 const CreateCheckIn = () => {
   const navigate = useNavigate();
@@ -46,13 +40,42 @@ const CreateCheckIn = () => {
   const [details, setDetails] = useState("");
   const [isDraft, setIsDraft] = useState(true);
 
+  // Real data from API
+  const [contactList, setContactList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [itemOptions, setItemOptions] = useState<
+    { id: string; name: string; internalCode?: string }[]
+  >([]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredItems = itemOptions.filter((item) =>
-    item.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // Fetch contacts, warehouses, items
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [contactRes, warehouseRes, itemRes] = await Promise.all([
+          getContacts({ limit: 100 }),
+          getWarehouses({ limit: 100 }),
+          getItems({ limit: 100 }),
+        ]);
+        setContactList(contactRes.data as { id: string; name: string }[]);
+        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        setItemOptions(
+          itemRes.data as { id: string; name: string; internalCode?: string }[],
+        );
+      } catch (err) {
+        console.error("Өгөгдөл татахад алдаа:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
+  // Click outside close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -66,11 +89,23 @@ const CreateCheckIn = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectItem = (itemName: string) => {
+  const filteredItems = itemOptions.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.internalCode ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
+  );
+
+  const handleSelectItem = (item: {
+    id: string;
+    name: string;
+    internalCode?: string;
+  }) => {
     const newItem: SelectedItem = {
       id: Date.now(),
-      name: itemName,
-      code: itemName.slice(0, 20) || "ITEM",
+      name: item.name,
+      code: item.internalCode || item.name.slice(0, 20) || "ITEM",
       weight: "1",
       quantity: "1",
       unit: "Хайрцаг",
@@ -151,12 +186,13 @@ const CreateCheckIn = () => {
           <form onSubmit={(e) => e.preventDefault()}>
             <div className="bg-white shadow-sm border border-gray-200 rounded-t-lg overflow-hidden">
               <div className="p-6 md:p-8 space-y-8">
-                {/* Top Fields */}
                 {error && (
                   <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
                     {error}
                   </p>
                 )}
+
+                {/* Top Fields */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
                   <div className="space-y-6">
                     <div>
@@ -194,9 +230,9 @@ const CreateCheckIn = () => {
                         onChange={(e) => setContact(e.target.value)}
                       >
                         <option value="">Харилцагч сонгох</option>
-                        {contacts.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
+                        {contactList.map((c) => (
+                          <option key={c.id} value={c.name}>
+                            {c.name}
                           </option>
                         ))}
                       </select>
@@ -211,9 +247,9 @@ const CreateCheckIn = () => {
                         onChange={(e) => setWarehouse(e.target.value)}
                       >
                         <option value="">Агуулах сонгох</option>
-                        {warehouses.map((wh) => (
-                          <option key={wh} value={wh}>
-                            {wh}
+                        {warehouseList.map((wh) => (
+                          <option key={wh.id} value={wh.name}>
+                            {wh.name}
                           </option>
                         ))}
                       </select>
@@ -248,13 +284,18 @@ const CreateCheckIn = () => {
                     {isOpen && (
                       <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
                         {filteredItems.length > 0 ? (
-                          filteredItems.map((item, index) => (
+                          filteredItems.map((item) => (
                             <div
-                              key={index}
+                              key={item.id}
                               className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors"
                               onClick={() => handleSelectItem(item)}
                             >
-                              {item}
+                              <span className="font-medium">{item.name}</span>
+                              {item.internalCode && (
+                                <span className="ml-2 text-xs text-gray-400">
+                                  {item.internalCode}
+                                </span>
+                              )}
                             </div>
                           ))
                         ) : (
@@ -382,7 +423,6 @@ const CreateCheckIn = () => {
                         className="hidden"
                       />
                     </div>
-
                     <div className="mt-3 flex flex-wrap gap-2">
                       {uploadedFiles.map((file, idx) => (
                         <div

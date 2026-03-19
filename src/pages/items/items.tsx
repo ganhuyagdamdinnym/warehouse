@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HiOutlineSearch,
@@ -11,25 +11,28 @@ import {
   HiX,
   HiOutlineChatAlt2,
 } from "react-icons/hi";
-import { AiOutlineFileText } from "react-icons/ai";
+
 import { ItemDetails } from "../../components/details/itemDetails";
+import { getItems, deleteItem } from "../../api/item/item";
 
 export interface ItemDetailData {
   id: string;
   name: string;
   code: string;
+  internalCode?: string;
   symbology?: string;
   sku?: string;
   rack?: string;
-  status?: "Ноорог" | "Дууссан" | "Хүлээгдэж буй";
+  category: string;
+  unit: string;
+  stock?: string;
+  description?: string;
+  trackStock?: boolean;
+  stockAlert?: number;
   trackSerials: boolean;
   trackWeight: boolean;
   trackQuantity: boolean;
   alertOn?: string;
-  category: string;
-  unit: string;
-  stock?: string;
-  details?: string;
   variants?: { label: string; values: string }[];
   warehouseStocks?: {
     id: string;
@@ -40,80 +43,6 @@ export interface ItemDetailData {
   }[];
 }
 
-const itemsList: ItemDetailData[] = [
-  {
-    id: "1",
-    name: "Туршилтын бараа 50",
-    code: "TI50",
-    symbology: "CODE128",
-    sku: "",
-    rack: "",
-    status: "Ноорог",
-    category: "Ангилал 4",
-    unit: "Ширхэг",
-    stock: "-18.00",
-    trackSerials: false,
-    trackWeight: true,
-    trackQuantity: true,
-    alertOn: "15.00",
-    variants: [
-      { label: "Өнгө", values: "Улаан, Ногоон" },
-      { label: "Хэмжээ", values: "S, M, L" },
-    ],
-    details: "Sit qui facere exercitationem quam nulla qui.",
-    warehouseStocks: [
-      {
-        id: "wh1",
-        name: "Агуулах 1",
-        code: "WH1",
-        totalQuantity: "-6.00 ш (-6.00 кг)",
-        variantStocks: [
-          { label: "Хэмжээ: S, Өнгө: Улаан", quantity: "0.00 ш (0.00 кг)" },
-          { label: "Хэмжээ: M, Өнгө: Улаан", quantity: "-10.00 ш (-10.00 кг)" },
-          { label: "Хэмжээ: L, Өнгө: Улаан", quantity: "0.00 ш (0.00 кг)" },
-          { label: "Хэмжээ: S, Өнгө: Ногоон", quantity: "0.00 ш (0.00 кг)" },
-          { label: "Хэмжээ: M, Өнгө: Ногоон", quantity: "0.00 ш (0.00 кг)" },
-          { label: "Хэмжээ: L, Өнгө: Ногоон", quantity: "4.00 ш (4.00 кг)" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Туршилтын бараа 49",
-    code: "TI49",
-    symbology: "CODE128",
-    sku: "SKU49",
-    rack: "A2",
-    status: "Дууссан",
-    category: "Ангилал 12",
-    unit: "Ширхэг",
-    stock: "7.00",
-    trackSerials: false,
-    trackWeight: false,
-    trackQuantity: true,
-    alertOn: "15.00",
-    variants: [
-      { label: "Өнгө", values: "Улаан, Ногоон" },
-      { label: "Хэмжээ", values: "S, M, L" },
-    ],
-    details: "Энэ бол туршилтын бараа 49-ийн дэлгэрэнгүй тайлбар.",
-    warehouseStocks: [
-      {
-        id: "wh1",
-        name: "Агуулах 1",
-        code: "WH1",
-        totalQuantity: "7.00 ш (7.00 кг)",
-        variantStocks: [
-          { label: "Хэмжээ: S, Өнгө: Улаан", quantity: "2.00 ш (2.00 кг)" },
-          { label: "Хэмжээ: M, Өнгө: Улаан", quantity: "3.00 ш (3.00 кг)" },
-          { label: "Хэмжээ: L, Өнгө: Улаан", quantity: "2.00 ш (2.00 кг)" },
-        ],
-      },
-    ],
-  },
-];
-
 const statusConfig = {
   Ноорог: { class: "bg-amber-50 text-amber-700 ring-1 ring-amber-200" },
   Дууссан: { class: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" },
@@ -123,30 +52,58 @@ const statusConfig = {
 const Items: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isOpenDetails, setIsOpenDetails] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ItemDetailData | null>(null);
 
+  const [itemsList, setItemsList] = useState<ItemDetailData[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      const res = await getItems({
+        search: searchTerm,
+        category: categoryFilter,
+        page: currentPage,
+        limit: itemsPerPage,
+      });
+      setItemsList(res.data as ItemDetailData[]);
+      setTotalItems(res.total);
+    } catch (err) {
+      console.error("Өгөгдөл татахад алдаа гарлаа:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, [searchTerm, categoryFilter, currentPage, itemsPerPage]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
+    try {
+      await deleteItem(id);
+      fetchItems();
+    } catch (err) {
+      console.error("Устгахад алдаа гарлаа:", err);
+    }
+  };
+
   const handleSelectItem = (item: ItemDetailData) => {
     setSelectedItem(item);
     setIsOpenDetails(true);
   };
 
-  const filteredList = itemsList.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.code.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  const totalItems = filteredList.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
-  const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
-  const displayTo = Math.min(indexOfLastItem, totalItems);
+  const displayFrom =
+    totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const displayTo = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
@@ -184,15 +141,28 @@ const Items: React.FC = () => {
               {isFilterOpen && (
                 <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-300 rounded-xl z-10 p-1.5">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1.5 uppercase tracking-wider">
-                    Шүүлтүүр
+                    Ангилал
                   </p>
-                  {["Бүгд", "Ноорог", "Дууссан"].map((f) => (
+                  {[
+                    { val: "", lab: "Бүгд" },
+                    { val: "parts", lab: "Сэлбэг хэрэгсэл" },
+                    { val: "fluids", lab: "Шингэн зүйлс" },
+                    { val: "electronics", lab: "Цахим төхөөрөмж" },
+                  ].map((f) => (
                     <button
-                      key={f}
-                      onClick={() => setIsFilterOpen(false)}
-                      className="w-full text-left px-3 py-2 text-sm rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                      key={f.val}
+                      onClick={() => {
+                        setCategoryFilter(f.val);
+                        setIsFilterOpen(false);
+                        setCurrentPage(1);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                        categoryFilter === f.val
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
                     >
-                      {f}
+                      {f.lab}
                     </button>
                   ))}
                 </div>
@@ -211,9 +181,13 @@ const Items: React.FC = () => {
                 className="w-full py-2 text-sm border-0 focus:ring-0 outline-none text-gray-700 placeholder-gray-400"
                 placeholder="Хайх..."
               />
-              {searchTerm && (
+              {(searchTerm || categoryFilter) && (
                 <button
-                  onClick={() => setSearchTerm("")}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setCategoryFilter("");
+                    setCurrentPage(1);
+                  }}
                   className="text-xs text-gray-400 hover:text-gray-600 shrink-0 transition-colors"
                 >
                   Цэвэрлэх
@@ -254,128 +228,16 @@ const Items: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/80">
-              {currentItems.map((item) => (
-                <tr
-                  key={item.id}
-                  onClick={() => handleSelectItem(item)}
-                  className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-gray-900">
-                      {item.name}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      Код:{" "}
-                      <span className="font-medium text-gray-600">
-                        {item.code}
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      Тэмдэглэгээ: {item.symbology}
-                    </div>
-                    {item.status && (
-                      <span
-                        className={`mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status]?.class}`}
-                      >
-                        <AiOutlineFileText className="w-3 h-3" />
-                        {item.status}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="text-xs text-gray-400 w-20 shrink-0">
-                          Жин хянах
-                        </span>
-                        {item.trackWeight ? (
-                          <HiCheck className="text-emerald-500 w-4 h-4" />
-                        ) : (
-                          <HiX className="text-red-400 w-4 h-4" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="text-xs text-gray-400 w-20 shrink-0">
-                          Тоо хянах
-                        </span>
-                        {item.trackQuantity ? (
-                          <HiCheck className="text-emerald-500 w-4 h-4" />
-                        ) : (
-                          <HiX className="text-red-400 w-4 h-4" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-xs text-gray-400 w-20 shrink-0">
-                          Доод хязгаар
-                        </span>
-                        <span className="text-gray-700 font-medium">
-                          {item.alertOn}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-xs text-gray-400 w-14 shrink-0">
-                          Ангилал
-                        </span>
-                        <span className="text-gray-700 font-medium">
-                          {item.category}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-xs text-gray-400 w-14 shrink-0">
-                          Нэгж
-                        </span>
-                        <span className="text-gray-700">{item.unit}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`text-lg font-bold ${parseFloat(item.stock ?? "0") < 0 ? "text-red-500" : "text-gray-900"}`}
-                    >
-                      {item.stock}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div
-                      className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => navigate(`/item/${item.id}/edit`)}
-                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
-                        title="Засах"
-                      >
-                        <HiOutlinePencilAlt className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
-                        title="Чат"
-                      >
-                        <HiOutlineChatAlt2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => navigate(`/item/${item.id}/trail`)}
-                        className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
-                        title="Түүх"
-                      >
-                        <HiOutlineClipboardList className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
-                        title="Устгах"
-                      >
-                        <HiOutlineTrash className="w-4 h-4" />
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Уншиж байна...
                   </td>
                 </tr>
-              ))}
-
-              {currentItems.length === 0 && (
+              ) : itemsList.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -384,6 +246,110 @@ const Items: React.FC = () => {
                     Өгөгдөл олдсонгүй
                   </td>
                 </tr>
+              ) : (
+                itemsList.map((item) => (
+                  <tr
+                    key={item.id}
+                    onClick={() => handleSelectItem(item)}
+                    className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-gray-900">
+                        {item.name}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        Код:{" "}
+                        <span className="font-medium text-gray-600">
+                          {item.internalCode || item.code}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Тэмдэглэгээ: {item.symbology || "CODE128"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span className="text-xs text-gray-400 w-20 shrink-0">
+                            Тоо хянах
+                          </span>
+                          {item.trackStock ? (
+                            <HiCheck className="text-emerald-500 w-4 h-4" />
+                          ) : (
+                            <HiX className="text-red-400 w-4 h-4" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-xs text-gray-400 w-20 shrink-0">
+                            Доод хязгаар
+                          </span>
+                          <span className="text-gray-700 font-medium">
+                            {item.stockAlert ?? "-"}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-xs text-gray-400 w-14 shrink-0">
+                            Ангилал
+                          </span>
+                          <span className="text-gray-700 font-medium">
+                            {item.category}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-xs text-gray-400 w-14 shrink-0">
+                            Нэгж
+                          </span>
+                          <span className="text-gray-700">{item.unit}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`text-lg font-bold ${parseFloat(item.stock ?? "0") < 0 ? "text-red-500" : "text-gray-900"}`}
+                      >
+                        {item.stock ?? "-"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div
+                        className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => navigate(`/item/${item.id}/edit`)}
+                          className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
+                          title="Засах"
+                        >
+                          <HiOutlinePencilAlt className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 bg-white text-indigo-500 hover:bg-indigo-50 border-r border-gray-200/60 transition-colors"
+                          title="Чат"
+                        >
+                          <HiOutlineChatAlt2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => navigate(`/item/${item.id}/trail`)}
+                          className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
+                          title="Түүх"
+                        >
+                          <HiOutlineClipboardList className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                          title="Устгах"
+                        >
+                          <HiOutlineTrash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -391,69 +357,61 @@ const Items: React.FC = () => {
 
         {/* Mobile Cards */}
         <div className="flex flex-col gap-2 md:hidden">
-          {currentItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleSelectItem(item)}
-              className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="font-semibold text-gray-900 text-sm">
-                    {item.name}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    Код:{" "}
-                    <span className="font-medium text-gray-600">
-                      {item.code}
-                    </span>
-                    <span className="ml-2">· {item.symbology}</span>
-                  </div>
-                </div>
-                {item.status && (
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status]?.class}`}
-                  >
-                    {item.status}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-1 text-sm mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400 text-xs w-20">Жин хянах</span>
-                  {item.trackWeight ? (
-                    <HiCheck className="text-emerald-500 w-4 h-4" />
-                  ) : (
-                    <HiX className="text-red-400 w-4 h-4" />
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400 text-xs w-20">Тоо хянах</span>
-                  {item.trackQuantity ? (
-                    <HiCheck className="text-emerald-500 w-4 h-4" />
-                  ) : (
-                    <HiX className="text-red-400 w-4 h-4" />
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-20">Ангилал</span>
-                  <span className="text-gray-700">{item.category}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-xs w-20">Нэгж</span>
-                  <span className="text-gray-700">{item.unit}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">Үлдэгдэл</span>
-                <span
-                  className={`font-bold text-base ${parseFloat(item.stock ?? "0") < 0 ? "text-red-500" : "text-gray-900"}`}
-                >
-                  {item.stock}
-                </span>
-              </div>
+          {loading ? (
+            <div className="text-center text-sm text-gray-400 py-8">
+              Уншиж байна...
             </div>
-          ))}
+          ) : (
+            itemsList.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleSelectItem(item)}
+                className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="font-semibold text-gray-900 text-sm">
+                      {item.name}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      Код:{" "}
+                      <span className="font-medium text-gray-600">
+                        {item.internalCode || item.code}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-400 text-xs w-20">
+                      Тоо хянах
+                    </span>
+                    {item.trackStock ? (
+                      <HiCheck className="text-emerald-500 w-4 h-4" />
+                    ) : (
+                      <HiX className="text-red-400 w-4 h-4" />
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-20">Ангилал</span>
+                    <span className="text-gray-700">{item.category}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-xs w-20">Нэгж</span>
+                    <span className="text-gray-700">{item.unit}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">Үлдэгдэл</span>
+                  <span
+                    className={`font-bold text-base ${parseFloat(item.stock ?? "0") < 0 ? "text-red-500" : "text-gray-900"}`}
+                  >
+                    {item.stock ?? "-"}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Pagination */}
