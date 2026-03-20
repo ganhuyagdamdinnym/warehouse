@@ -16,7 +16,6 @@ const CreateItem = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state
   const [name, setName] = useState("");
   const [internalCode, setInternalCode] = useState("");
   const [barcodeType, setBarcodeType] = useState("CODE128");
@@ -71,38 +70,45 @@ const CreateItem = () => {
   };
 
   const baseInputClass =
-    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
-  const labelClass = "text-sm font-semibold text-gray-700 ml-0.5";
+    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm transition-all focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 outline-none hover:border-gray-300 placeholder:text-gray-400";
+  const labelClass =
+    "text-xs font-semibold text-gray-500 uppercase tracking-wider";
 
   return (
-    <div className="md:flex-1 md:px-6 py-8 md:p-10 bg-gray-50 min-h-screen">
-      <div className="max-w-5xl mx-auto">
+    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/50">
+      <div className="w-full">
         {/* Header */}
-        <div className="px-4 md:px-0 mb-8">
-          <div className="flex items-center gap-2 mb-1">
-            <HiOutlineCube className="w-6 h-6 text-blue-600" />
-            <h3 className="text-2xl font-bold text-gray-900">
-              Шинэ бараа бүртгэх
-            </h3>
+        <div className="px-4 md:px-0 mb-8 flex items-start gap-4">
+          <div className="w-1 h-12 rounded-full bg-gray-900 flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="flex items-center gap-2">
+              <HiOutlineCube className="w-5 h-5 text-blue-500" />
+              <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
+                Шинэ бараа бүртгэх
+              </h3>
+            </div>
+            <p className="mt-1 text-sm text-gray-400">
+              Системд шинэ бараа материал, бүтээгдэхүүн нэмэх.
+            </p>
           </div>
-          <p className="mt-1 text-sm text-gray-500">
-            Системд шинэ бараа материал, бүтээгдэхүүн нэмэх.
-          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
             <div className="p-6 md:p-8 space-y-8">
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                <div className="flex items-start gap-3 text-sm text-red-700 bg-red-50 border border-red-100 px-4 py-3 rounded-lg">
+                  <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-red-200 text-red-700 flex items-center justify-center text-[10px] font-bold">
+                    !
+                  </span>
                   {error}
-                </p>
+                </div>
               )}
 
               {/* Primary Info Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left Side */}
-                <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+                {/* Left */}
+                <div className="space-y-5">
                   <div>
                     <label className={labelClass}>Барааны нэр</label>
                     <input
@@ -117,7 +123,7 @@ const CreateItem = () => {
                   <div>
                     <label className={labelClass}>Дотоод код</label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors mt-1.5">
                         <HiOutlineHashtag className="w-4 h-4" />
                       </div>
                       <input
@@ -158,12 +164,12 @@ const CreateItem = () => {
                   </div>
                 </div>
 
-                {/* Right Side */}
-                <div className="space-y-6">
+                {/* Right */}
+                <div className="space-y-5">
                   <div>
                     <label className={labelClass}>Ангилал</label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors mt-1.5">
                         <HiOutlineTag className="w-4 h-4" />
                       </div>
                       <select
@@ -196,7 +202,7 @@ const CreateItem = () => {
                   <div>
                     <label className={labelClass}>Тавиурын байршил</label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors mt-1.5">
                         <HiOutlineLocationMarker className="w-4 h-4" />
                       </div>
                       <input
@@ -213,7 +219,7 @@ const CreateItem = () => {
                     <label className={labelClass}>Барааны зураг</label>
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="mt-1.5 flex items-center justify-center border-2 border-dashed border-gray-200 bg-gray-50 rounded-md p-2 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group"
+                      className="mt-1.5 flex items-center justify-center border-2 border-dashed border-gray-200 bg-gray-50/50 rounded-xl p-3 hover:bg-blue-50/50 hover:border-blue-300 transition-all cursor-pointer group"
                     >
                       {imagePreview ? (
                         <img
@@ -223,7 +229,9 @@ const CreateItem = () => {
                         />
                       ) : (
                         <div className="flex items-center gap-2 py-0.5">
-                          <HiOutlinePhotograph className="w-5 h-5 text-gray-400 group-hover:text-blue-600" />
+                          <div className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center group-hover:border-blue-300 group-hover:bg-blue-50 transition-all shadow-sm">
+                            <HiOutlinePhotograph className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                          </div>
                           <span className="text-xs text-gray-500 font-medium">
                             Зураг сонгох
                           </span>
@@ -241,7 +249,7 @@ const CreateItem = () => {
                       <button
                         type="button"
                         onClick={() => setImagePreview(null)}
-                        className="mt-1 text-xs text-red-500 hover:underline"
+                        className="mt-1.5 text-xs text-red-400 hover:text-red-600 transition-colors"
                       >
                         Зураг устгах
                       </button>
@@ -250,8 +258,11 @@ const CreateItem = () => {
                 </div>
               </div>
 
+              {/* Divider */}
+              <div className="border-t border-dashed border-gray-100" />
+
               {/* Description */}
-              <div className="pt-4 border-t border-gray-100">
+              <div>
                 <label className={labelClass}>Дэлгэрэнгүй мэдээлэл</label>
                 <textarea
                   className={`${baseInputClass} resize-none`}
@@ -259,25 +270,25 @@ const CreateItem = () => {
                   placeholder="Барааны шинж чанар, техникийн үзүүлэлт..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                ></textarea>
+                />
               </div>
 
-              {/* Inventory Control Options */}
-              <div className="bg-blue-50/50 p-6 rounded-lg space-y-4 border border-blue-100">
-                <h4 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">
+              {/* Inventory Control */}
+              <div className="bg-blue-50/40 p-6 rounded-xl border border-blue-100/80 space-y-4">
+                <h4 className="text-xs font-bold text-blue-700 uppercase tracking-widest">
                   Бараа материалын хяналт
                 </h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <label className="flex items-center cursor-pointer group">
+                  <div className="flex items-center">
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
                       <input
                         type="checkbox"
                         checked={trackStock}
                         onChange={(e) => setTrackStock(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                       />
-                      <span className="ml-2 text-sm text-gray-700 group-hover:text-gray-900">
+                      <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
                         Тоо ширхэгээр хянах
                       </span>
                     </label>
@@ -288,13 +299,13 @@ const CreateItem = () => {
                       Доод хязгаар (Stock Alert)
                     </label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-red-500 transition-colors">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-red-400 transition-colors mt-1.5">
                         <HiOutlineBell className="w-4 h-4" />
                       </div>
                       <input
                         placeholder="Үлдэгдэл багасах үед мэдэгдэх тоо"
                         type="number"
-                        className={`${baseInputClass} pl-10 border-blue-200`}
+                        className={`${baseInputClass} pl-10 border-blue-200 focus:border-blue-500`}
                         value={stockAlert}
                         onChange={(e) => setStockAlert(e.target.value)}
                       />
@@ -304,22 +315,52 @@ const CreateItem = () => {
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-4">
-              <button
-                type="button"
-                onClick={() => navigate("/items")}
-                className="px-6 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
-              >
-                Цуцлах
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-md font-bold text-sm shadow-none transition-all active:scale-95"
-              >
-                {saving ? "Хадгалж байна..." : "Бүртгэл хадгалах"}
-              </button>
+            {/* Footer */}
+            <div className="px-8 py-5 bg-gray-50/70 border-t border-gray-200 flex items-center justify-between">
+              <p className="text-xs text-gray-400">
+                * Барааны нэр заавал бөглөнө
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate("/items")}
+                  className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+                >
+                  Цуцлах
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-7 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-sm transition-all active:scale-[0.98]"
+                >
+                  {saving ? (
+                    <span className="flex items-center gap-2">
+                      <svg
+                        className="animate-spin w-3.5 h-3.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Хадгалж байна...
+                    </span>
+                  ) : (
+                    "Бүртгэл хадгалах"
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </form>

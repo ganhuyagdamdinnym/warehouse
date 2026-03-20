@@ -40,7 +40,6 @@ const CreateCheckIn = () => {
   const [details, setDetails] = useState("");
   const [isDraft, setIsDraft] = useState(true);
 
-  // Real data from API
   const [contactList, setContactList] = useState<
     { id: string; name: string }[]
   >([]);
@@ -54,7 +53,6 @@ const CreateCheckIn = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch contacts, warehouses, items
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -75,7 +73,6 @@ const CreateCheckIn = () => {
     fetchData();
   }, []);
 
-  // Click outside close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -168,35 +165,42 @@ const CreateCheckIn = () => {
   };
 
   const inputClass =
-    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
+    "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm transition-all focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 outline-none hover:border-gray-300 placeholder:text-gray-400";
 
   return (
-    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/30">
-      <div className="max-w-5xl mx-auto">
-        <div className="px-4 md:px-0 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900">
-            Шинэ орлого үүсгэх
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Бараа материалын зарлагын баримт шинээр үүсгэх.
-          </p>
+    <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/50">
+      <div className="w-full">
+        {/* Page Header */}
+        <div className="px-4 md:px-0 mb-8 flex items-start gap-4">
+          <div className="w-1 h-12 rounded-full bg-gray-900 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
+              Шинэ орлого үүсгэх
+            </h3>
+            <p className="mt-1 text-sm text-gray-400">
+              Бараа материалын зарлагын баримт шинээр үүсгэх.
+            </p>
+          </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-4">
           <form onSubmit={(e) => e.preventDefault()}>
-            <div className="bg-white shadow-sm border border-gray-200 rounded-t-lg overflow-hidden">
+            <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
               <div className="p-6 md:p-8 space-y-8">
                 {error && (
-                  <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                  <div className="flex items-start gap-3 text-sm text-red-700 bg-red-50 border border-red-100 px-4 py-3 rounded-lg">
+                    <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-red-200 text-red-700 flex items-center justify-center text-[10px] font-bold">
+                      !
+                    </span>
                     {error}
-                  </p>
+                  </div>
                 )}
 
                 {/* Top Fields */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
-                  <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                  <div className="space-y-5">
                     <div>
-                      <label className="text-sm font-semibold text-gray-700">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Огноо
                       </label>
                       <input
@@ -207,7 +211,7 @@ const CreateCheckIn = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-semibold text-gray-700">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Лавлах дугаар (Reference)
                       </label>
                       <input
@@ -219,9 +223,9 @@ const CreateCheckIn = () => {
                       />
                     </div>
                   </div>
-                  <div className="space-y-6">
+                  <div className="space-y-5">
                     <div>
-                      <label className="text-sm font-semibold text-gray-700">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Харилцагч
                       </label>
                       <select
@@ -238,7 +242,7 @@ const CreateCheckIn = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="text-sm font-semibold text-gray-700">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Агуулах
                       </label>
                       <select
@@ -257,14 +261,17 @@ const CreateCheckIn = () => {
                   </div>
                 </div>
 
+                {/* Divider */}
+                <div className="border-t border-dashed border-gray-100" />
+
                 {/* Item Search Section */}
-                <div className="pt-4">
+                <div>
                   <div className="relative mb-4" ref={containerRef}>
-                    <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
                       Бараа нэмэх
                     </label>
                     <div className="relative group">
-                      <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors w-5 h-5" />
+                      <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4" />
                       <input
                         type="text"
                         value={searchTerm}
@@ -274,15 +281,15 @@ const CreateCheckIn = () => {
                         }}
                         onFocus={() => setIsOpen(true)}
                         placeholder="Бараа хайх болон сонгох..."
-                        className={`${inputClass} pl-10 py-2.5 bg-gray-50/50 group-focus-within:bg-white`}
+                        className={`${inputClass} pl-9 py-2.5`}
                       />
                       <HiChevronDown
-                        className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                       />
                     </div>
 
                     {isOpen && (
-                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl shadow-gray-100/80 max-h-60 overflow-y-auto">
                         {filteredItems.length > 0 ? (
                           filteredItems.map((item) => (
                             <div
@@ -292,14 +299,14 @@ const CreateCheckIn = () => {
                             >
                               <span className="font-medium">{item.name}</span>
                               {item.internalCode && (
-                                <span className="ml-2 text-xs text-gray-400">
+                                <span className="ml-2 text-xs text-gray-400 font-mono">
                                   {item.internalCode}
                                 </span>
                               )}
                             </div>
                           ))
                         ) : (
-                          <div className="px-4 py-3 text-gray-400 text-xs">
+                          <div className="px-4 py-4 text-gray-400 text-xs text-center">
                             Илэрц олдсонгүй
                           </div>
                         )}
@@ -308,21 +315,21 @@ const CreateCheckIn = () => {
                   </div>
 
                   {/* Table Section */}
-                  <div className="border border-gray-200 rounded-md overflow-hidden">
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr className="text-left text-gray-600 font-bold">
+                      <thead className="bg-gray-50/80 border-b border-gray-200">
+                        <tr className="text-left text-gray-500 font-semibold">
                           <th className="px-4 py-3 w-12 text-center"></th>
-                          <th className="px-4 py-3 uppercase tracking-wider text-[11px]">
+                          <th className="px-4 py-3 uppercase tracking-widest text-[10px]">
                             Бараа
                           </th>
-                          <th className="px-4 py-3 uppercase tracking-wider text-[11px] w-32">
+                          <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32">
                             Жин
                           </th>
-                          <th className="px-4 py-3 uppercase tracking-wider text-[11px] w-32">
+                          <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32">
                             Тоо
                           </th>
-                          <th className="px-4 py-3 uppercase tracking-wider text-[11px] w-40">
+                          <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-44">
                             Хэмжих нэгж
                           </th>
                         </tr>
@@ -332,15 +339,15 @@ const CreateCheckIn = () => {
                           selectedItemsList.map((row) => (
                             <tr
                               key={row.id}
-                              className="hover:bg-gray-50 transition-colors group"
+                              className="hover:bg-gray-50/60 transition-colors group"
                             >
                               <td className="px-4 py-3 text-center">
                                 <button
                                   type="button"
                                   onClick={() => removeItem(row.id)}
-                                  className="text-gray-300 hover:text-red-600 transition-colors"
+                                  className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                                 >
-                                  <HiOutlineTrash className="w-5 h-5" />
+                                  <HiOutlineTrash className="w-4 h-4" />
                                 </button>
                               </td>
                               <td className="px-4 py-3 font-medium text-gray-800">
@@ -354,7 +361,7 @@ const CreateCheckIn = () => {
                                     updateItem(row.id, "weight", e.target.value)
                                   }
                                   placeholder="0.00"
-                                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
+                                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
                                 />
                               </td>
                               <td className="px-4 py-3">
@@ -369,18 +376,18 @@ const CreateCheckIn = () => {
                                     )
                                   }
                                   placeholder="0"
-                                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
+                                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
                                 />
                               </td>
                               <td className="px-4 py-3">
-                                <div className="relative group">
-                                  <select className="w-full pl-3 pr-8 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-700 text-sm appearance-none cursor-pointer transition-all focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+                                <div className="relative">
+                                  <select className="w-full pl-3 pr-8 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm appearance-none cursor-pointer transition-all focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none">
                                     <option>Хайрцаг (Box)</option>
                                     <option>Ширхэг (Piece)</option>
                                     <option>Багц (Dozen)</option>
                                   </select>
-                                  <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600">
-                                    <HiChevronDown className="w-4 h-4" />
+                                  <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-400">
+                                    <HiChevronDown className="w-3.5 h-3.5" />
                                   </div>
                                 </div>
                               </td>
@@ -390,7 +397,7 @@ const CreateCheckIn = () => {
                           <tr>
                             <td
                               colSpan={5}
-                              className="py-12 text-center text-gray-400 italic bg-gray-50/30"
+                              className="py-14 text-center text-gray-300 text-sm bg-gray-50/20"
                             >
                               Хайлт хийх эсвэл баркод уншуулж бараа нэмнэ үү
                             </td>
@@ -401,18 +408,23 @@ const CreateCheckIn = () => {
                   </div>
                 </div>
 
-                {/* File Attachment Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                {/* Divider */}
+                <div className="border-t border-dashed border-gray-100" />
+
+                {/* File Attachment + Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
                       Хавсралт файлууд
                     </label>
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-200 bg-gray-50 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all group"
+                      className="border-2 border-dashed border-gray-200 bg-gray-50/50 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50/50 hover:border-blue-300 transition-all group"
                     >
-                      <HiOutlinePaperClip className="text-gray-400 group-hover:text-blue-600 w-6 h-6 mb-2" />
-                      <p className="text-xs text-gray-600 font-medium">
+                      <div className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center mb-2.5 group-hover:border-blue-300 group-hover:bg-blue-50 transition-all shadow-sm">
+                        <HiOutlinePaperClip className="text-gray-400 group-hover:text-blue-500 w-4 h-4 transition-colors" />
+                      </div>
+                      <p className="text-xs text-gray-500 font-medium">
                         Дарж хуулна уу эсвэл файлаа чирнэ үү
                       </p>
                       <input
@@ -427,26 +439,29 @@ const CreateCheckIn = () => {
                       {uploadedFiles.map((file, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded border border-blue-100 text-xs font-medium"
+                          className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-2.5 py-1.5 rounded-lg border border-blue-100 text-xs font-medium"
                         >
                           <span className="truncate max-w-[120px]">
                             {file.name}
                           </span>
-                          <HiX
-                            className="cursor-pointer hover:text-blue-900"
+                          <button
+                            type="button"
+                            className="hover:text-blue-900 transition-colors"
                             onClick={() =>
                               setUploadedFiles((prev) =>
                                 prev.filter((_, i) => i !== idx),
                               )
                             }
-                          />
+                          >
+                            <HiX className="w-3 h-3" />
+                          </button>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
                       Дэлгэрэнгүй тайлбар
                     </label>
                     <textarea
@@ -459,15 +474,17 @@ const CreateCheckIn = () => {
                   </div>
                 </div>
 
-                <div className="pt-4">
-                  <label className="flex items-center cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={isDraft}
-                      onChange={(e) => setIsDraft(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-600">
+                <div>
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={isDraft}
+                        onChange={(e) => setIsDraft(e.target.checked)}
+                        className="peer w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                    </div>
+                    <span className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
                       Энэ бүртгэлийг ноорог (draft) хэлбэрээр хадгалах
                     </span>
                   </label>
@@ -475,22 +492,52 @@ const CreateCheckIn = () => {
               </div>
 
               {/* Footer Actions */}
-              <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate("/checkin")}
-                  className="px-6 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  Цуцлах
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={saving}
-                  className="px-8 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-60 text-white rounded-md font-bold text-sm shadow-sm transition-all active:translate-y-0.5"
-                >
-                  {saving ? "Хадгалагдаж байна..." : "Хадгалах"}
-                </button>
+              <div className="px-8 py-5 bg-gray-50/70 border-t border-gray-200 flex items-center justify-between">
+                <p className="text-xs text-gray-400">
+                  * Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/checkin")}
+                    className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+                  >
+                    Цуцлах
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={saving}
+                    className="px-7 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-sm transition-all active:scale-[0.98]"
+                  >
+                    {saving ? (
+                      <span className="flex items-center gap-2">
+                        <svg
+                          className="animate-spin w-3.5 h-3.5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Хадгалагдаж байна...
+                      </span>
+                    ) : (
+                      "Хадгалах"
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </form>
