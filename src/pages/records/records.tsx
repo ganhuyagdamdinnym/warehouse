@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { getTotals } from "../../api/dashboard/dashboard";
+
 const TotalRecords = () => {
   const data = [
     { name: "Бараа материал", count: 150 },
@@ -20,6 +23,13 @@ const TotalRecords = () => {
     { label: "Өөрчлөлтийн тайлан", href: "/reports/adjustment" },
   ];
 
+  const fetchTotals = async () => {
+    const totalCount = await getTotals();
+    console.log("total", totalCount);
+  };
+  useEffect(() => {
+    fetchTotals();
+  }, []);
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
       <div className="px-4 md:px-0">
