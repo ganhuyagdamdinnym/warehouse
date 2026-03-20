@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   HiChevronDown,
   HiOutlineCalendar,
@@ -7,26 +8,76 @@ import {
   HiOutlinePaperClip,
   HiOutlineSwitchHorizontal,
 } from "react-icons/hi";
+import { createTransfer } from "../../api/transfer/transfer";
+import { getWarehouses } from "../../api/warehouse/warehouse_api";
+import { getItems } from "../../api/item/item";
+
+interface SelectedItem {
+  id: number;
+  name: string;
+  code: string;
+  weight: string;
+  quantity: string;
+  unit: string;
+}
 
 const CreateTransfer = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItemsList, setSelectedItemsList] = useState<any[]>([]);
+  const [selectedItemsList, setSelectedItemsList] = useState<SelectedItem[]>(
+    [],
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Form state
+  const today = new Date().toISOString().split("T")[0];
+  const [date, setDate] = useState(today);
+  const [code, setCode] = useState("");
+  const [fromWarehouse, setFromWarehouse] = useState("");
+  const [toWarehouse, setToWarehouse] = useState("");
+  const [details, setDetails] = useState("");
+  const [isDraft, setIsDraft] = useState(false);
+
+  // Real data from API
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [itemOptions, setItemOptions] = useState<
+    { id: string; name: string; internalCode?: string }[]
+  >([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
-  const items = [
-    "Бүтээгдэхүүн 1 - Агуулах А",
-    "Бүтээгдэхүүн 2 - Агуулах Б",
-    "Бараа 3 - Хадгалах C",
-    "Сэлбэг хэрэгсэл 4",
-  ];
-
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredItems = itemOptions.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.internalCode ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
   );
 
+  // Fetch warehouses and items
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [warehouseRes, itemRes] = await Promise.all([
+          getWarehouses({ limit: 100 }),
+          getItems({ limit: 100 }),
+        ]);
+        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        setItemOptions(
+          itemRes.data as { id: string; name: string; internalCode?: string }[],
+        );
+      } catch (err) {
+        console.error("Өгөгдөл татахад алдаа:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Click outside close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -40,21 +91,75 @@ const CreateTransfer = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectItem = (item: string) => {
-    const newItem = {
+  const handleSelectItem = (item: {
+    id: string;
+    name: string;
+    internalCode?: string;
+  }) => {
+    const newItem: SelectedItem = {
       id: Date.now(),
-      name: item,
-      weight: 1,
-      quantity: 1,
+      name: item.name,
+      code: item.internalCode || item.name.slice(0, 20) || "ITEM",
+      weight: "1",
+      quantity: "1",
       unit: "Ширхэг",
     };
-    setSelectedItemsList([...selectedItemsList, newItem]);
+    setSelectedItemsList((prev) => [...prev, newItem]);
     setSearchTerm("");
     setIsOpen(false);
   };
 
   const removeItem = (id: number) => {
-    setSelectedItemsList(selectedItemsList.filter((item) => item.id !== id));
+    setSelectedItemsList((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updateItem = (
+    id: number,
+    field: "weight" | "quantity" | "unit",
+    value: string,
+  ) => {
+    setSelectedItemsList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!date || !fromWarehouse || !toWarehouse) {
+      setError("Огноо, гарах болон орох агуулах заавал бөглөнө.");
+      return;
+    }
+    if (fromWarehouse === toWarehouse) {
+      setError("Гарах болон орох агуулах ижил байж болохгүй.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await createTransfer({
+        code: code.trim() || `TRF${Date.now()}`,
+        date,
+        status: isDraft ? "Draft" : "Pending",
+        fromWarehouse,
+        toWarehouse,
+        user: "Admin",
+        details: details.trim() || undefined,
+        items: selectedItemsList.map((item) => ({
+          name: item.name,
+          code: item.code,
+          weight: item.weight,
+          quantity: item.quantity,
+          unit: item.unit,
+        })),
+      });
+      navigate("/transfer", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const baseInputClass =
@@ -78,9 +183,15 @@ const CreateTransfer = () => {
           </div>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={handleSubmit}>
           <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
             <div className="p-6 md:p-8 space-y-8">
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                  {error}
+                </p>
+              )}
+
               {/* Transfer Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
                 <div className="space-y-5">
@@ -94,6 +205,8 @@ const CreateTransfer = () => {
                       </div>
                       <input
                         type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
                         className={`${baseInputClass} pl-10 accent-blue-600 cursor-pointer`}
                       />
                     </div>
@@ -105,6 +218,8 @@ const CreateTransfer = () => {
                     <input
                       placeholder="Шилжүүлгийн дугаар"
                       type="text"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
                       className={baseInputClass}
                     />
                   </div>
@@ -115,11 +230,15 @@ const CreateTransfer = () => {
                     <label className="text-xs font-semibold text-blue-500 uppercase tracking-wider">
                       Гарах агуулах (From)
                     </label>
-                    <select className={baseInputClass}>
+                    <select
+                      className={baseInputClass}
+                      value={fromWarehouse}
+                      onChange={(e) => setFromWarehouse(e.target.value)}
+                    >
                       <option value="">Сонгох...</option>
-                      {warehouses.map((wh) => (
-                        <option key={wh} value={wh}>
-                          {wh}
+                      {warehouseList.map((wh) => (
+                        <option key={wh.id} value={wh.name}>
+                          {wh.name}
                         </option>
                       ))}
                     </select>
@@ -128,11 +247,15 @@ const CreateTransfer = () => {
                     <label className="text-xs font-semibold text-green-600 uppercase tracking-wider">
                       Орох агуулах (To)
                     </label>
-                    <select className={baseInputClass}>
+                    <select
+                      className={baseInputClass}
+                      value={toWarehouse}
+                      onChange={(e) => setToWarehouse(e.target.value)}
+                    >
                       <option value="">Сонгох...</option>
-                      {warehouses.map((wh) => (
-                        <option key={wh} value={wh}>
-                          {wh}
+                      {warehouseList.map((wh) => (
+                        <option key={wh.id} value={wh.name}>
+                          {wh.name}
                         </option>
                       ))}
                     </select>
@@ -170,13 +293,18 @@ const CreateTransfer = () => {
                   {isOpen && (
                     <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl shadow-gray-100/80 max-h-60 overflow-y-auto">
                       {filteredItems.length > 0 ? (
-                        filteredItems.map((item, index) => (
+                        filteredItems.map((item) => (
                           <div
-                            key={index}
-                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors"
+                            key={item.id}
+                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors flex items-center justify-between"
                             onClick={() => handleSelectItem(item)}
                           >
-                            {item}
+                            <span>{item.name}</span>
+                            {item.internalCode && (
+                              <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-400 font-bold uppercase">
+                                {item.internalCode}
+                              </span>
+                            )}
                           </div>
                         ))
                       ) : (
@@ -230,20 +358,30 @@ const CreateTransfer = () => {
                             <td className="px-4 py-3 text-center">
                               <input
                                 type="number"
-                                defaultValue={row.weight}
+                                value={row.weight}
+                                onChange={(e) =>
+                                  updateItem(row.id, "weight", e.target.value)
+                                }
                                 className={tableInputClass}
                               />
                             </td>
                             <td className="px-4 py-3 text-center">
                               <input
                                 type="number"
-                                defaultValue={row.quantity}
+                                value={row.quantity}
+                                onChange={(e) =>
+                                  updateItem(row.id, "quantity", e.target.value)
+                                }
                                 className={tableInputClass}
                               />
                             </td>
                             <td className="px-4 py-3">
                               <div className="relative">
                                 <select
+                                  value={row.unit}
+                                  onChange={(e) =>
+                                    updateItem(row.id, "unit", e.target.value)
+                                  }
                                   className={`${tableInputClass} appearance-none pr-8 cursor-pointer`}
                                 >
                                   <option>Ширхэг</option>
@@ -297,6 +435,8 @@ const CreateTransfer = () => {
                     className={`${baseInputClass} resize-none`}
                     rows={5}
                     placeholder="Шилжүүлэг хийх шалтгаан, нэмэлт тэмдэглэл..."
+                    value={details}
+                    onChange={(e) => setDetails(e.target.value)}
                   />
                 </div>
               </div>
@@ -305,6 +445,8 @@ const CreateTransfer = () => {
                 <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
                   <input
                     type="checkbox"
+                    checked={isDraft}
+                    onChange={(e) => setIsDraft(e.target.checked)}
                     className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                   <span className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors font-medium">
@@ -322,16 +464,18 @@ const CreateTransfer = () => {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
+                  onClick={() => navigate("/transfer")}
                   className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
                 >
                   Цуцлах
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-7 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-lg font-semibold text-sm shadow-sm transition-all active:scale-[0.98]"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-7 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm shadow-sm transition-all active:scale-[0.98]"
                 >
                   <HiOutlineSwitchHorizontal className="w-4 h-4" />
-                  Шилжүүлэг баталгаажуулах
+                  {saving ? "Хадгалж байна..." : "Шилжүүлэг баталгаажуулах"}
                 </button>
               </div>
             </div>

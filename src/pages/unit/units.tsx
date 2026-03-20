@@ -1,97 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  HiChevronDown,
   HiOutlineSearch,
   HiOutlinePlus,
   HiOutlinePencilAlt,
   HiOutlineTrash,
 } from "react-icons/hi";
-
-interface UnitData {
-  id: string;
-  name: string;
-  code: string;
-  baseUnit: string;
-  formula: string;
-  status: "Draft" | "Completed" | "Pending";
-}
-
-const unitsList: UnitData[] = [
-  {
-    id: "1",
-    name: "Доозон",
-    code: "dz",
-    baseUnit: "Ширхэг (pc)",
-    formula: "Ширхэг (pc) * 12 = Доозон (dz)",
-    status: "Completed",
-  },
-  {
-    id: "2",
-    name: "Сантиметр",
-    code: "cm",
-    baseUnit: "Метр (m)",
-    formula: "Метр (m) * 100 = Сантиметр (cm)",
-    status: "Completed",
-  },
-  {
-    id: "3",
-    name: "Килограмм",
-    code: "kg",
-    baseUnit: "",
-    formula: "",
-    status: "Completed",
-  },
-  {
-    id: "4",
-    name: "Ширхэг",
-    code: "pc",
-    baseUnit: "",
-    formula: "",
-    status: "Completed",
-  },
-  {
-    id: "5",
-    name: "Метр",
-    code: "m",
-    baseUnit: "",
-    formula: "",
-    status: "Completed",
-  },
-];
+import { getUnits, deleteUnit } from "../../api/unit/unit";
+import type { Unit } from "../../models/types/unit";
 
 const Units: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const handleSelectItem = (item: UnitData) => {
-    navigate(`/units/${item.id}/edit`);
+  const [unitsList, setUnitsList] = useState<Unit[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const fetchUnits = async () => {
+    try {
+      setLoading(true);
+      const res = await getUnits({
+        search: searchTerm,
+        page: currentPage,
+        limit: itemsPerPage,
+      });
+      setUnitsList(res.data as Unit[]);
+      setTotalItems(res.total);
+    } catch (err) {
+      console.error("Өгөгдөл татахад алдаа гарлаа:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredList = unitsList.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "All"
-        ? true
-        : statusFilter === "Draft"
-          ? item.status === "Draft"
-          : item.status !== "Draft";
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    fetchUnits();
+  }, [searchTerm, currentPage, itemsPerPage]);
 
-  const totalItems = filteredList.length;
+  const handleDelete = async (id: string) => {
+    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
+    try {
+      await deleteUnit(id);
+      fetchUnits();
+    } catch (err) {
+      console.error("Устгахад алдаа гарлаа:", err);
+    }
+  };
+
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
-  const displayFrom = totalItems === 0 ? 0 : indexOfFirstItem + 1;
-  const displayTo = Math.min(indexOfLastItem, totalItems);
+  const displayFrom =
+    totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const displayTo = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
@@ -109,45 +71,6 @@ const Units: React.FC = () => {
         {/* Toolbar */}
         <div className="mb-5 flex gap-3 justify-between items-center print:hidden">
           <div className="flex items-center gap-2 w-full max-w-2xl">
-            {/* Filter */}
-            <div className="relative">
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 font-medium hover:bg-gray-50 transition-colors"
-              >
-                Шүүлтүүр
-                <HiChevronDown
-                  className={`w-4 h-4 transition-transform ${isFilterOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              {isFilterOpen && (
-                <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-300 rounded-xl z-10 p-1.5">
-                  <p className="text-xs font-semibold text-gray-400 px-2 py-1.5 uppercase tracking-wider">
-                    Төлөв
-                  </p>
-                  {[
-                    { value: "All", label: "Бүгд" },
-                    { value: "Draft", label: "Ноорог" },
-                  ].map((f) => (
-                    <button
-                      key={f.value}
-                      onClick={() => {
-                        setStatusFilter(f.value);
-                        setIsFilterOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                        statusFilter === f.value
-                          ? "bg-blue-50 text-blue-600 font-medium"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Search */}
             <div className="flex items-center flex-1 bg-white border border-gray-200 rounded-lg px-3 gap-2 hover:border-gray-300 transition-colors">
               <HiOutlineSearch className="text-gray-400 w-4 h-4 shrink-0" />
@@ -161,11 +84,11 @@ const Units: React.FC = () => {
                 className="w-full py-2 text-sm border-0 focus:ring-0 outline-none text-gray-700 placeholder-gray-400"
                 placeholder="Хайх..."
               />
-              {(searchTerm || statusFilter !== "All") && (
+              {searchTerm && (
                 <button
                   onClick={() => {
                     setSearchTerm("");
-                    setStatusFilter("All");
+                    setCurrentPage(1);
                   }}
                   className="text-xs text-gray-400 hover:text-gray-600 shrink-0 transition-colors"
                 >
@@ -204,49 +127,16 @@ const Units: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100/80">
-              {currentItems.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
-                  onClick={() => handleSelectItem(item)}
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-gray-900 text-sm">
-                      {item.name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{item.code}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500">
-                      {item.baseUnit || "—"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div
-                      className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => navigate(`/units/${item.id}/edit`)}
-                        className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
-                        title="Засах"
-                      >
-                        <HiOutlinePencilAlt className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
-                        title="Устгах"
-                      >
-                        <HiOutlineTrash className="w-4 h-4" />
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Уншиж байна...
                   </td>
                 </tr>
-              ))}
-
-              {currentItems.length === 0 && (
+              ) : unitsList.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
@@ -255,6 +145,51 @@ const Units: React.FC = () => {
                     Өгөгдөл олдсонгүй
                   </td>
                 </tr>
+              ) : (
+                unitsList.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
+                    onClick={() => navigate(`/units/${item.id}/edit`)}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-gray-900 text-sm">
+                        {item.name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-600">{item.code}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">
+                        {item.parent
+                          ? `${item.parent.name} (${item.parent.code})`
+                          : "—"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div
+                        className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => navigate(`/units/${item.id}/edit`)}
+                          className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
+                          title="Засах"
+                        >
+                          <HiOutlinePencilAlt className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                          title="Устгах"
+                        >
+                          <HiOutlineTrash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -262,35 +197,43 @@ const Units: React.FC = () => {
 
         {/* Mobile Cards */}
         <div className="flex flex-col gap-2 md:hidden">
-          {currentItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleSelectItem(item)}
-              className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <div className="font-semibold text-gray-900 text-sm">
-                    {item.name}
+          {loading ? (
+            <div className="text-center text-sm text-gray-400 py-8">
+              Уншиж байна...
+            </div>
+          ) : (
+            unitsList.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => navigate(`/units/${item.id}/edit`)}
+                className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <div className="font-semibold text-gray-900 text-sm">
+                      {item.name}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      Код:{" "}
+                      <span className="font-medium text-gray-600">
+                        {item.code}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    Код:{" "}
-                    <span className="font-medium text-gray-600">
-                      {item.code}
+                </div>
+                {item.parent && (
+                  <div className="flex gap-2 text-sm mt-2">
+                    <span className="text-gray-400 text-xs w-24 shrink-0">
+                      Үндсэн нэгж
+                    </span>
+                    <span className="text-gray-700">
+                      {item.parent.name} ({item.parent.code})
                     </span>
                   </div>
-                </div>
+                )}
               </div>
-              {item.baseUnit && (
-                <div className="flex gap-2 text-sm mt-2">
-                  <span className="text-gray-400 text-xs w-24 shrink-0">
-                    Үндсэн нэгж
-                  </span>
-                  <span className="text-gray-700">{item.baseUnit}</span>
-                </div>
-              )}
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Pagination */}

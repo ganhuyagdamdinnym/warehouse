@@ -3,7 +3,6 @@ import {
   HiOutlineScale,
   HiOutlineHashtag,
   HiOutlineVariable,
-  HiOutlineCalculator,
   HiOutlineTrash,
   HiOutlineSave,
   HiOutlineSwitchHorizontal,
@@ -13,7 +12,6 @@ import { Confirmation } from "../../components/confirmation";
 const EditUnit = () => {
   const [parentCategory, setParentCategory] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
-  const [showOperationFields, setShowOperationFields] = useState(false);
 
   const categories = [
     { id: "1", name: "метр" },
@@ -57,7 +55,6 @@ const EditUnit = () => {
         <form onSubmit={(e) => e.preventDefault()}>
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <div className="p-6 md:p-8 space-y-8">
-              
               {/* Basic Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
@@ -103,7 +100,6 @@ const EditUnit = () => {
                         value={parentCategory}
                         onChange={(e) => {
                           setParentCategory(e.target.value);
-                          setShowOperationFields(e.target.value !== "");
                         }}
                         className={`${baseInputClass} pl-10 bg-white appearance-none cursor-pointer`}
                       >
@@ -115,7 +111,10 @@ const EditUnit = () => {
                         ))}
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-                        <svg className="fill-current h-4 w-4" viewBox="0 0 20 20">
+                        <svg
+                          className="fill-current h-4 w-4"
+                          viewBox="0 0 20 20"
+                        >
                           <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                         </svg>
                       </div>
@@ -123,46 +122,6 @@ const EditUnit = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Dynamic Operations Section */}
-              {showOperationFields && (
-                <div className="pt-8 border-t border-gray-100 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <div className="mb-4">
-                    <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                      <HiOutlineCalculator className="w-4 h-4 text-blue-500" />
-                      Хөрвүүлэх утга тохируулах
-                    </h4>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                      <label className={labelClass}>Оператор</label>
-                      <div className="mt-1.5 relative group">
-                        <select className={`${baseInputClass} appearance-none cursor-pointer`}>
-                          <option value="">Оператор сонгоно уу</option>
-                          <option value="multiply">× Үржих</option>
-                          <option value="divide">÷ Хуваах</option>
-                          <option value="add">+ Нэмэх</option>
-                          <option value="subtract">− Хасах</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-                          <svg className="fill-current h-4 w-4" viewBox="0 0 20 20">
-                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>Үйлдлийн утга</label>
-                      <input
-                        type="number"
-                        placeholder="0.00"
-                        className={baseInputClass}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Footer Actions */}

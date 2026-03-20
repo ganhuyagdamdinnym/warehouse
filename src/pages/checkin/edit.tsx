@@ -75,7 +75,7 @@ const CheckinEdit = () => {
         setLoading(true);
         const data = await getCheckin(id);
         if (cancelled) return;
-        setDate(data.date || "");
+        setDate(data.date ? data.date.split("T")[0] : "");
         setCode(data.code || "");
         setContact(data.contact || "");
         setWarehouse(data.warehouse || "");

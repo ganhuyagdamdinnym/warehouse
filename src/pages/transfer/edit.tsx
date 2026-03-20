@@ -1,39 +1,134 @@
 import { useState, useRef, useEffect } from "react";
-import { 
-  HiChevronDown, 
-  HiOutlineCalendar, 
-  HiOutlineTag, 
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  HiChevronDown,
+  HiOutlineCalendar,
+  HiOutlineTag,
   HiOutlineSearch,
   HiOutlineCloudUpload,
   HiOutlineDocumentText,
   HiOutlineTrash,
 } from "react-icons/hi";
+import { HiOutlineHomeModern, HiOutlineArrowRight } from "react-icons/hi2";
 import { Confirmation } from "../../components/confirmation";
-import {HiOutlineHomeModern,HiOutlineArrowRight} from "react-icons/hi2";
+import {
+  getTransfer,
+  updateTransfer,
+  deleteTransfer,
+} from "../../api/transfer/transfer";
+import { getWarehouses } from "../../api/warehouse/warehouse_api";
+import { getItems } from "../../api/item/item";
+
+interface LineRow {
+  id: number;
+  name: string;
+  code: string;
+  weight: string;
+  quantity: string;
+  unit: string;
+}
+
 const TransferEdit = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
-  const items = [
-    "Бүтээгдэхүүн 1 - Агуулах А",
-    "Бүтээгдэхүүн 2 - Агуулах Б",
-    "Бараа 3 - Хадгалах C",
-    "Сэлбэг хэрэгсэл 4",
-    "Цахим төхөөрөмж 5",
-  ];
+  // Form state
+  const [date, setDate] = useState("");
+  const [code, setCode] = useState("");
+  const [fromWarehouse, setFromWarehouse] = useState("");
+  const [toWarehouse, setToWarehouse] = useState("");
+  const [details, setDetails] = useState("");
+  const [isDraft, setIsDraft] = useState(false);
+  const [lineItems, setLineItems] = useState<LineRow[]>([]);
 
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // Real data
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [itemOptions, setItemOptions] = useState<
+    { id: string; name: string; internalCode?: string }[]
+  >([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const filteredItems = itemOptions.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.internalCode ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
+  );
+
+  // Fetch transfer data
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await getTransfer(id);
+        if (cancelled) return;
+        setDate(data.date ? data.date.split("T")[0] : "");
+        setCode(data.code || "");
+        setFromWarehouse(data.fromWarehouse || "");
+        setToWarehouse(data.toWarehouse || "");
+        setDetails(data.details || "");
+        setIsDraft(data.status === "Draft");
+        setLineItems(
+          (data.items || []).map((it: any, i: number) => ({
+            id: i + 1,
+            name: it.name || "",
+            code: it.code || "",
+            weight: it.weight || "1",
+            quantity: it.quantity || "1",
+            unit: it.unit || "Ширхэг",
+          })),
+        );
+      } catch (e) {
+        if (!cancelled)
+          setError(e instanceof Error ? e.message : "Өгөгдөл ачаалахад алдаа.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  // Fetch warehouses and items
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [warehouseRes, itemRes] = await Promise.all([
+          getWarehouses({ limit: 100 }),
+          getItems({ limit: 100 }),
+        ]);
+        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        setItemOptions(
+          itemRes.data as { id: string; name: string; internalCode?: string }[],
+        );
+      } catch (err) {
+        console.error("Өгөгдөл татахад алдаа:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Click outside close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -41,13 +136,94 @@ const TransferEdit = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleDelete = () => {
-    console.log("Устгасан");
-    setShowConfirm(false);
+  const addItem = (item: {
+    id: string;
+    name: string;
+    internalCode?: string;
+  }) => {
+    const newRow: LineRow = {
+      id: Date.now(),
+      name: item.name,
+      code: item.internalCode || item.name.slice(0, 20) || "ITEM",
+      weight: "1",
+      quantity: "1",
+      unit: "Ширхэг",
+    };
+    setLineItems((prev) => [...prev, newRow]);
+    setSearchTerm("");
+    setSelectedValue("");
+    setIsOpen(false);
   };
 
-  const baseInputClass = "mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
+  const removeLineItem = (rowId: number) => {
+    setLineItems((prev) => prev.filter((r) => r.id !== rowId));
+  };
+
+  const updateLineItem = (
+    rowId: number,
+    field: keyof LineRow,
+    value: string,
+  ) => {
+    setLineItems((prev) =>
+      prev.map((r) => (r.id === rowId ? { ...r, [field]: value } : r)),
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+    setError(null);
+    if (!date || !fromWarehouse || !toWarehouse) {
+      setError("Огноо, гарах болон орох агуулах заавал бөглөнө.");
+      return;
+    }
+    try {
+      setSaving(true);
+      await updateTransfer(id, {
+        code: code.trim() || `TRF${Date.now()}`,
+        date,
+        status: isDraft ? "Draft" : "Pending",
+        fromWarehouse,
+        toWarehouse,
+        details: details.trim() || undefined,
+        items: lineItems.map((row) => ({
+          name: row.name,
+          code: row.code,
+          weight: row.weight,
+          quantity: row.quantity,
+          unit: row.unit,
+        })),
+      });
+      navigate("/transfer", { replace: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Шинэчлэхэд алдаа гарлаа.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    try {
+      await deleteTransfer(id);
+      setShowConfirm(false);
+      navigate("/transfer", { replace: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Устгахад алдаа гарлаа.");
+    }
+  };
+
+  const baseInputClass =
+    "mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
   const labelClass = "text-sm font-semibold text-gray-700";
+
+  if (loading) {
+    return (
+      <div className="md:flex-1 md:px-4 py-8 md:p-8 flex items-center justify-center">
+        <p className="text-gray-500">Уншиж байна...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto bg-gray-50/30">
@@ -67,7 +243,13 @@ const TransferEdit = () => {
             <div>
               <h3 className="text-lg font-bold text-gray-900">
                 <div className="flex items-center gap-2">
-                  <a href="#" className="text-blue-600 hover:underline">Шилжүүлэг</a>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/transfer")}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Шилжүүлэг
+                  </button>
                   <span className="text-gray-400 font-light">/</span>
                   <span className="text-gray-500 font-medium">Засах</span>
                 </div>
@@ -80,9 +262,14 @@ const TransferEdit = () => {
         </div>
 
         <div className="mt-6">
-          <form onSubmit={(e) => e.preventDefault()}>
+          <form onSubmit={handleSubmit}>
             <div className="px-4 py-6 bg-white border border-gray-200 md:p-8 md:rounded-t-xl space-y-8 shadow-sm">
-              
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                  {error}
+                </p>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-6 border-b border-gray-50">
                 <div className="relative group">
                   <label className={labelClass}>Огноо</label>
@@ -90,7 +277,12 @@ const TransferEdit = () => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
                       <HiOutlineCalendar className="w-4 h-4" />
                     </div>
-                    <input type="date" className={`${baseInputClass} pl-10`} />
+                    <input
+                      type="date"
+                      className={`${baseInputClass} pl-10`}
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
                   </div>
                 </div>
 
@@ -100,10 +292,12 @@ const TransferEdit = () => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
                       <HiOutlineTag className="w-4 h-4" />
                     </div>
-                    <input 
-                      type="text" 
-                      placeholder="TR-2024-001" 
-                      className={`${baseInputClass} pl-10`} 
+                    <input
+                      type="text"
+                      placeholder="TR-2024-001"
+                      className={`${baseInputClass} pl-10`}
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
                     />
                   </div>
                 </div>
@@ -112,15 +306,23 @@ const TransferEdit = () => {
               {/* Transfer Logic: From -> To */}
               <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 flex flex-col lg:flex-row items-center gap-6">
                 <div className="flex-1 w-full group">
-                  <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 block">Хаанаас (Гарах агуулах)</label>
+                  <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 block">
+                    Хаанаас (Гарах агуулах)
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-blue-400">
                       <HiOutlineHomeModern className="w-4 h-4" />
                     </div>
-                    <select className={`${baseInputClass} pl-10 border-blue-200 bg-white appearance-none cursor-pointer`}>
+                    <select
+                      className={`${baseInputClass} pl-10 border-blue-200 bg-white appearance-none cursor-pointer`}
+                      value={fromWarehouse}
+                      onChange={(e) => setFromWarehouse(e.target.value)}
+                    >
                       <option value="">Сонгох...</option>
-                      {warehouses.map((wh) => (
-                        <option key={wh} value={wh}>{wh}</option>
+                      {warehouseList.map((wh) => (
+                        <option key={wh.id} value={wh.name}>
+                          {wh.name}
+                        </option>
                       ))}
                     </select>
                     <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none" />
@@ -132,15 +334,23 @@ const TransferEdit = () => {
                 </div>
 
                 <div className="flex-1 w-full group">
-                  <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 block">Хаашаа (Орох агуулах)</label>
+                  <label className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 block">
+                    Хаашаа (Орох агуулах)
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-blue-400">
                       <HiOutlineHomeModern className="w-4 h-4" />
                     </div>
-                    <select className={`${baseInputClass} pl-10 border-blue-200 bg-white appearance-none cursor-pointer`}>
+                    <select
+                      className={`${baseInputClass} pl-10 border-blue-200 bg-white appearance-none cursor-pointer`}
+                      value={toWarehouse}
+                      onChange={(e) => setToWarehouse(e.target.value)}
+                    >
                       <option value="">Сонгох...</option>
-                      {warehouses.map((wh) => (
-                        <option key={wh} value={wh}>{wh}</option>
+                      {warehouseList.map((wh) => (
+                        <option key={wh.id} value={wh.name}>
+                          {wh.name}
+                        </option>
                       ))}
                     </select>
                     <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none" />
@@ -150,7 +360,9 @@ const TransferEdit = () => {
 
               {/* Items Section */}
               <div className="pt-2">
-                <label className={labelClass}>Шилжүүлэх бараа материалын жагсаалт</label>
+                <label className={labelClass}>
+                  Шилжүүлэх бараа материалын жагсаалт
+                </label>
                 <div className="mt-3 bg-gray-50/80 p-5 rounded-xl border border-gray-200/60 shadow-inner">
                   <div className="relative" ref={containerRef}>
                     <div className="relative group">
@@ -159,7 +371,9 @@ const TransferEdit = () => {
                       </div>
                       <input
                         type="text"
-                        value={isOpen ? searchTerm : selectedValue || searchTerm}
+                        value={
+                          isOpen ? searchTerm : selectedValue || searchTerm
+                        }
                         onChange={(e) => {
                           setSearchTerm(e.target.value);
                           setIsOpen(true);
@@ -168,28 +382,32 @@ const TransferEdit = () => {
                         placeholder="Бараа хайх эсвэл баркод уншуулах..."
                         className="w-full bg-white border border-gray-300 rounded-lg py-3 pl-11 pr-10 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all shadow-sm"
                       />
-                      <HiChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                      <HiChevronDown
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                      />
                     </div>
 
                     {isOpen && (
-                      <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto animate-in fade-in zoom-in-95">
+                      <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
                         {filteredItems.length > 0 ? (
-                          filteredItems.map((item, index) => (
+                          filteredItems.map((item) => (
                             <div
-                              key={index}
+                              key={item.id}
                               className="px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 flex items-center justify-between border-b border-gray-50 last:border-none"
-                              onClick={() => {
-                                setSelectedValue(item);
-                                setSearchTerm(item);
-                                setIsOpen(false);
-                              }}
+                              onClick={() => addItem(item)}
                             >
-                              <span>{item}</span>
-                              <span className="text-[10px] bg-blue-100 px-2 py-1 rounded text-blue-600 font-bold uppercase">Нэмэх</span>
+                              <span>{item.name}</span>
+                              {item.internalCode && (
+                                <span className="text-[10px] bg-blue-100 px-2 py-1 rounded text-blue-600 font-bold uppercase">
+                                  {item.internalCode}
+                                </span>
+                              )}
                             </div>
                           ))
                         ) : (
-                          <div className="px-4 py-8 text-center text-gray-400 text-sm">Хайлттай тохирох бараа олдсонгүй</div>
+                          <div className="px-4 py-8 text-center text-gray-400 text-sm">
+                            Хайлттай тохирох бараа олдсонгүй
+                          </div>
                         )}
                       </div>
                     )}
@@ -202,16 +420,100 @@ const TransferEdit = () => {
                           <th className="px-6 py-4 w-12 text-center">#</th>
                           <th className="px-6 py-4">Бараа</th>
                           <th className="px-6 py-4 text-center">Жин</th>
-                          <th className="px-6 py-4 text-center w-40">Тоо ширхэг</th>
+                          <th className="px-6 py-4 text-center w-40">
+                            Тоо ширхэг
+                          </th>
                           <th className="px-6 py-4 text-center">Нэгж</th>
+                          <th className="px-6 py-4 w-12"></th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b border-gray-50 last:border-none">
-                          <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
-                            Жагсаалт хоосон байна. Бараа нэмнэ үү.
-                          </td>
-                        </tr>
+                        {lineItems.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={6}
+                              className="px-6 py-12 text-center text-gray-400 italic"
+                            >
+                              Жагсаалт хоосон байна. Бараа нэмнэ үү.
+                            </td>
+                          </tr>
+                        ) : (
+                          lineItems.map((row) => (
+                            <tr
+                              key={row.id}
+                              className="border-b border-gray-50 last:border-none"
+                            >
+                              <td className="px-6 py-3 text-center text-gray-400">
+                                {row.id}
+                              </td>
+                              <td className="px-6 py-3">
+                                <input
+                                  type="text"
+                                  value={row.name}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "name",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <input
+                                  type="text"
+                                  value={row.weight}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "weight",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm text-center"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <input
+                                  type="text"
+                                  value={row.quantity}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "quantity",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm text-center"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <input
+                                  type="text"
+                                  value={row.unit}
+                                  onChange={(e) =>
+                                    updateLineItem(
+                                      row.id,
+                                      "unit",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-24 px-2 py-1.5 border border-gray-200 rounded text-sm text-center"
+                                />
+                              </td>
+                              <td className="px-6 py-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => removeLineItem(row.id)}
+                                  className="text-red-400 hover:text-red-600 p-1"
+                                >
+                                  <HiOutlineTrash className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -219,48 +521,53 @@ const TransferEdit = () => {
               </div>
 
               {/* Notes and Attachments */}
-             
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-  
-  {/* Тайлбар хэсэг */}
-  <div className="flex flex-col">
-    <label className={labelClass}>Тэмдэглэл / Дэлгэрэнгүй</label>
-    <div className="relative mt-1 flex-1 flex flex-col group">
-      <div className="absolute top-3 left-3 text-gray-400 group-focus-within:text-blue-600 transition-colors">
-        <HiOutlineDocumentText className="w-4 h-4" />
-      </div>
-      {/* flex-1 ашиглан үлдсэн бүх зайг дүүргэнэ */}
-      <textarea
-        className={`${baseInputClass} pl-10 resize-none flex-1 min-h-[120px]`}
-        placeholder="Шилжүүлгийн тухай нэмэлт тайлбар..."
-      />
-    </div>
-  </div>
+                <div className="flex flex-col">
+                  <label className={labelClass}>Тэмдэглэл / Дэлгэрэнгүй</label>
+                  <div className="relative mt-1 flex-1 flex flex-col group">
+                    <div className="absolute top-3 left-3 text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                      <HiOutlineDocumentText className="w-4 h-4" />
+                    </div>
+                    <textarea
+                      className={`${baseInputClass} pl-10 resize-none flex-1 min-h-[120px]`}
+                      placeholder="Шилжүүлгийн тухай нэмэлт тайлбар..."
+                      value={details}
+                      onChange={(e) => setDetails(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-  {/* Файл хуулах хэсэг */}
-  <div className="flex flex-col">
-    <label className={labelClass}>Хавсралт файлууд</label>
-    <div className="mt-1 flex-1">
-      <div className="h-full group cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-6 transition-all hover:bg-blue-50/30 hover:border-blue-400 flex flex-col items-center justify-center text-center">
-        <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors">
-          <HiOutlineCloudUpload className="w-8 h-8 text-gray-400 group-hover:text-blue-600" />
-        </div>
-        <p className="mt-2 text-sm text-gray-600 font-medium">Баримтын зураг эсвэл PDF оруулах</p>
-        <p className="text-[11px] text-gray-400 mt-1">.png, .jpg, .pdf, .docx, .xlsx</p>
-      </div>
-    </div>
-  </div>
-
-</div>
+                <div className="flex flex-col">
+                  <label className={labelClass}>Хавсралт файлууд</label>
+                  <div className="mt-1 flex-1">
+                    <div className="h-full group cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-6 transition-all hover:bg-blue-50/30 hover:border-blue-400 flex flex-col items-center justify-center text-center">
+                      <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors">
+                        <HiOutlineCloudUpload className="w-8 h-8 text-gray-400 group-hover:text-blue-600" />
+                      </div>
+                      <p className="mt-2 text-sm text-gray-600 font-medium">
+                        Баримтын зураг эсвэл PDF оруулах
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        .png, .jpg, .pdf, .docx, .xlsx
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Status */}
               <div className="flex items-center gap-3 p-4 bg-indigo-50/50 rounded-xl w-fit pr-8 border border-indigo-100/50">
                 <input
                   type="checkbox"
                   id="draft"
+                  checked={isDraft}
+                  onChange={(e) => setIsDraft(e.target.checked)}
                   className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer transition-all"
                 />
-                <label htmlFor="draft" className="text-sm text-indigo-900 font-semibold cursor-pointer select-none">
+                <label
+                  htmlFor="draft"
+                  className="text-sm text-indigo-900 font-semibold cursor-pointer select-none"
+                >
                   Энэ бичилт ноорог төлөвтэй байна
                 </label>
               </div>
@@ -276,13 +583,23 @@ const TransferEdit = () => {
                 <HiOutlineTrash className="w-4 h-4" />
                 Бүртгэлийг устгах
               </button>
-              
-              <button
-                type="submit"
-                className="flex items-center gap-2 px-12 py-3 bg-gray-800 text-white text-xs font-bold rounded-lg hover:bg-blue-600 active:scale-95 transition-all uppercase tracking-[2px] shadow-lg shadow-gray-200"
-              >
-                Хадгалах
-              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate("/transfer")}
+                  className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  Цуцлах
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-12 py-3 bg-gray-800 text-white text-xs font-bold rounded-lg hover:bg-blue-600 disabled:opacity-60 active:scale-95 transition-all uppercase tracking-[2px] shadow-lg shadow-gray-200"
+                >
+                  {saving ? "Хадгалж байна..." : "Хадгалах"}
+                </button>
+              </div>
             </div>
           </form>
         </div>
