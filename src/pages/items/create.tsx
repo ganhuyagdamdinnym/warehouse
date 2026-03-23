@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HiOutlineCube,
@@ -7,8 +7,13 @@ import {
   HiOutlineHashtag,
   HiOutlineLocationMarker,
   HiOutlineBell,
+  HiOutlineArchive,
 } from "react-icons/hi";
 import { createItem } from "../../api/item/item";
+import { getCategories } from "../../api/category/category";
+import { getUnits } from "../../api/unit/unit";
+import type { Category } from "../../models/types/category";
+import type { Unit } from "../../models/types/unit";
 
 const CreateItem = () => {
   const navigate = useNavigate();
@@ -21,12 +26,25 @@ const CreateItem = () => {
   const [barcodeType, setBarcodeType] = useState("CODE128");
   const [sku, setSku] = useState("");
   const [category, setCategory] = useState("");
-  const [unit, setUnit] = useState("pcs");
+  const [unit, setUnit] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [trackStock, setTrackStock] = useState(false);
   const [stockAlert, setStockAlert] = useState<string>("");
+  const [stock, setStock] = useState<string>("0");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
+  const [unitList, setUnitList] = useState<Unit[]>([]);
+
+  useEffect(() => {
+    Promise.all([getCategories({ limit: 100 }), getUnits({ limit: 100 })])
+      .then(([catRes, unitRes]) => {
+        setCategoryList(catRes.data);
+        setUnitList(unitRes.data);
+      })
+      .catch(console.error);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,12 +72,13 @@ const CreateItem = () => {
         barcodeType,
         sku: sku.trim() || undefined,
         category: category || undefined,
-        unit,
+        unit: unit || undefined,
         location: location.trim() || undefined,
         description: description.trim() || undefined,
         image: imagePreview || undefined,
         trackStock,
         stockAlert: stockAlert ? Number(stockAlert) : undefined,
+        stock: Number(stock) || 0,
       });
       navigate("/items", { replace: true });
     } catch (err: unknown) {
@@ -166,6 +185,7 @@ const CreateItem = () => {
 
                 {/* Right */}
                 <div className="space-y-5">
+                  {/* Category — from API */}
                   <div>
                     <label className={labelClass}>Ангилал</label>
                     <div className="relative group">
@@ -178,13 +198,16 @@ const CreateItem = () => {
                         onChange={(e) => setCategory(e.target.value)}
                       >
                         <option value="">Ангилал сонгох</option>
-                        <option value="parts">Сэлбэг хэрэгсэл</option>
-                        <option value="fluids">Шингэн зүйлс</option>
-                        <option value="electronics">Цахим төхөөрөмж</option>
+                        {categoryList.map((c) => (
+                          <option key={c.id} value={String(c.name)}>
+                            {c.parent ? `${c.parent.name} / ${c.name}` : c.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
 
+                  {/* Unit — from API */}
                   <div>
                     <label className={labelClass}>Хэмжих нэгж</label>
                     <select
@@ -192,10 +215,12 @@ const CreateItem = () => {
                       value={unit}
                       onChange={(e) => setUnit(e.target.value)}
                     >
-                      <option value="pcs">Ширхэг (pcs)</option>
-                      <option value="kg">Киллограмм (kg)</option>
-                      <option value="liter">Литр (l)</option>
-                      <option value="meter">Метр (m)</option>
+                      <option value="">Нэгж сонгох</option>
+                      {unitList.map((u) => (
+                        <option key={u.id} value={String(u.id)}>
+                          {u.name} ({u.code})
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -278,20 +303,22 @@ const CreateItem = () => {
                 <h4 className="text-xs font-bold text-blue-700 uppercase tracking-widest">
                   Бараа материалын хяналт
                 </h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex items-center">
-                    <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className={labelClass}>Анхны үлдэгдэл</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors mt-1.5">
+                        <HiOutlineArchive className="w-4 h-4" />
+                      </div>
                       <input
-                        type="checkbox"
-                        checked={trackStock}
-                        onChange={(e) => setTrackStock(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        placeholder="0"
+                        type="number"
+                        min="0"
+                        className={`${baseInputClass} pl-10 border-blue-200 focus:border-blue-500`}
+                        value={stock}
+                        onChange={(e) => setStock(e.target.value)}
                       />
-                      <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
-                        Тоо ширхэгээр хянах
-                      </span>
-                    </label>
+                    </div>
                   </div>
 
                   <div>
@@ -303,13 +330,28 @@ const CreateItem = () => {
                         <HiOutlineBell className="w-4 h-4" />
                       </div>
                       <input
-                        placeholder="Үлдэгдэл багасах үед мэдэгдэх тоо"
+                        placeholder="Мэдэгдэх тоо"
                         type="number"
+                        min="0"
                         className={`${baseInputClass} pl-10 border-blue-200 focus:border-blue-500`}
                         value={stockAlert}
                         onChange={(e) => setStockAlert(e.target.value)}
                       />
                     </div>
+                  </div>
+
+                  <div className="flex items-end pb-1">
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
+                      <input
+                        type="checkbox"
+                        checked={trackStock}
+                        onChange={(e) => setTrackStock(e.target.checked)}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                      <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                        Тоо ширхэгээр хянах
+                      </span>
+                    </label>
                   </div>
                 </div>
               </div>

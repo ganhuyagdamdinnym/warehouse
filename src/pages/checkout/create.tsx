@@ -9,15 +9,29 @@ import {
   HiOutlineCalendar,
 } from "react-icons/hi";
 import { createCheckout } from "../../api/checkout/checkout_api";
+import { getContacts } from "../../api/contact/contact_api";
+import { getWarehouses } from "../../api/warehouse/warehouse_api";
+import { getItems } from "../../api/item/item";
+
+interface SelectedItem {
+  id: number;
+  name: string;
+  weight: string;
+  quantity: string;
+  unit: string;
+}
 
 const CreateCheckOut = () => {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItemsList, setSelectedItemsList] = useState<any[]>([]);
+  const [selectedItemsList, setSelectedItemsList] = useState<SelectedItem[]>(
+    [],
+  );
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [date, setDate] = useState("");
   const [reference, setReference] = useState("");
@@ -26,21 +40,38 @@ const CreateCheckOut = () => {
   const [details, setDetails] = useState("");
   const [isDraft, setIsDraft] = useState(false);
 
+  const [contactList, setContactList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [itemOptions, setItemOptions] = useState<
+    { id: string; name: string; internalCode?: string }[]
+  >([]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const contacts = ["Марианна Аптон", "Жон Доу", "Алис Смит", "Боб Браун"];
-  const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
-  const items = [
-    "Бүтээгдэхүүн 1 - Агуулах А",
-    "Бүтээгдэхүүн 2 - Агуулах Б",
-    "Бараа 3 - С хэсэг",
-    "Сэлбэг хэрэгсэл 4",
-  ];
-
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [contactRes, warehouseRes, itemRes] = await Promise.all([
+          getContacts({ limit: 100 }),
+          getWarehouses({ limit: 100 }),
+          getItems({ limit: 100 }),
+        ]);
+        setContactList(contactRes.data as { id: string; name: string }[]);
+        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        setItemOptions(
+          itemRes.data as { id: string; name: string; internalCode?: string }[],
+        );
+      } catch (err) {
+        console.error("Өгөгдөл татахад алдаа:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,27 +86,41 @@ const CreateCheckOut = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectItem = (item: string) => {
-    const newItem = {
-      id: Date.now(),
-      name: item,
-      weight: 1,
-      quantity: 1,
-      unit: "Хайрцаг",
-    };
-    setSelectedItemsList([...selectedItemsList, newItem]);
+  const filteredItems = itemOptions.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.internalCode ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
+  );
+
+  const handleSelectItem = (item: {
+    id: string;
+    name: string;
+    internalCode?: string;
+  }) => {
+    setSelectedItemsList((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        name: item.name,
+        weight: "1",
+        quantity: "1",
+        unit: "Хайрцаг",
+      },
+    ]);
     setSearchTerm("");
     setIsOpen(false);
   };
 
   const removeItem = (id: number) => {
-    setSelectedItemsList(selectedItemsList.filter((item) => item.id !== id));
+    setSelectedItemsList((prev) => prev.filter((item) => item.id !== id));
   };
 
   const updateItem = (
     id: number,
-    field: "weight" | "quantity" | "unit",
-    value: string | number,
+    field: keyof Omit<SelectedItem, "id" | "name">,
+    value: string,
   ) => {
     setSelectedItemsList((prev) =>
       prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
@@ -84,44 +129,45 @@ const CreateCheckOut = () => {
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setUploadedFiles((prev) => [...prev, ...newFiles]);
+      setUploadedFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
     if (!date || !contact || !warehouse) {
-      alert("Огноо, харилцагч, агуулахыг заавал бөглөнө үү!");
+      setError("Огноо, харилцагч, агуулахыг заавал бөглөнө үү.");
       return;
     }
+    if (selectedItemsList.length === 0) {
+      setError("Дор хаяж нэг бараа нэмнэ үү.");
+      return;
+    }
+
     try {
-      setLoading(true);
-      const payload = {
-        code: reference || `TCO${Date.now()}`,
+      setSaving(true);
+      await createCheckout({
+        code: reference.trim() || `TCO${Date.now()}`,
         date,
-        status: isDraft ? ("Draft" as const) : ("Pending" as const),
+        status: isDraft ? "Draft" : "Pending",
         contact,
         warehouse,
         user: "Admin",
-        details,
+        details: details.trim(),
         items: selectedItemsList.map((item) => ({
           name: item.name,
           code: item.name.slice(0, 5).toUpperCase(),
-          weight: `${item.weight}kg`,
-          quantity: `${item.quantity}${item.unit}`,
+          weight: item.weight,
+          quantity: item.quantity,
         })),
-      };
-      const res = await createCheckout(payload);
-      if (res?.id) {
-        alert("Зарлага амжилттай үүслээ!");
-        navigate("/checkout");
-      }
-    } catch (err) {
-      console.error("Хадгалахад алдаа гарлаа:", err);
-      alert("Сервертэй холбогдоход алдаа гарлаа.");
+      });
+      navigate("/checkout", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -150,8 +196,18 @@ const CreateCheckOut = () => {
           <form onSubmit={handleSubmit}>
             <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
               <div className="p-6 md:p-8 space-y-8">
+                {/* Error Banner */}
+                {error && (
+                  <div className="flex items-start gap-3 text-sm text-red-700 bg-red-50 border border-red-100 px-4 py-3 rounded-lg">
+                    <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-red-200 text-red-700 flex items-center justify-center text-[10px] font-bold">
+                      !
+                    </span>
+                    {error}
+                  </div>
+                )}
+
                 {/* Main Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
                   <div className="space-y-5">
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -171,7 +227,7 @@ const CreateCheckOut = () => {
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Лавлах дугаар
+                        Лавлах дугаар (Reference)
                       </label>
                       <input
                         placeholder="Дугаар оруулна уу"
@@ -194,9 +250,9 @@ const CreateCheckOut = () => {
                         className={baseInputClass}
                       >
                         <option value="">Харилцагч сонгох</option>
-                        {contacts.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
+                        {contactList.map((c) => (
+                          <option key={c.id} value={c.name}>
+                            {c.name}
                           </option>
                         ))}
                       </select>
@@ -211,9 +267,9 @@ const CreateCheckOut = () => {
                         className={baseInputClass}
                       >
                         <option value="">Агуулах сонгох</option>
-                        {warehouses.map((wh) => (
-                          <option key={wh} value={wh}>
-                            {wh}
+                        {warehouseList.map((wh) => (
+                          <option key={wh.id} value={wh.name}>
+                            {wh.name}
                           </option>
                         ))}
                       </select>
@@ -251,13 +307,18 @@ const CreateCheckOut = () => {
                     {isOpen && (
                       <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl shadow-gray-100/80 max-h-60 overflow-y-auto">
                         {filteredItems.length > 0 ? (
-                          filteredItems.map((item, index) => (
+                          filteredItems.map((item) => (
                             <div
-                              key={index}
+                              key={item.id}
                               className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors"
                               onClick={() => handleSelectItem(item)}
                             >
-                              {item}
+                              <span className="font-medium">{item.name}</span>
+                              {item.internalCode && (
+                                <span className="ml-2 text-xs text-gray-400 font-mono">
+                                  {item.internalCode}
+                                </span>
+                              )}
                             </div>
                           ))
                         ) : (
@@ -310,36 +371,34 @@ const CreateCheckOut = () => {
                               </td>
                               <td className="px-4 py-3">
                                 <input
-                                  type="number"
-                                  defaultValue={row.weight}
+                                  type="text"
+                                  value={row.weight}
                                   onChange={(e) =>
-                                    updateItem(
-                                      row.id,
-                                      "weight",
-                                      Number(e.target.value),
-                                    )
+                                    updateItem(row.id, "weight", e.target.value)
                                   }
+                                  placeholder="0.00"
                                   className={tableInputClass}
                                 />
                               </td>
                               <td className="px-4 py-3">
                                 <input
-                                  type="number"
-                                  defaultValue={row.quantity}
+                                  type="text"
+                                  value={row.quantity}
                                   onChange={(e) =>
                                     updateItem(
                                       row.id,
                                       "quantity",
-                                      Number(e.target.value),
+                                      e.target.value,
                                     )
                                   }
+                                  placeholder="0"
                                   className={tableInputClass}
                                 />
                               </td>
                               <td className="px-4 py-3">
                                 <div className="relative">
                                   <select
-                                    defaultValue={row.unit}
+                                    value={row.unit}
                                     onChange={(e) =>
                                       updateItem(row.id, "unit", e.target.value)
                                     }
@@ -360,8 +419,7 @@ const CreateCheckOut = () => {
                               colSpan={5}
                               className="py-14 text-center text-gray-300 text-sm bg-gray-50/20"
                             >
-                              Бараа нэмэгдээгүй байна. Дээрх хайлтаар бараагаа
-                              сонгоно уу.
+                              Хайлт хийх эсвэл баркод уншуулж бараа нэмнэ үү
                             </td>
                           </tr>
                         )}
@@ -386,11 +444,8 @@ const CreateCheckOut = () => {
                       <div className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center mb-2.5 group-hover:border-blue-300 group-hover:bg-blue-50 transition-all shadow-sm">
                         <HiOutlinePaperClip className="text-gray-400 group-hover:text-blue-500 w-4 h-4 transition-colors" />
                       </div>
-                      <p className="text-xs text-gray-500 font-medium text-center">
-                        <span className="text-blue-500 font-semibold">
-                          Файл хуулах
-                        </span>{" "}
-                        эсвэл энд чирч оруулна уу
+                      <p className="text-xs text-gray-500 font-medium">
+                        Дарж хуулна уу эсвэл файлаа чирнэ үү
                       </p>
                       <input
                         type="file"
@@ -445,7 +500,7 @@ const CreateCheckOut = () => {
                       type="checkbox"
                       checked={isDraft}
                       onChange={(e) => setIsDraft(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      className="peer w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                     <span className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
                       Энэ бүртгэлийг ноорог (draft) хэлбэрээр хадгалах
@@ -462,17 +517,17 @@ const CreateCheckOut = () => {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate("/checkout")}
                     className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
                   >
                     Цуцлах
                   </button>
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={saving}
                     className="px-7 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-sm transition-all active:scale-[0.98]"
                   >
-                    {loading ? (
+                    {saving ? (
                       <span className="flex items-center gap-2">
                         <svg
                           className="animate-spin w-3.5 h-3.5"

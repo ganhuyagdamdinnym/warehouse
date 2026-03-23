@@ -13,6 +13,7 @@ export interface Item {
   trackStock?: boolean;
   stockAlert?: number;
   createdAt?: string;
+  stock?: number;
 }
 
 export interface ItemListResponse {

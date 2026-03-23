@@ -5,7 +5,7 @@ export interface Warehouse {
   phone?: string;
   email?: string;
   address?: string;
-  is_active?: number;
+  is_active?: boolean;
 }
 
 export interface WarehouseListResponse {

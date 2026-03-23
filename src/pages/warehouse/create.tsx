@@ -48,7 +48,7 @@ const CreateWarehouse = () => {
         phone: phone.trim() || undefined,
         email: email.trim() || undefined,
         address: address.trim() || undefined,
-        is_active: isActive ? 1 : 0,
+        is_active: isActive ? true : false,
       });
       navigate("/warehouses", { replace: true });
     } catch (err: unknown) {

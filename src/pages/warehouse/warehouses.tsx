@@ -34,9 +34,9 @@ const Warehouses: React.FC = () => {
       // Filter by active status on client side
       let data = res.data as Warehouse[];
       if (activeFilter === "Active") {
-        data = data.filter((w) => w.is_active === 1);
+        data = data.filter((w) => w.is_active === true);
       } else if (activeFilter === "Inactive") {
-        data = data.filter((w) => w.is_active === 0);
+        data = data.filter((w) => w.is_active === false);
       }
       setWarehousesList(data);
       setTotalItems(activeFilter === "All" ? res.total : data.length);
@@ -228,7 +228,7 @@ const Warehouses: React.FC = () => {
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      {item.is_active === 1 ? (
+                      {item.is_active === true ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
                           <IoCheckmark className="w-3 h-3" />
                           Идэвхтэй
@@ -295,7 +295,7 @@ const Warehouses: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  {item.is_active === 1 ? (
+                  {item.is_active === true ? (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
                       <IoCheckmark className="w-3 h-3" />
                       Идэвхтэй

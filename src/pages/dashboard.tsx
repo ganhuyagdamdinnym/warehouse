@@ -9,12 +9,11 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  LineChart,
-  Line,
   AreaChart,
   Area,
 } from "recharts";
 import { Totals } from "../components/dashboard/totals";
+import { LastActions } from "../components/dashboard/lastActions";
 
 const monthlyData = [
   { name: "7-р сар", checkins: 12, checkouts: 8, transfers: 5, adjustments: 3 },
@@ -134,62 +133,6 @@ const topItems = [
     trend: "down",
   },
 ];
-
-const recentActivity = [
-  {
-    code: "TCI-082",
-    type: "Орлого",
-    warehouse: "Агуулах 1",
-    user: "Дамдинням",
-    date: "Өнөөдөр, 09:14",
-    status: "Completed",
-  },
-  {
-    code: "TCO-061",
-    type: "Зарлага",
-    warehouse: "Агуулах 3",
-    user: "Сүрэн",
-    date: "Өнөөдөр, 08:47",
-    status: "Draft",
-  },
-  {
-    code: "TTR-039",
-    type: "Шилжүүлэг",
-    warehouse: "Агуулах 2",
-    user: "Болд",
-    date: "Өчигдөр, 17:22",
-    status: "Completed",
-  },
-  {
-    code: "TAD-017",
-    type: "Залруулга",
-    warehouse: "Агуулах 4",
-    user: "Бат",
-    date: "Өчигдөр, 14:05",
-    status: "Pending",
-  },
-  {
-    code: "TCI-081",
-    type: "Орлого",
-    warehouse: "Агуулах 1",
-    user: "Дамдинням",
-    date: "Өчигдөр, 11:30",
-    status: "Completed",
-  },
-];
-
-const statusConfig: Record<string, string> = {
-  Completed: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-  Draft: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
-  Pending: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
-};
-
-const typeColor: Record<string, string> = {
-  Орлого: "text-emerald-600",
-  Зарлага: "text-amber-600",
-  Шилжүүлэг: "text-indigo-600",
-  Залруулга: "text-red-500",
-};
 
 const Dashboard = () => {
   const [year, setYear] = useState("2026");
@@ -388,77 +331,7 @@ const Dashboard = () => {
         {/* Bottom Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Recent Activity — 2/3 */}
-          <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900">
-                Сүүлийн үйл ажиллагаа
-              </h3>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Хамгийн сүүлд бүртгэгдсэн гүйлгээнүүд
-              </p>
-            </div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-left">
-                    Код
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-left">
-                    Төрөл
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-left hidden sm:table-cell">
-                    Агуулах
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-left hidden md:table-cell">
-                    Хэрэглэгч
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-left">
-                    Төлөв
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100/80">
-                {recentActivity.map((row, i) => (
-                  <tr key={i} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="font-semibold text-blue-600 text-xs">
-                        {row.code}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {row.date}
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`text-xs font-semibold ${typeColor[row.type]}`}
-                      >
-                        {row.type}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 hidden sm:table-cell">
-                      <span className="text-xs text-gray-600">
-                        {row.warehouse}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 hidden md:table-cell">
-                      <span className="text-xs text-gray-600">{row.user}</span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[row.status]}`}
-                      >
-                        {row.status === "Completed"
-                          ? "Дууссан"
-                          : row.status === "Draft"
-                            ? "Ноорог"
-                            : "Хүлээгдэж буй"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <LastActions />
 
           {/* Top Items — 1/3 */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
