@@ -1,3 +1,10 @@
+// WarehouseAllocation төрлийг тусад нь эсвэл Item дотор тодорхойлно
+export interface WarehouseAllocation {
+  warehouseId: number | string;
+  warehouseName?: string;
+  quantity: number | string;
+}
+
 export interface Item {
   id: string;
   name: string;
@@ -14,6 +21,9 @@ export interface Item {
   stockAlert?: number;
   createdAt?: string;
   stock?: number;
+
+  // Энэ талбарыг заавал нэмж өгөх хэрэгтэй:
+  warehouseAllocations?: WarehouseAllocation[];
 }
 
 export interface ItemListResponse {

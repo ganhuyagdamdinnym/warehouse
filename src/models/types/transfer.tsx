@@ -12,8 +12,11 @@ export interface Transfer {
   code: string;
   date: string;
   status: "Draft" | "Completed" | "Pending";
-  fromWarehouse: string;
-  toWarehouse: string;
+  fromWarehouseId: number;
+  toWarehouseId: number;
+  // Хэрэв Backend-ээс агуулахын объект ирж байгаа бол:
+  fromWarehouse?: { name: string };
+  toWarehouse?: { name: string };
   user?: string;
   details?: string;
   items?: TransferItem[];

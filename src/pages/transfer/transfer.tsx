@@ -11,17 +11,8 @@ import {
 } from "react-icons/hi";
 import { AiOutlineFileText } from "react-icons/ai";
 import { getTransfers, deleteTransfer } from "../../api/transfer/transfer";
-
-interface TransferData {
-  id: string;
-  code: string;
-  date: string;
-  status: "Draft" | "Completed" | "Pending";
-  fromWarehouse: string;
-  toWarehouse: string;
-  user?: string;
-  details?: string;
-}
+// Төрөл (Interface) тодорхойлсон файлаасаа импортлох
+import type { Transfer } from "../../models/types/transfer";
 
 const statusConfig = {
   Draft: {
@@ -38,7 +29,7 @@ const statusConfig = {
   },
 };
 
-const Transfer: React.FC = () => {
+const TransferPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
@@ -46,7 +37,7 @@ const Transfer: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const [transferList, setTransferList] = useState<TransferData[]>([]);
+  const [transferList, setTransferList] = useState<Transfer[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -59,7 +50,8 @@ const Transfer: React.FC = () => {
         page: currentPage,
         limit: itemsPerPage,
       });
-      setTransferList(res.data as TransferData[]);
+      // API-аас ирсэн датаг шууд онооно
+      setTransferList(res.data);
       setTotalItems(res.total);
     } catch (err) {
       console.error("Өгөгдөл татахад алдаа гарлаа:", err);
@@ -73,7 +65,7 @@ const Transfer: React.FC = () => {
   }, [searchTerm, statusFilter, currentPage, itemsPerPage]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
+    if (!window.confirm("Устгахдаа итгэлтэй байна уу?")) return;
     try {
       await deleteTransfer(id);
       fetchTransfers();
@@ -103,7 +95,6 @@ const Transfer: React.FC = () => {
         {/* Toolbar */}
         <div className="mb-5 flex gap-3 justify-between items-center print:hidden">
           <div className="flex items-center gap-2 w-full max-w-2xl">
-            {/* Filter */}
             <div className="relative">
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -115,7 +106,7 @@ const Transfer: React.FC = () => {
                 />
               </button>
               {isFilterOpen && (
-                <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-300 rounded-xl z-10 p-1.5">
+                <div className="absolute left-0 mt-1.5 w-52 bg-white border border-gray-300 rounded-xl z-10 p-1.5 shadow-lg">
                   <p className="text-xs font-semibold text-gray-400 px-2 py-1.5 uppercase tracking-wider">
                     Төлөв
                   </p>
@@ -144,7 +135,6 @@ const Transfer: React.FC = () => {
               )}
             </div>
 
-            {/* Search */}
             <div className="flex items-center flex-1 bg-white border border-gray-200 rounded-lg px-3 gap-2 hover:border-gray-300 transition-colors">
               <HiOutlineSearch className="text-gray-400 w-4 h-4 shrink-0" />
               <input
@@ -230,44 +220,52 @@ const Transfer: React.FC = () => {
                         {item.code}
                       </div>
                       <div className="text-xs text-gray-400 mt-0.5">
-                        {item.date}
+                        {new Date(item.date).toLocaleDateString()}
                       </div>
                       <span
-                        className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
+                        className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status]?.class}`}
                       >
                         <AiOutlineFileText className="w-3 h-3" />
-                        {statusConfig[item.status].label}
+                        {statusConfig[item.status]?.label}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="space-y-1">
-                        {[
-                          { label: "Гарах агуулах", value: item.fromWarehouse },
-                          { label: "Орох агуулах", value: item.toWarehouse },
-                          { label: "Хэрэглэгч", value: item.user },
-                        ].map(({ label, value }) => (
-                          <div
-                            key={label}
-                            className="flex items-center gap-2 text-sm"
-                          >
-                            <span className="text-gray-400 text-xs w-24 shrink-0">
-                              {label}
-                            </span>
-                            <span className="text-gray-700">{value}</span>
-                          </div>
-                        ))}
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-gray-400 text-xs w-24 shrink-0">
+                            Гарах агуулах
+                          </span>
+                          <span className="text-gray-700">
+                            {(item as any).fromWarehouse?.name ||
+                              item.fromWarehouseId}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-gray-400 text-xs w-24 shrink-0">
+                            Орох агуулах
+                          </span>
+                          <span className="text-gray-700">
+                            {(item as any).toWarehouse?.name ||
+                              item.toWarehouseId}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-gray-400 text-xs w-24 shrink-0">
+                            Хэрэглэгч
+                          </span>
+                          <span className="text-gray-700">
+                            {item.user || "Тодорхойгүй"}
+                          </span>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 max-w-xs">
                       <p className="text-sm text-gray-500 line-clamp-2">
-                        {item.details}
+                        {item.details || "-"}
                       </p>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div
-                        className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <div className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden">
                         <button
                           onClick={() => navigate(`/transfer/${item.id}/edit`)}
                           className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
@@ -313,7 +311,7 @@ const Transfer: React.FC = () => {
             transferList.map((item) => (
               <div
                 key={item.id}
-                className="bg-white border border-gray-200/60 rounded-xl p-4 cursor-pointer hover:border-gray-300/60 transition-colors"
+                className="bg-white border border-gray-200/60 rounded-xl p-4 shadow-sm"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -321,38 +319,32 @@ const Transfer: React.FC = () => {
                       {item.code}
                     </div>
                     <div className="text-xs text-gray-400 mt-0.5">
-                      {item.date}
+                      {new Date(item.date).toLocaleDateString()}
                     </div>
                   </div>
                   <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status].class}`}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${statusConfig[item.status]?.class}`}
                   >
-                    {statusConfig[item.status].label}
+                    {statusConfig[item.status]?.label}
                   </span>
                 </div>
                 <div className="space-y-1 text-sm">
-                  <div className="flex gap-2">
-                    <span className="text-gray-400 text-xs w-24">
-                      Гарах агуулах
+                  <div className="flex justify-between">
+                    <span className="text-gray-400 text-xs">
+                      Гарах агуулах:
                     </span>
-                    <span className="text-gray-700">{item.fromWarehouse}</span>
+                    <span className="text-gray-700">
+                      {(item as any).fromWarehouse?.name ||
+                        item.fromWarehouseId}
+                    </span>
                   </div>
-                  <div className="flex gap-2">
-                    <span className="text-gray-400 text-xs w-24">
-                      Орох агуулах
+                  <div className="flex justify-between">
+                    <span className="text-gray-400 text-xs">Орох агуулах:</span>
+                    <span className="text-gray-700">
+                      {(item as any).toWarehouse?.name || item.toWarehouseId}
                     </span>
-                    <span className="text-gray-700">{item.toWarehouse}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className="text-gray-400 text-xs w-24">
-                      Хэрэглэгч
-                    </span>
-                    <span className="text-gray-700">{item.user}</span>
                   </div>
                 </div>
-                <p className="mt-3 text-xs text-gray-400 line-clamp-1">
-                  {item.details}
-                </p>
               </div>
             ))
           )}
@@ -418,4 +410,4 @@ const Transfer: React.FC = () => {
   );
 };
 
-export default Transfer;
+export default TransferPage;

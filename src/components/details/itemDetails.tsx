@@ -7,14 +7,14 @@ type Variant = {
 };
 
 type WarehouseVariantStock = {
-  label: string; // e.g. "Size: S, Color: Red"
-  quantity: string; // e.g. "0.00 pc (0.00 kg)"
+  label: string;
+  quantity: string;
 };
 
 type WarehouseStock = {
   id: string;
-  name: string; // e.g. "Warehouse 1"
-  code: string; // e.g. "WH1"
+  name: string;
+  code: string;
   totalQuantity: string;
   variantStocks: WarehouseVariantStock[];
 };
@@ -23,15 +23,20 @@ type ItemDetailData = {
   id: string;
   name: string;
   code: string;
+  internalCode?: string;
   sku?: string;
   rack?: string;
   category: string;
   unit: string;
+  stock?: number | string;
   trackSerials: boolean;
   trackWeight: boolean;
   trackQuantity: boolean;
+  trackStock?: boolean;
+  stockAlert?: number;
   variants?: Variant[];
   details?: string;
+  description?: string;
   warehouseStocks?: WarehouseStock[];
 };
 
@@ -43,16 +48,20 @@ type Props = {
 const BarcodeDisplay = ({ code }: { code: string }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   useEffect(() => {
-    if (svgRef.current) {
-      JsBarcode(svgRef.current, code, {
-        format: "CODE128",
-        lineColor: "#000",
-        width: 2,
-        height: 60,
-        displayValue: true,
-        fontSize: 14,
-        margin: 10,
-      });
+    if (svgRef.current && code) {
+      try {
+        JsBarcode(svgRef.current, code, {
+          format: "CODE128",
+          lineColor: "#000",
+          width: 2,
+          height: 60,
+          displayValue: true,
+          fontSize: 14,
+          margin: 10,
+        });
+      } catch {
+        // Invalid barcode value — silently skip
+      }
     }
   }, [code]);
   return <svg ref={svgRef} />;
@@ -100,6 +109,11 @@ const DetailRow = ({
 );
 
 export const ItemDetails = ({ onClose, item }: Props) => {
+  const barcodeValue = item.internalCode || item.code || "";
+  const totalStock = Number(item.stock ?? 0);
+  const hasWarehouseStocks =
+    item.warehouseStocks && item.warehouseStocks.length > 0;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75 p-4"
@@ -136,18 +150,20 @@ export const ItemDetails = ({ onClose, item }: Props) => {
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 space-y-4">
           {/* Section 1: Barcode + Info */}
-          <div className="rounded-lg bg-white p-6 shadow-sm mb-4">
-            {/* Barcode */}
-            <div className="flex justify-center mb-6">
-              <BarcodeDisplay code={item.code} />
-            </div>
-
-            {/* Info Rows */}
+          <div className="rounded-lg bg-white p-6 shadow-sm">
+            {barcodeValue && (
+              <div className="flex justify-center mb-6">
+                <BarcodeDisplay code={barcodeValue} />
+              </div>
+            )}
             <div>
               <DetailRow label="Нэр">
                 <span className="font-semibold">{item.name}</span>
+              </DetailRow>
+              <DetailRow label="Дотоод код">
+                {item.internalCode || <span className="text-gray-300">—</span>}
               </DetailRow>
               <DetailRow label="SKU">
                 {item.sku || <span className="text-gray-300">—</span>}
@@ -155,20 +171,32 @@ export const ItemDetails = ({ onClose, item }: Props) => {
               <DetailRow label="Ангилал">
                 {item.category || <span className="text-gray-300">—</span>}
               </DetailRow>
-              <DetailRow label="Rack">
-                {item.rack || <span className="text-gray-300">—</span>}
-              </DetailRow>
               <DetailRow label="Нэгж">
                 {item.unit || <span className="text-gray-300">—</span>}
               </DetailRow>
-              <DetailRow label="Серийн дугаар хянах">
-                {item.trackSerials ? <CheckIcon /> : <CrossIcon />}
+              <DetailRow label="Нийт үлдэгдэл">
+                <span
+                  className={`font-bold text-base ${totalStock < 0 ? "text-red-500" : "text-gray-900"}`}
+                >
+                  {totalStock} ш
+                </span>
               </DetailRow>
-              <DetailRow label="Жин хянах">
-                {item.trackWeight ? <CheckIcon /> : <CrossIcon />}
-              </DetailRow>
+              {item.stockAlert != null && (
+                <DetailRow label="Доод хязгаар">
+                  <span
+                    className={`font-medium ${totalStock <= item.stockAlert ? "text-red-500" : "text-gray-700"}`}
+                  >
+                    {item.stockAlert} ш
+                    {totalStock <= item.stockAlert && (
+                      <span className="ml-2 text-xs bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md ring-1 ring-red-200">
+                        Дутагдалтай
+                      </span>
+                    )}
+                  </span>
+                </DetailRow>
+              )}
               <DetailRow label="Тоо хянах">
-                {item.trackQuantity ? <CheckIcon /> : <CrossIcon />}
+                {item.trackStock ? <CheckIcon /> : <CrossIcon />}
               </DetailRow>
               {item.variants && item.variants.length > 0 && (
                 <DetailRow label="Хувилбарууд">
@@ -182,51 +210,92 @@ export const ItemDetails = ({ onClose, item }: Props) => {
                   </div>
                 </DetailRow>
               )}
-              {item.details && (
+              {(item.details || item.description) && (
                 <DetailRow label="Дэлгэрэнгүй">
                   <span className="text-gray-600 leading-relaxed">
-                    {item.details}
+                    {item.details || item.description}
                   </span>
                 </DetailRow>
               )}
             </div>
           </div>
 
-          {/* Section 2: Warehouse Stocks Grid */}
-          {item.warehouseStocks && item.warehouseStocks.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {item.warehouseStocks.map((wh) => (
-                <div key={wh.id} className="rounded-lg bg-white p-4 shadow-sm">
-                  <div className="font-bold text-gray-900 mb-3">
-                    {wh.name} ({wh.code})
-                  </div>
-                  {/* Total row */}
-                  {/* <div className="flex justify-between py-2 border-b border-gray-200 mb-1">
-                    <span className="font-semibold text-sm text-gray-700">
-                      Тоо хэмжээ
-                    </span>
-                    <span
-                      className={`font-semibold text-sm ${wh.totalQuantity.startsWith("-") ? "text-red-500" : "text-gray-900"}`}
-                    >
-                      {wh.totalQuantity}
-                    </span>
-                  </div> */}
-                  {/* Variant rows */}
-                  {wh.variantStocks.map((vs, i) => (
+          {/* Section 2: Per-Warehouse Stock */}
+          {hasWarehouseStocks ? (
+            <div>
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 px-1">
+                Агуулах тус бүрийн үлдэгдэл
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {item.warehouseStocks!.map((wh) => {
+                  const qty = Number(wh.totalQuantity);
+                  const isLow =
+                    item.stockAlert != null && qty <= item.stockAlert;
+                  return (
                     <div
-                      key={i}
-                      className="flex justify-between py-1.5 border-b border-gray-100 last:border-0"
+                      key={wh.id}
+                      className="rounded-lg bg-white p-4 shadow-sm border border-gray-100"
                     >
-                      {/* <span className="text-sm text-gray-600">{vs.label}</span> */}
-                      <span
-                        className={`text-sm ${vs.quantity.startsWith("-") ? "text-red-500" : "text-gray-700"}`}
-                      >
-                        {vs.quantity}
-                      </span>
+                      {/* Warehouse header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <div className="font-bold text-gray-900 text-sm">
+                            {wh.name}
+                          </div>
+                          <div className="text-xs text-gray-400 font-mono">
+                            {wh.code}
+                          </div>
+                        </div>
+                        <div
+                          className={`text-2xl font-bold ${qty < 0 ? "text-red-500" : isLow ? "text-amber-500" : "text-gray-900"}`}
+                        >
+                          {qty}
+                        </div>
+                      </div>
+
+                      {/* Quantity bar */}
+                      <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
+                        <div
+                          className={`h-1.5 rounded-full transition-all ${
+                            qty <= 0
+                              ? "bg-red-400"
+                              : isLow
+                                ? "bg-amber-400"
+                                : "bg-emerald-400"
+                          }`}
+                          style={{
+                            width: `${Math.min(100, Math.max(0, (qty / Math.max(totalStock, 1)) * 100))}%`,
+                          }}
+                        />
+                      </div>
+
+                      {/* Status badge */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-400">
+                          Нийт {totalStock}-аас {qty} ш
+                        </span>
+                        {qty <= 0 ? (
+                          <span className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded ring-1 ring-red-200 font-medium">
+                            Дуссан
+                          </span>
+                        ) : isLow ? (
+                          <span className="text-[10px] bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded ring-1 ring-amber-200 font-medium">
+                            Цөөн
+                          </span>
+                        ) : (
+                          <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded ring-1 ring-emerald-200 font-medium">
+                            Хангалттай
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              ))}
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-white p-6 shadow-sm text-center text-sm text-gray-400 italic">
+              Агуулахын үлдэгдэл бүртгэгдээгүй байна
             </div>
           )}
         </div>

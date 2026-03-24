@@ -12,8 +12,10 @@ import { createTransfer } from "../../api/transfer/transfer";
 import { getWarehouses } from "../../api/warehouse/warehouse_api";
 import { getItems } from "../../api/item/item";
 
+// Шинэчилсэн интерфейс: Backend-ийн itemId-тай нийцүүлсэн
 interface SelectedItem {
-  id: number;
+  id: number; // Local unique key for React rendering
+  itemId: number; // Real database Item ID
   name: string;
   code: string;
   weight: string;
@@ -31,21 +33,21 @@ const CreateTransfer = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state
+  // Form state - Backend-ийн хүлээж авах ID-нууд
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
   const [code, setCode] = useState("");
-  const [fromWarehouse, setFromWarehouse] = useState("");
-  const [toWarehouse, setToWarehouse] = useState("");
+  const [fromWarehouseId, setFromWarehouseId] = useState<number | "">("");
+  const [toWarehouseId, setToWarehouseId] = useState<number | "">("");
   const [details, setDetails] = useState("");
   const [isDraft, setIsDraft] = useState(false);
 
-  // Real data from API
+  // API Data
   const [warehouseList, setWarehouseList] = useState<
-    { id: string; name: string }[]
+    { id: number; name: string }[]
   >([]);
   const [itemOptions, setItemOptions] = useState<
-    { id: string; name: string; internalCode?: string }[]
+    { id: number; name: string; internalCode?: string }[]
   >([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -58,7 +60,6 @@ const CreateTransfer = () => {
         .includes(searchTerm.toLowerCase()),
   );
 
-  // Fetch warehouses and items
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -66,9 +67,12 @@ const CreateTransfer = () => {
           getWarehouses({ limit: 100 }),
           getItems({ limit: 100 }),
         ]);
-        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        // Backend-ээс ирж буй ID-г Number болгож баталгаажуулах
+        setWarehouseList(
+          warehouseRes.data.map((w: any) => ({ ...w, id: Number(w.id) })),
+        );
         setItemOptions(
-          itemRes.data as { id: string; name: string; internalCode?: string }[],
+          itemRes.data.map((i: any) => ({ ...i, id: Number(i.id) })),
         );
       } catch (err) {
         console.error("Өгөгдөл татахад алдаа:", err);
@@ -77,7 +81,6 @@ const CreateTransfer = () => {
     fetchData();
   }, []);
 
-  // Click outside close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -92,14 +95,15 @@ const CreateTransfer = () => {
   }, []);
 
   const handleSelectItem = (item: {
-    id: string;
+    id: number;
     name: string;
     internalCode?: string;
   }) => {
     const newItem: SelectedItem = {
-      id: Date.now(),
+      id: Date.now(), // Local UI ID
+      itemId: item.id, // Database ID
       name: item.name,
-      code: item.internalCode || item.name.slice(0, 20) || "ITEM",
+      code: item.internalCode || "ITEM",
       weight: "1",
       quantity: "1",
       unit: "Ширхэг",
@@ -127,12 +131,16 @@ const CreateTransfer = () => {
     e.preventDefault();
     setError(null);
 
-    if (!date || !fromWarehouse || !toWarehouse) {
-      setError("Огноо, гарах болон орох агуулах заавал бөглөнө.");
+    if (!date || !fromWarehouseId || !toWarehouseId) {
+      setError("Огноо, гарах болон орох агуулах заавал сонгоно уу.");
       return;
     }
-    if (fromWarehouse === toWarehouse) {
+    if (fromWarehouseId === toWarehouseId) {
       setError("Гарах болон орох агуулах ижил байж болохгүй.");
+      return;
+    }
+    if (selectedItemsList.length === 0) {
+      setError("Шилжүүлэх бараа сонгоогүй байна.");
       return;
     }
 
@@ -141,12 +149,13 @@ const CreateTransfer = () => {
       await createTransfer({
         code: code.trim() || `TRF${Date.now()}`,
         date,
-        status: isDraft ? "Draft" : "Pending",
-        fromWarehouse,
-        toWarehouse,
+        status: isDraft ? "Draft" : "Completed", // Backend "Completed" үед үлдэгдэл хасдаг
+        fromWarehouseId: Number(fromWarehouseId),
+        toWarehouseId: Number(toWarehouseId),
         user: "Admin",
         details: details.trim() || undefined,
         items: selectedItemsList.map((item) => ({
+          itemId: item.itemId, // Backend-ийн хүлээж авах гол талбар
           name: item.name,
           code: item.code,
           weight: item.weight,
@@ -155,13 +164,16 @@ const CreateTransfer = () => {
         })),
       });
       navigate("/transfer", { replace: true });
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа.");
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.error || err.message || "Хадгалахад алдаа гарлаа.",
+      );
     } finally {
       setSaving(false);
     }
   };
 
+  // Styles (No changes made as requested)
   const baseInputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm transition-all focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 outline-none hover:border-gray-300 placeholder:text-gray-400";
   const tableInputClass =
@@ -170,7 +182,6 @@ const CreateTransfer = () => {
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/50">
       <div className="w-full">
-        {/* Header */}
         <div className="px-4 md:px-0 mb-8 flex items-start gap-4">
           <div className="w-1 h-12 rounded-full bg-gray-900 flex-shrink-0 mt-0.5" />
           <div>
@@ -192,7 +203,6 @@ const CreateTransfer = () => {
                 </p>
               )}
 
-              {/* Transfer Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
                 <div className="space-y-5">
                   <div>
@@ -232,12 +242,14 @@ const CreateTransfer = () => {
                     </label>
                     <select
                       className={baseInputClass}
-                      value={fromWarehouse}
-                      onChange={(e) => setFromWarehouse(e.target.value)}
+                      value={fromWarehouseId}
+                      onChange={(e) =>
+                        setFromWarehouseId(Number(e.target.value))
+                      }
                     >
                       <option value="">Сонгох...</option>
                       {warehouseList.map((wh) => (
-                        <option key={wh.id} value={wh.name}>
+                        <option key={wh.id} value={wh.id}>
                           {wh.name}
                         </option>
                       ))}
@@ -249,12 +261,12 @@ const CreateTransfer = () => {
                     </label>
                     <select
                       className={baseInputClass}
-                      value={toWarehouse}
-                      onChange={(e) => setToWarehouse(e.target.value)}
+                      value={toWarehouseId}
+                      onChange={(e) => setToWarehouseId(Number(e.target.value))}
                     >
                       <option value="">Сонгох...</option>
                       {warehouseList.map((wh) => (
-                        <option key={wh.id} value={wh.name}>
+                        <option key={wh.id} value={wh.id}>
                           {wh.name}
                         </option>
                       ))}
@@ -263,10 +275,8 @@ const CreateTransfer = () => {
                 </div>
               </div>
 
-              {/* Divider */}
               <div className="border-t border-dashed border-gray-100" />
 
-              {/* Item Search */}
               <div>
                 <div className="relative mb-4" ref={containerRef}>
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
@@ -291,12 +301,12 @@ const CreateTransfer = () => {
                   </div>
 
                   {isOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl shadow-gray-100/80 max-h-60 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
                       {filteredItems.length > 0 ? (
                         filteredItems.map((item) => (
                           <div
                             key={item.id}
-                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors flex items-center justify-between"
+                            className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none flex items-center justify-between"
                             onClick={() => handleSelectItem(item)}
                           >
                             <span>{item.name}</span>
@@ -316,7 +326,6 @@ const CreateTransfer = () => {
                   )}
                 </div>
 
-                {/* Table */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50/80 border-b border-gray-200">
@@ -408,10 +417,8 @@ const CreateTransfer = () => {
                 </div>
               </div>
 
-              {/* Divider */}
               <div className="border-t border-dashed border-gray-100" />
 
-              {/* File + Notes */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
@@ -426,7 +433,6 @@ const CreateTransfer = () => {
                     </p>
                   </div>
                 </div>
-
                 <div>
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
                     Шилжүүлгийн тайлбар
@@ -456,7 +462,6 @@ const CreateTransfer = () => {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="px-8 py-5 bg-gray-50/70 border-t border-gray-200 flex items-center justify-between">
               <p className="text-xs text-gray-400">
                 * Огноо, гарах болон орох агуулах заавал бөглөнө
