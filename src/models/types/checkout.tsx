@@ -2,6 +2,7 @@ export interface CheckoutItem {
   id?: number;
   name: string;
   code: string;
+  productId?: number;
   weight: string;
   quantity: string;
 }
@@ -13,6 +14,7 @@ export interface Checkout {
   status: "Draft" | "Completed" | "Pending";
   contact: string;
   warehouse: string;
+  warehouseId: number;
   user: string;
   details: string;
   items: CheckoutItem[];

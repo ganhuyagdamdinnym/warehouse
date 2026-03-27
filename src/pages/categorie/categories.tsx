@@ -9,10 +9,13 @@ import {
 } from "react-icons/hi";
 import { getCategories, deleteCategory } from "../../api/category/category";
 import type { Category } from "../../models/types/category";
+import { Confirmation } from "../../components/confirmation";
 
 const Categories: React.FC = () => {
   const navigate = useNavigate();
 
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,6 +30,11 @@ const Categories: React.FC = () => {
   const displayFrom = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const displayTo = Math.min(currentPage * itemsPerPage, total);
 
+  const openDeleteConfirm = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDeleteId(id);
+    setShowConfirm(true);
+  };
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -53,12 +61,14 @@ const Categories: React.FC = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    if (!confirm("Энэ ангиллыг устгах уу?")) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+
     try {
-      await deleteCategory(id);
-      fetchData();
+      await deleteCategory(deleteId);
+      setShowConfirm(false); // Close modal
+      setDeleteId(null); // Clear ID
+      fetchData(); // Refresh list
     } catch (err: any) {
       alert(err.message ?? "Устгахад алдаа гарлаа.");
     }
@@ -66,6 +76,18 @@ const Categories: React.FC = () => {
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => {
+            setShowConfirm(false);
+            setDeleteId(null);
+          }}
+          onConfirm={handleConfirmDelete} // No more type error!
+          title="Ангилалыг устгах уу?"
+          description="Та энэ ангилалг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+        />
+      )}
+
       <div className="px-4 md:px-0">
         {/* Header */}
         <div className="mb-8">
@@ -248,7 +270,7 @@ const Categories: React.FC = () => {
                           <HiOutlinePencilAlt className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={(e) => handleDelete(e, item.id)}
+                          onClick={(e) => openDeleteConfirm(e, item.id)}
                           className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
                           title="Устгах"
                         >
@@ -295,7 +317,7 @@ const Categories: React.FC = () => {
                       <HiOutlinePencilAlt className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={(e) => handleDelete(e, item.id)}
+                      onClick={(e) => openDeleteConfirm(e, item.id)}
                       className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
                     >
                       <HiOutlineTrash className="w-4 h-4" />

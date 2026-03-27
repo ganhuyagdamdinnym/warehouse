@@ -13,6 +13,7 @@ import { AiOutlineFileText } from "react-icons/ai";
 import { getTransfers, deleteTransfer } from "../../api/transfer/transfer";
 // Төрөл (Interface) тодорхойлсон файлаасаа импортлох
 import type { Transfer } from "../../models/types/transfer";
+import { Confirmation } from "../../components/confirmation";
 
 const statusConfig = {
   Draft: {
@@ -31,6 +32,9 @@ const statusConfig = {
 
 const TransferPage: React.FC = () => {
   const navigate = useNavigate();
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -60,19 +64,28 @@ const TransferPage: React.FC = () => {
     }
   };
 
+  const openDeleteConfirm = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDeleteId(id);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      await deleteTransfer(deleteId);
+      setShowConfirm(false); // Close modal
+      setDeleteId(null); // Clear ID
+      fetchTransfers(); // Refresh list
+    } catch (err: any) {
+      alert(err.message ?? "Устгахад алдаа гарлаа.");
+    }
+  };
+
   useEffect(() => {
     fetchTransfers();
   }, [searchTerm, statusFilter, currentPage, itemsPerPage]);
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Устгахдаа итгэлтэй байна уу?")) return;
-    try {
-      await deleteTransfer(id);
-      fetchTransfers();
-    } catch (err) {
-      console.error("Устгахад алдаа гарлаа:", err);
-    }
-  };
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const displayFrom =
@@ -81,6 +94,18 @@ const TransferPage: React.FC = () => {
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => {
+            setShowConfirm(false);
+            setDeleteId(null);
+          }}
+          onConfirm={handleConfirmDelete} // No more type error!
+          title="Шилжүүлгийг устгах уу?"
+          description="Та энэ шилжүүлгийг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+        />
+      )}
+
       <div className="px-4 md:px-0">
         {/* Header */}
         <div className="mb-8">
@@ -265,7 +290,10 @@ const TransferPage: React.FC = () => {
                       </p>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden">
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"
+                      >
                         <button
                           onClick={() => navigate(`/transfer/${item.id}/edit`)}
                           className="p-2 bg-white text-blue-500 hover:bg-blue-50 border-r border-gray-200/60 transition-colors"
@@ -286,7 +314,7 @@ const TransferPage: React.FC = () => {
                           <HiOutlineClipboardList className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id)}
+                          onClick={(e) => openDeleteConfirm(e, item.id)}
                           className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
                           title="Устгах"
                         >

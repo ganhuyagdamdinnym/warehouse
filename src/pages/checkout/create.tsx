@@ -18,6 +18,7 @@ interface SelectedItem {
   name: string;
   weight: string;
   quantity: string;
+  productId: number;
   unit: string;
 }
 
@@ -36,7 +37,9 @@ const CreateCheckOut = () => {
   const [date, setDate] = useState("");
   const [reference, setReference] = useState("");
   const [contact, setContact] = useState("");
-  const [warehouse, setWarehouse] = useState("");
+  const [warehouseId, setWarehouseId] = useState<number | null>(null); // ← ID
+  const [warehouseName, setWarehouseName] = useState(""); // ← Нэр
+  const [warehouseSelectValue, setWarehouseSelectValue] = useState(""); // ← Select-ийн value
   const [details, setDetails] = useState("");
   const [isDraft, setIsDraft] = useState(false);
 
@@ -104,6 +107,7 @@ const CreateCheckOut = () => {
       {
         id: Date.now(),
         name: item.name,
+        productId: 1,
         weight: "1",
         quantity: "1",
         unit: "Хайрцаг",
@@ -133,11 +137,19 @@ const CreateCheckOut = () => {
     }
   };
 
+  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    setWarehouseSelectValue(selectedId); // Select-ийн харагдах утга
+    const found = warehouseList.find((wh) => String(wh.id) === selectedId);
+    setWarehouseId(found ? Number(found.id) : null); // ID хадгалах
+    setWarehouseName(found ? found.name : ""); // Нэр хадгалах
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!date || !contact || !warehouse) {
+    if (!date || !contact || !warehouseId) {
       setError("Огноо, харилцагч, агуулахыг заавал бөглөнө үү.");
       return;
     }
@@ -151,13 +163,15 @@ const CreateCheckOut = () => {
       await createCheckout({
         code: reference.trim() || `TCO${Date.now()}`,
         date,
-        status: isDraft ? "Draft" : "Pending",
+        status: isDraft ? "Draft" : "Completed",
         contact,
-        warehouse,
+        warehouse: warehouseName, // ← Нэр
+        warehouseId: warehouseId, // ← ID
         user: "Admin",
         details: details.trim(),
         items: selectedItemsList.map((item) => ({
           name: item.name,
+          productId: 1,
           code: item.name.slice(0, 5).toUpperCase(),
           weight: item.weight,
           quantity: item.quantity,
@@ -261,14 +275,15 @@ const CreateCheckOut = () => {
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Агуулах
                       </label>
+                      {/* ↓ value нь warehouseSelectValue (id string) */}
                       <select
-                        value={warehouse}
-                        onChange={(e) => setWarehouse(e.target.value)}
+                        value={warehouseSelectValue}
+                        onChange={handleWarehouseChange}
                         className={baseInputClass}
                       >
                         <option value="">Агуулах сонгох</option>
                         {warehouseList.map((wh) => (
-                          <option key={wh.id} value={wh.name}>
+                          <option key={wh.id} value={String(wh.id)}>
                             {wh.name}
                           </option>
                         ))}

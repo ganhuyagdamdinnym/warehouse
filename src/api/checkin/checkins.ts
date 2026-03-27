@@ -3,9 +3,9 @@ import type {
   Checkin,
   CheckinItem,
   CheckinListResponse,
+  CreateCheckinPayload, // ← нэм
 } from "../../models/types/checkin";
 
-/** Normalize id to string (backend may return number). */
 function normalizeCheckin(raw: Record<string, unknown>): Checkin {
   const c = raw as unknown as Checkin & { id?: number };
   return {
@@ -33,8 +33,6 @@ function normalizeList(res: {
     ),
   };
 }
-
-// --- API ---
 
 export interface GetCheckinsParams {
   search?: string;
@@ -67,14 +65,14 @@ export async function getCheckin(id: string): Promise<Checkin> {
 }
 
 export async function createCheckin(
-  data: Omit<Checkin, "id">,
+  data: CreateCheckinPayload, // ← Omit<Checkin, "id"> → CreateCheckinPayload
 ): Promise<{ message: string; id: number }> {
   return request("/checkins", { method: "POST", body: data });
 }
 
 export async function updateCheckin(
   id: string,
-  data: Omit<Checkin, "id">,
+  data: CreateCheckinPayload, // ← мөн адил
 ): Promise<{ message: string }> {
   return request(`/checkins/${id}`, { method: "PUT", body: data });
 }

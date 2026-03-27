@@ -6,6 +6,7 @@ import {
   HiOutlinePlus,
   HiOutlinePencilAlt,
   HiOutlineTrash,
+  HiOutlineClipboardList,
 } from "react-icons/hi";
 import { IoCheckmark } from "react-icons/io5";
 import { getWarehouses, deleteWarehouse } from "../../api/warehouse/warehouse";
@@ -253,6 +254,12 @@ const Warehouses: React.FC = () => {
                           title="Засах"
                         >
                           <HiOutlinePencilAlt className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
+                          title="Бүртгэл"
+                        >
+                          <HiOutlineClipboardList className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}

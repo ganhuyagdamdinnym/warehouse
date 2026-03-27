@@ -8,8 +8,12 @@ import {
 } from "react-icons/hi";
 import { getContacts, deleteContact } from "../../api/contact/contact_api";
 import type { Contact } from "../../models/types/contact";
+import { Confirmation } from "../../components/confirmation";
 const Contacts: React.FC = () => {
   const navigate = useNavigate();
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -39,13 +43,21 @@ const Contacts: React.FC = () => {
     fetchContacts();
   }, [searchTerm, currentPage, itemsPerPage]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
+  const openDeleteConfirm = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDeleteId(id);
+    setShowConfirm(true);
+  };
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+
     try {
-      await deleteContact(id);
-      fetchContacts();
-    } catch (err) {
-      console.error("Устгахад алдаа гарлаа:", err);
+      await deleteContact(deleteId);
+      setShowConfirm(false); // Close modal
+      setDeleteId(null); // Clear ID
+      fetchContacts(); // Refresh list
+    } catch (err: any) {
+      alert(err.message ?? "Устгахад алдаа гарлаа.");
     }
   };
 
@@ -56,6 +68,17 @@ const Contacts: React.FC = () => {
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => {
+            setShowConfirm(false);
+            setDeleteId(null);
+          }}
+          onConfirm={handleConfirmDelete} // No more type error!
+          title="Харилцагчийг устгах уу?"
+          description="Та энэ ангилалг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+        />
+      )}
       <div className="px-4 md:px-0">
         {/* Header */}
         <div className="mb-8">
@@ -183,7 +206,7 @@ const Contacts: React.FC = () => {
                           <HiOutlinePencilAlt className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id)}
+                          onClick={(e) => openDeleteConfirm(e, item.id)}
                           className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
                           title="Устгах"
                         >
@@ -243,7 +266,7 @@ const Contacts: React.FC = () => {
                     <HiOutlinePencilAlt className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(item.id)}
+                    onClick={(e) => openDeleteConfirm(e, item.id)}
                     className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
                     title="Устгах"
                   >

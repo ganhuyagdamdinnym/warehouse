@@ -8,9 +8,13 @@ import {
 } from "react-icons/hi";
 import { getUnits, deleteUnit } from "../../api/unit/unit";
 import type { Unit } from "../../models/types/unit";
+import { Confirmation } from "../../components/confirmation";
 
 const Units: React.FC = () => {
   const navigate = useNavigate();
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -40,16 +44,24 @@ const Units: React.FC = () => {
     fetchUnits();
   }, [searchTerm, currentPage, itemsPerPage]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Устгахдаа итгэлтэй байна уу?")) return;
-    try {
-      await deleteUnit(id);
-      fetchUnits();
-    } catch (err) {
-      console.error("Устгахад алдаа гарлаа:", err);
-    }
+  const openDeleteConfirm = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDeleteId(id);
+    setShowConfirm(true);
   };
 
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      await deleteUnit(deleteId);
+      setShowConfirm(false); // Close modal
+      setDeleteId(null); // Clear ID
+      fetchUnits(); // Refresh list
+    } catch (err: any) {
+      alert(err.message ?? "Устгахад алдаа гарлаа.");
+    }
+  };
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const displayFrom =
     totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
@@ -57,6 +69,17 @@ const Units: React.FC = () => {
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
+      {showConfirm && (
+        <Confirmation
+          onClose={() => {
+            setShowConfirm(false);
+            setDeleteId(null);
+          }}
+          onConfirm={handleConfirmDelete} // No more type error!
+          title="Шилжүүлгийг устгах уу?"
+          description="Та энэ шилжүүлгийг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+        />
+      )}
       <div className="px-4 md:px-0">
         {/* Header */}
         <div className="mb-8">
@@ -180,7 +203,7 @@ const Units: React.FC = () => {
                           <HiOutlinePencilAlt className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id)}
+                          onClick={(e) => openDeleteConfirm(e, item.id)}
                           className="p-2 bg-white text-red-500 hover:bg-red-50 transition-colors"
                           title="Устгах"
                         >

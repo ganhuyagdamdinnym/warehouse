@@ -15,6 +15,7 @@ import type { CheckinItem } from "../../models/types/checkin";
 
 interface SelectedItem {
   id: number;
+  productId: number; // ← Item-ийн бодит ID
   name: string;
   code: string;
   weight: string;
@@ -36,7 +37,9 @@ const CreateCheckIn = () => {
   const [date, setDate] = useState("");
   const [code, setCode] = useState("");
   const [contact, setContact] = useState("");
-  const [warehouse, setWarehouse] = useState("");
+  const [warehouseId, setWarehouseId] = useState<number | null>(null); // ← ID
+  const [warehouseName, setWarehouseName] = useState(""); // ← Нэр
+  const [warehouseSelectValue, setWarehouseSelectValue] = useState(""); // ← Select value
   const [details, setDetails] = useState("");
   const [isDraft, setIsDraft] = useState(true);
 
@@ -94,6 +97,14 @@ const CreateCheckIn = () => {
         .includes(searchTerm.toLowerCase()),
   );
 
+  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    setWarehouseSelectValue(selectedId);
+    const found = warehouseList.find((wh) => String(wh.id) === selectedId);
+    setWarehouseId(found ? Number(found.id) : null);
+    setWarehouseName(found ? found.name : "");
+  };
+
   const handleSelectItem = (item: {
     id: string;
     name: string;
@@ -101,6 +112,7 @@ const CreateCheckIn = () => {
   }) => {
     const newItem: SelectedItem = {
       id: Date.now(),
+      productId: Number(item.id), // ← бодит Item ID хадгалах
       name: item.name,
       code: item.internalCode || item.name.slice(0, 20) || "ITEM",
       weight: "1",
@@ -134,24 +146,32 @@ const CreateCheckIn = () => {
 
   const handleSubmit = async () => {
     setError(null);
-    if (!date || !code.trim() || !contact || !warehouse) {
+    if (!date || !code.trim() || !contact || !warehouseId) {
       setError("Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө.");
       return;
     }
-    const itemsForApi: CheckinItem[] = selectedItemsList.map((row) => ({
+    if (selectedItemsList.length === 0) {
+      setError("Дор хаяж нэг бараа нэмнэ үү.");
+      return;
+    }
+
+    const itemsForApi = selectedItemsList.map((row) => ({
+      productId: row.productId, // ← backend-д явуулах
       name: row.name,
       code: row.code,
       weight: row.weight,
       quantity: row.quantity,
     }));
+
     try {
       setSaving(true);
       await createCheckin({
         code: code.trim(),
         date,
-        status: isDraft ? "Draft" : "Pending",
+        status: isDraft ? "Draft" : "Completed",
         contact,
-        warehouse,
+        warehouse: warehouseName, // ← нэр
+        warehouseId, // ← ID
         user: contact,
         details: details.trim(),
         items: itemsForApi,
@@ -170,7 +190,6 @@ const CreateCheckIn = () => {
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/50">
       <div className="w-full">
-        {/* Page Header */}
         <div className="px-4 md:px-0 mb-8 flex items-start gap-4">
           <div className="w-1 h-12 rounded-full bg-gray-900 flex-shrink-0 mt-0.5" />
           <div>
@@ -178,7 +197,7 @@ const CreateCheckIn = () => {
               Шинэ орлого үүсгэх
             </h3>
             <p className="mt-1 text-sm text-gray-400">
-              Бараа материалын зарлагын баримт шинээр үүсгэх.
+              Бараа материалын орлогын баримт шинээр үүсгэх.
             </p>
           </div>
         </div>
@@ -196,7 +215,6 @@ const CreateCheckIn = () => {
                   </div>
                 )}
 
-                {/* Top Fields */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
                   <div className="space-y-5">
                     <div>
@@ -245,14 +263,15 @@ const CreateCheckIn = () => {
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Агуулах
                       </label>
+                      {/* ↓ value нь warehouseSelectValue (id string) */}
                       <select
                         className={inputClass}
-                        value={warehouse}
-                        onChange={(e) => setWarehouse(e.target.value)}
+                        value={warehouseSelectValue}
+                        onChange={handleWarehouseChange}
                       >
                         <option value="">Агуулах сонгох</option>
                         {warehouseList.map((wh) => (
-                          <option key={wh.id} value={wh.name}>
+                          <option key={wh.id} value={String(wh.id)}>
                             {wh.name}
                           </option>
                         ))}
@@ -261,10 +280,8 @@ const CreateCheckIn = () => {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t border-dashed border-gray-100" />
 
-                {/* Item Search Section */}
                 <div>
                   <div className="relative mb-4" ref={containerRef}>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
@@ -314,7 +331,6 @@ const CreateCheckIn = () => {
                     )}
                   </div>
 
-                  {/* Table Section */}
                   <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50/80 border-b border-gray-200">
@@ -408,10 +424,8 @@ const CreateCheckIn = () => {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t border-dashed border-gray-100" />
 
-                {/* File Attachment + Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
@@ -476,14 +490,12 @@ const CreateCheckIn = () => {
 
                 <div>
                   <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
-                    <div className="relative">
-                      <input
-                        type="checkbox"
-                        checked={isDraft}
-                        onChange={(e) => setIsDraft(e.target.checked)}
-                        className="peer w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                      />
-                    </div>
+                    <input
+                      type="checkbox"
+                      checked={isDraft}
+                      onChange={(e) => setIsDraft(e.target.checked)}
+                      className="peer w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
                     <span className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
                       Энэ бүртгэлийг ноорог (draft) хэлбэрээр хадгалах
                     </span>
@@ -491,7 +503,6 @@ const CreateCheckIn = () => {
                 </div>
               </div>
 
-              {/* Footer Actions */}
               <div className="px-8 py-5 bg-gray-50/70 border-t border-gray-200 flex items-center justify-between">
                 <p className="text-xs text-gray-400">
                   * Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө
