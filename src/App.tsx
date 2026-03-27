@@ -49,6 +49,7 @@ import CreateUnit from "./pages/unit/create";
 import EditUnit from "./pages/unit/unit";
 import ItemTrail from "./pages/items/trail";
 import Notifications from "./pages/settings/notification";
+import Settings from "./pages/settings/settings";
 
 function App() {
   const [isOpenSidebar, setIsOpenSideBar] = useState<boolean>(false);
@@ -177,6 +178,7 @@ function App() {
                           path="/notifications"
                           element={<Notifications />}
                         />
+                        <Route path="/settings" element={<Settings />} />
 
                         {/* 404 Catch-all (Optional) */}
                         <Route

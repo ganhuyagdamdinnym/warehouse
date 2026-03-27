@@ -84,7 +84,10 @@ export const Header = (props: Props) => {
         </div>
         <div className="flex items-center gap-x-3">
           <div className="px-4 flex gap-x-3 items-center">
-            <button className="inline-flex items-center justify-center p-2 bg-white text-gray-700 hover:text-white hover:bg-blue-700 rounded-sm font-bold">
+            <button
+              onClick={() => navigate("/settings")}
+              className="inline-flex items-center justify-center p-2 bg-white text-gray-700 hover:text-white hover:bg-blue-700 rounded-sm font-bold"
+            >
               <HiOutlineCog className="w-5 h-5" />
             </button>
             <button
