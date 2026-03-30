@@ -3,17 +3,19 @@ import type {
   Checkin,
   CheckinItem,
   CheckinListResponse,
-  CreateCheckinPayload, // ← нэм
+  CreateCheckinPayload,
 } from "../../models/types/checkin";
 
+// Өгөгдлийг форматлах функц (ID-г string болгох анхны логик хэвээр)
 function normalizeCheckin(raw: Record<string, unknown>): Checkin {
-  const c = raw as unknown as Checkin & { id?: number };
+  const c = raw as any;
   return {
     ...c,
-    id: String(c.id ?? c),
-    items: (c.items || []).map((i: CheckinItem & { id?: number }) => ({
+    id: String(c.id ?? ""),
+    items: (c.items || []).map((i: any) => ({
       ...i,
       id: i.id,
+      productId: i.productId, // Моделд нэмэгдсэн талбар
     })),
   };
 }
@@ -41,6 +43,7 @@ export interface GetCheckinsParams {
   limit?: number;
 }
 
+// Бүх checkin-уудыг авах
 export async function getCheckins(
   params: GetCheckinsParams = {},
 ): Promise<CheckinListResponse> {
@@ -59,24 +62,34 @@ export async function getCheckins(
   return normalizeList(res);
 }
 
+// Нэг checkin-ийн дэлгэрэнгүй
 export async function getCheckin(id: string): Promise<Checkin> {
   const res = await request<Record<string, unknown>>(`/checkins/${id}`);
   return normalizeCheckin(res);
 }
 
 export async function createCheckin(
-  data: CreateCheckinPayload, // ← Omit<Checkin, "id"> → CreateCheckinPayload
+  data: CreateCheckinPayload,
 ): Promise<{ message: string; id: number }> {
-  return request("/checkins", { method: "POST", body: data });
+  // body: JSON.stringify(data) байсныг body: data болгож өөрчлөв
+  return request("/checkins", {
+    method: "POST",
+    body: data,
+  });
 }
 
 export async function updateCheckin(
   id: string,
-  data: CreateCheckinPayload, // ← мөн адил
+  data: CreateCheckinPayload,
 ): Promise<{ message: string }> {
-  return request(`/checkins/${id}`, { method: "PUT", body: data });
+  return request(`/checkins/${id}`, {
+    method: "PUT",
+    body: data,
+  });
 }
-
+// Устгах
 export async function deleteCheckin(id: string): Promise<{ message: string }> {
-  return request(`/checkins/${id}`, { method: "DELETE" });
+  return request(`/checkins/${id}`, {
+    method: "DELETE",
+  });
 }

@@ -14,11 +14,11 @@ import { getWarehouses } from "../../api/warehouse/warehouse_api";
 import { getItems } from "../../api/item/item";
 
 interface SelectedItem {
-  id: number;
+  id: number; // Render key (Date.now())
+  productId: number; // Database Item ID
   name: string;
   weight: string;
   quantity: string;
-  productId: number;
   unit: string;
 }
 
@@ -34,24 +34,18 @@ const CreateCheckOut = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [reference, setReference] = useState("");
   const [contact, setContact] = useState("");
-  const [warehouseId, setWarehouseId] = useState<number | null>(null); // ← ID
-  const [warehouseName, setWarehouseName] = useState(""); // ← Нэр
-  const [warehouseSelectValue, setWarehouseSelectValue] = useState(""); // ← Select-ийн value
+  const [warehouseId, setWarehouseId] = useState<number | null>(null);
+  const [warehouseName, setWarehouseName] = useState("");
+  const [warehouseSelectValue, setWarehouseSelectValue] = useState("");
   const [details, setDetails] = useState("");
   const [isDraft, setIsDraft] = useState(false);
 
-  const [contactList, setContactList] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [warehouseList, setWarehouseList] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [itemOptions, setItemOptions] = useState<
-    { id: string; name: string; internalCode?: string }[]
-  >([]);
+  const [contactList, setContactList] = useState<any[]>([]);
+  const [warehouseList, setWarehouseList] = useState<any[]>([]);
+  const [itemOptions, setItemOptions] = useState<any[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,11 +58,9 @@ const CreateCheckOut = () => {
           getWarehouses({ limit: 100 }),
           getItems({ limit: 100 }),
         ]);
-        setContactList(contactRes.data as { id: string; name: string }[]);
-        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
-        setItemOptions(
-          itemRes.data as { id: string; name: string; internalCode?: string }[],
-        );
+        setContactList(contactRes.data);
+        setWarehouseList(warehouseRes.data);
+        setItemOptions(itemRes.data);
       } catch (err) {
         console.error("Өгөгдөл татахад алдаа:", err);
       }
@@ -89,28 +81,22 @@ const CreateCheckOut = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredItems = itemOptions.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.internalCode ?? "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()),
-  );
-
-  const handleSelectItem = (item: {
-    id: string;
-    name: string;
-    internalCode?: string;
-  }) => {
+  const handleSelectItem = (item: any) => {
+    // Хэрэв бараа аль хэдийн жагсаалтад байвал нэмэхгүй
+    if (selectedItemsList.some((i) => i.productId === Number(item.id))) {
+      setIsOpen(false);
+      setSearchTerm("");
+      return;
+    }
     setSelectedItemsList((prev) => [
       ...prev,
       {
-        id: Date.now(),
+        id: Date.now(), // Unique key for render
+        productId: Number(item.id), // Real Database ID
         name: item.name,
-        productId: 1,
         weight: "1",
         quantity: "1",
-        unit: "Хайрцаг",
+        unit: "Хйрцаг",
       },
     ]);
     setSearchTerm("");
@@ -139,10 +125,15 @@ const CreateCheckOut = () => {
 
   const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
-    setWarehouseSelectValue(selectedId); // Select-ийн харагдах утга
+    setWarehouseSelectValue(selectedId);
     const found = warehouseList.find((wh) => String(wh.id) === selectedId);
-    setWarehouseId(found ? Number(found.id) : null); // ID хадгалах
-    setWarehouseName(found ? found.name : ""); // Нэр хадгалах
+    if (found) {
+      setWarehouseId(Number(found.id));
+      setWarehouseName(found.name);
+    } else {
+      setWarehouseId(null);
+      setWarehouseName("");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,13 +156,14 @@ const CreateCheckOut = () => {
         date,
         status: isDraft ? "Draft" : "Completed",
         contact,
-        warehouse: warehouseName, // ← Нэр
-        warehouseId: warehouseId, // ← ID
+        warehouse: warehouseName,
+        warehouseId: warehouseId,
         user: "Admin",
         details: details.trim(),
         items: selectedItemsList.map((item) => ({
+          itemId: item.productId, // Энэ ID-аар сток хасна
           name: item.name,
-          productId: 1,
+          productId: 1, // Зүгээр л текст талбар болгон ашиглаж байна
           code: item.name.slice(0, 5).toUpperCase(),
           weight: item.weight,
           quantity: item.quantity,
@@ -275,7 +267,6 @@ const CreateCheckOut = () => {
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Агуулах
                       </label>
-                      {/* ↓ value нь warehouseSelectValue (id string) */}
                       <select
                         value={warehouseSelectValue}
                         onChange={handleWarehouseChange}
@@ -321,21 +312,31 @@ const CreateCheckOut = () => {
 
                     {isOpen && (
                       <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl shadow-gray-100/80 max-h-60 overflow-y-auto">
-                        {filteredItems.length > 0 ? (
-                          filteredItems.map((item) => (
-                            <div
-                              key={item.id}
-                              className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors"
-                              onClick={() => handleSelectItem(item)}
-                            >
-                              <span className="font-medium">{item.name}</span>
-                              {item.internalCode && (
-                                <span className="ml-2 text-xs text-gray-400 font-mono">
-                                  {item.internalCode}
-                                </span>
-                              )}
-                            </div>
-                          ))
+                        {itemOptions.filter((i) =>
+                          i.name
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()),
+                        ).length > 0 ? (
+                          itemOptions
+                            .filter((i) =>
+                              i.name
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase()),
+                            )
+                            .map((item) => (
+                              <div
+                                key={item.id}
+                                className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors"
+                                onClick={() => handleSelectItem(item)}
+                              >
+                                <span className="font-medium">{item.name}</span>
+                                {item.internalCode && (
+                                  <span className="ml-2 text-xs text-gray-400 font-mono">
+                                    {item.internalCode}
+                                  </span>
+                                )}
+                              </div>
+                            ))
                         ) : (
                           <div className="px-4 py-4 text-gray-400 text-xs text-center">
                             Илэрц олдсонгүй
@@ -354,9 +355,7 @@ const CreateCheckOut = () => {
                           <th className="px-4 py-3 uppercase tracking-widest text-[10px]">
                             Бараа
                           </th>
-                          <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32">
-                            Жин (кг)
-                          </th>
+                          <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32"></th>
                           <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32">
                             Тоо хэмжээ
                           </th>
@@ -384,17 +383,7 @@ const CreateCheckOut = () => {
                               <td className="px-4 py-3 font-medium text-gray-800">
                                 {row.name}
                               </td>
-                              <td className="px-4 py-3">
-                                <input
-                                  type="text"
-                                  value={row.weight}
-                                  onChange={(e) =>
-                                    updateItem(row.id, "weight", e.target.value)
-                                  }
-                                  placeholder="0.00"
-                                  className={tableInputClass}
-                                />
-                              </td>
+                              <td className="px-4 py-3"></td>
                               <td className="px-4 py-3">
                                 <input
                                   type="text"
@@ -419,9 +408,9 @@ const CreateCheckOut = () => {
                                     }
                                     className={`${tableInputClass} appearance-none pr-8 cursor-pointer`}
                                   >
-                                    <option>Хайрцаг (Box)</option>
-                                    <option>Ширхэг (Piece)</option>
-                                    <option>Боодол (Pack)</option>
+                                    <option>Хайрцаг</option>
+                                    <option>Ширхэг</option>
+                                    <option>Боодол</option>
                                   </select>
                                   <HiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none w-3.5 h-3.5" />
                                 </div>
@@ -509,6 +498,7 @@ const CreateCheckOut = () => {
                   </div>
                 </div>
 
+                {/* Draft Checkbox */}
                 <div>
                   <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
                     <input
@@ -542,32 +532,7 @@ const CreateCheckOut = () => {
                     disabled={saving}
                     className="px-7 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-sm transition-all active:scale-[0.98]"
                   >
-                    {saving ? (
-                      <span className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin w-3.5 h-3.5"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v8z"
-                          />
-                        </svg>
-                        Хадгалж байна...
-                      </span>
-                    ) : (
-                      "Хадгалах"
-                    )}
+                    {saving ? "Хадгалж байна..." : "Хадгалах"}
                   </button>
                 </div>
               </div>

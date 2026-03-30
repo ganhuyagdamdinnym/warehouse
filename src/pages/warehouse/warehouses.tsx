@@ -256,6 +256,9 @@ const Warehouses: React.FC = () => {
                           <HiOutlinePencilAlt className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() =>
+                            navigate(`/warehouses/${item.id}/items`)
+                          }
                           className="p-2 bg-white text-amber-500 hover:bg-amber-50 border-r border-gray-200/60 transition-colors"
                           title="Бүртгэл"
                         >

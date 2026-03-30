@@ -178,15 +178,7 @@ const Roles: React.FC = () => {
                 <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Нэр
                 </th>
-                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  И-мэйл
-                </th>
-                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Утас
-                </th>
-                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Эрх
-                </th>
+
                 <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right pr-6">
                   Үйлдэл
                 </th>
@@ -200,23 +192,13 @@ const Roles: React.FC = () => {
                   onClick={() => handleSelectItem(user.id)}
                 >
                   <td className="px-6 py-4">
-                    <div className="font-semibold text-gray-900 text-sm">
-                      {user.name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{user.email}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{user.phone}</div>
-                  </td>
-                  <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${roleConfig[user.role] ?? roleConfig["User"]}`}
                     >
                       {user.role}
                     </span>
                   </td>
+
                   <td className="px-6 py-4 text-right">
                     <div
                       className="inline-flex rounded-lg border border-gray-200/60 overflow-hidden"

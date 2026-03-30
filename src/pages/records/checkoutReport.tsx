@@ -1,35 +1,12 @@
-import React, { useState } from "react";
+// pages/reports/CheckoutReport.tsx
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { HiArrowLeft } from "react-icons/hi";
 import { AiOutlineFileText } from "react-icons/ai";
-
-interface CheckinData {
-  id: string;
-  code: string;
-  date: string;
-  status: "Draft" | "Completed" | "Pending";
-  contact: string;
-  warehouse: string;
-  user: string;
-  category: string;
-  details: string;
-  items: any[];
-}
-
-const checkinsList: CheckinData[] = [
-  {
-    id: "1",
-    code: "TCI28",
-    date: "2026-03-03",
-    status: "Draft",
-    contact: "Reese Reichert PhD",
-    warehouse: "Warehouse 2",
-    user: "Prof. Merle Bergstrom",
-    category: "Electronics",
-    details: "Qui harum neque vero nam necessitatibus laudantium...",
-    items: [],
-  },
-];
+import { getCheckouts } from "../../api/checkout/checkout_api";
+import { getContacts } from "../../api/contact/contact";
+import { getWarehouses } from "../../api/warehouse/warehouse_api";
+import type { Checkout } from "../../models/types/checkout";
 
 const CheckoutReport: React.FC = () => {
   const navigate = useNavigate();
@@ -38,107 +15,114 @@ const CheckoutReport: React.FC = () => {
   const [inputs, setInputs] = useState({
     startDate: "",
     endDate: "",
-    startCreatedAt: "",
-    endCreatedAt: "",
     reference: "",
     contact: "",
     warehouse: "",
-    user: "",
-    category: "",
+    status: "",
   });
-  const [appliedFilters, setAppliedFilters] = useState({ ...inputs });
+
+  const [list, setList] = useState<Checkout[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const itemsPerPage = 10;
+
+  const [contactList, setContactList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
+
+  useEffect(() => {
+    Promise.all([getContacts({ limit: 100 }), getWarehouses({ limit: 100 })])
+      .then(([c, w]) => {
+        setContactList(c.data as { id: string; name: string }[]);
+        setWarehouseList(w.data as { id: string; name: string }[]);
+      })
+      .catch(console.error);
+  }, []);
+
+  const fetchData = async (page = 1) => {
+    try {
+      setLoading(true);
+      const res = await getCheckouts({
+        search: inputs.reference,
+        status: inputs.status || "All",
+        page,
+        limit: itemsPerPage,
+      });
+      let filtered = res.data;
+      if (inputs.contact)
+        filtered = filtered.filter((c) =>
+          c.contact?.toLowerCase().includes(inputs.contact.toLowerCase()),
+        );
+      if (inputs.warehouse)
+        filtered = filtered.filter((c) =>
+          c.warehouse?.toLowerCase().includes(inputs.warehouse.toLowerCase()),
+        );
+      if (inputs.startDate)
+        filtered = filtered.filter(
+          (c) => new Date(c.date) >= new Date(inputs.startDate),
+        );
+      if (inputs.endDate)
+        filtered = filtered.filter(
+          (c) => new Date(c.date) <= new Date(inputs.endDate),
+        );
+      setList(filtered);
+      setTotal(res.total);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(currentPage);
+  }, [currentPage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setAppliedFilters({ ...inputs });
     setCurrentPage(1);
+    fetchData(1);
   };
-
   const handleReset = () => {
     const cleared = {
       startDate: "",
       endDate: "",
-      startCreatedAt: "",
-      endCreatedAt: "",
       reference: "",
       contact: "",
       warehouse: "",
-      user: "",
-      category: "",
+      status: "",
     };
     setInputs(cleared);
-    setAppliedFilters(cleared);
     setCurrentPage(1);
+    setTimeout(() => fetchData(1), 0);
   };
 
-  const filteredList = checkinsList.filter((item) => {
-    const matchesRef = item.code
-      .toLowerCase()
-      .includes(appliedFilters.reference.toLowerCase());
-    const matchesContact = item.contact
-      .toLowerCase()
-      .includes(appliedFilters.contact.toLowerCase());
-    const matchesWarehouse =
-      !appliedFilters.warehouse || item.warehouse === appliedFilters.warehouse;
-    const matchesUser =
-      !appliedFilters.user || item.user === appliedFilters.user;
-    const matchesCategory =
-      !appliedFilters.category || item.category === appliedFilters.category;
-    const itemDate = new Date(item.date).getTime();
-    const start = appliedFilters.startDate
-      ? new Date(appliedFilters.startDate).getTime()
-      : -Infinity;
-    const end = appliedFilters.endDate
-      ? new Date(appliedFilters.endDate).getTime()
-      : Infinity;
-    const matchesDate = itemDate >= start && itemDate <= end;
-    return (
-      matchesRef &&
-      matchesContact &&
-      matchesWarehouse &&
-      matchesUser &&
-      matchesCategory &&
-      matchesDate
-    );
-  });
-
-  const totalItems = filteredList.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const currentItems = filteredList.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const totalPages = Math.ceil(total / itemsPerPage);
+  const displayFrom = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const displayTo = Math.min(currentPage * itemsPerPage, total);
 
   const inputClass =
     "w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white";
-
-  const statusBadgeClass = (status: string) =>
-    status === "Completed"
+  const statusBadge = (s: string) =>
+    s === "Completed"
       ? "bg-green-100 text-green-800"
-      : status === "Pending"
+      : s === "Pending"
         ? "bg-yellow-100 text-yellow-800"
         : "bg-gray-100 text-gray-800";
-
-  // Төлөвийг монголоор харуулах туслах функц
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "Draft":
-        return "Ноорог";
-      case "Completed":
-        return "Дууссан";
-      case "Pending":
-        return "Хүлээгдэж буй";
-      default:
-        return status;
-    }
-  };
+  const statusLabel = (s: string) =>
+    s === "Completed"
+      ? "Дууссан"
+      : s === "Pending"
+        ? "Хүлээгдэж буй"
+        : "Ноорог";
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto">
       <div className="px-4 md:px-0">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
           <div className="flex items-start gap-3">
             <button
@@ -164,13 +148,12 @@ const CheckoutReport: React.FC = () => {
           </button>
         </div>
 
-        {/* Filter Form */}
         {showForm && (
           <form
             onSubmit={handleSubmit}
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-8"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
                   Эхлэх огноо
@@ -193,32 +176,6 @@ const CheckoutReport: React.FC = () => {
                   value={inputs.endDate}
                   onChange={(e) =>
                     setInputs({ ...inputs, endDate: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-semibold text-gray-600">
-                  Үүссэн огноо (Эхлэх)
-                </label>
-                <input
-                  type="datetime-local"
-                  value={inputs.startCreatedAt}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, startCreatedAt: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-semibold text-gray-600">
-                  Үүссэн огноо (Дуусах)
-                </label>
-                <input
-                  type="datetime-local"
-                  value={inputs.endCreatedAt}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, endCreatedAt: e.target.value })
                   }
                   className={inputClass}
                 />
@@ -249,7 +206,11 @@ const CheckoutReport: React.FC = () => {
                   className={inputClass}
                 >
                   <option value="">Харилцагч сонгох</option>
-                  <option value="Reese Reichert PhD">Reese Reichert PhD</option>
+                  {contactList.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
@@ -264,54 +225,42 @@ const CheckoutReport: React.FC = () => {
                   className={inputClass}
                 >
                   <option value="">Агуулах сонгох</option>
-                  <option value="Warehouse 2">Warehouse 2</option>
+                  {warehouseList.map((w) => (
+                    <option key={w.id} value={w.name}>
+                      {w.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-gray-600">
-                  Хэрэглэгч
+                  Төлөв
                 </label>
                 <select
-                  value={inputs.user}
+                  value={inputs.status}
                   onChange={(e) =>
-                    setInputs({ ...inputs, user: e.target.value })
+                    setInputs({ ...inputs, status: e.target.value })
                   }
                   className={inputClass}
                 >
-                  <option value="">Хэрэглэгч сонгох</option>
-                  <option value="Prof. Merle Bergstrom">
-                    Prof. Merle Bergstrom
-                  </option>
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-semibold text-gray-600">
-                  Ангилал
-                </label>
-                <select
-                  value={inputs.category}
-                  onChange={(e) =>
-                    setInputs({ ...inputs, category: e.target.value })
-                  }
-                  className={inputClass}
-                >
-                  <option value="">Ангилал сонгох</option>
-                  <option value="Electronics">Electronics</option>
+                  <option value="">Бүгд</option>
+                  <option value="Draft">Ноорог</option>
+                  <option value="Pending">Хүлээгдэж буй</option>
+                  <option value="Completed">Дууссан</option>
                 </select>
               </div>
             </div>
-
             <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3 border-t pt-5">
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-6 py-2 bg-gray-200 rounded text-sm font-bold text-gray-700 hover:bg-gray-300 text-center"
+                className="px-6 py-2 bg-gray-200 rounded text-sm font-bold text-gray-700 hover:bg-gray-300"
               >
                 ЦЭВЭРЛЭХ
               </button>
               <button
                 type="submit"
-                className="px-8 py-2 bg-[#1A202C] text-white text-xs font-bold rounded uppercase tracking-widest hover:bg-black text-center"
+                className="px-8 py-2 bg-[#1A202C] text-white text-xs font-bold rounded uppercase tracking-widest hover:bg-black"
               >
                 ШҮҮХ
               </button>
@@ -319,7 +268,6 @@ const CheckoutReport: React.FC = () => {
           </form>
         )}
 
-        {/* ── Desktop Table ── */}
         <div className="hidden md:block bg-white rounded-sm shadow-sm border border-gray-200 overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -336,53 +284,71 @@ const CheckoutReport: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {currentItems.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4 align-top">
-                    <div className="font-bold text-blue-600">{item.code}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                    <div
-                      className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
-                    >
-                      <AiOutlineFileText className="mr-1" />{" "}
-                      {getStatusLabel(item.status)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm align-top leading-relaxed">
-                    <div>
-                      <span className="text-gray-400 w-24 inline-block">
-                        Харилцагч:
-                      </span>{" "}
-                      {item.contact}
-                    </div>
-                    <div>
-                      <span className="text-gray-400 w-24 inline-block">
-                        Агуулах:
-                      </span>{" "}
-                      {item.warehouse}
-                    </div>
-                    <div>
-                      <span className="text-gray-400 w-24 inline-block">
-                        Хэрэглэгч:
-                      </span>{" "}
-                      {item.user}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 align-top max-w-md">
-                    {item.details}
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Уншиж байна...
                   </td>
                 </tr>
-              ))}
+              ) : list.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-12 text-center text-sm text-gray-400"
+                  >
+                    Өгөгдөл олдсонгүй
+                  </td>
+                </tr>
+              ) : (
+                list.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 align-top">
+                      <div className="font-bold text-blue-600">{item.code}</div>
+                      <div className="text-sm text-gray-500">{item.date}</div>
+                      <div
+                        className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadge(item.status)}`}
+                      >
+                        <AiOutlineFileText className="mr-1" />
+                        {statusLabel(item.status)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm align-top leading-relaxed">
+                      <div>
+                        <span className="text-gray-400 w-24 inline-block">
+                          Харилцагч:
+                        </span>
+                        {item.contact ?? "—"}
+                      </div>
+                      <div>
+                        <span className="text-gray-400 w-24 inline-block">
+                          Агуулах:
+                        </span>
+                        {item.warehouse ?? "—"}
+                      </div>
+                      <div>
+                        <span className="text-gray-400 w-24 inline-block">
+                          Хэрэглэгч:
+                        </span>
+                        {item.user ?? "—"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 align-top max-w-md">
+                      {item.details ?? "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
           <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t text-sm text-gray-600">
             <span>
-              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}-ээс{" "}
-              {Math.min(currentPage * itemsPerPage, totalItems)} хүртэл, нийт{" "}
-              {totalItems} бичлэг
+              {displayFrom}–{displayTo} / нийт {total} бичлэг
             </span>
             <div className="flex gap-1">
               <button
@@ -392,6 +358,15 @@ const CheckoutReport: React.FC = () => {
               >
                 Өмнөх
               </button>
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1.5 border rounded transition-colors ${currentPage === i + 1 ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-600 hover:bg-gray-50"}`}
+                >
+                  {i + 1}
+                </button>
+              ))}
               <button
                 onClick={() =>
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
@@ -405,59 +380,66 @@ const CheckoutReport: React.FC = () => {
           </div>
         </div>
 
-        {/* ── Mobile Cards ── */}
         <div className="flex flex-col gap-3 md:hidden">
-          {currentItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="font-bold text-blue-600 text-base">
-                    {item.code}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {item.date}
-                  </div>
-                </div>
-                <div
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeClass(item.status)}`}
-                >
-                  <AiOutlineFileText className="mr-1" />{" "}
-                  {getStatusLabel(item.status)}
-                </div>
-              </div>
-              <div className="text-sm text-gray-700 space-y-1 mb-3">
-                <div className="flex gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Харилцагч
-                  </span>
-                  <span>{item.contact}</span>
-                </div>
-                <div className="flex gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Агуулах
-                  </span>
-                  <span>{item.warehouse}</span>
-                </div>
-                <div className="flex gap-1">
-                  <span className="text-gray-400 text-xs w-16 shrink-0">
-                    Хэрэглэгч
-                  </span>
-                  <span>{item.user}</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 italic line-clamp-2">
-                {item.details}
-              </p>
+          {loading ? (
+            <div className="text-center text-sm text-gray-400 py-8">
+              Уншиж байна...
             </div>
-          ))}
-
+          ) : list.length === 0 ? (
+            <div className="text-center text-sm text-gray-400 py-8">
+              Өгөгдөл олдсонгүй
+            </div>
+          ) : (
+            list.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="font-bold text-blue-600 text-base">
+                      {item.code}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {item.date}
+                    </div>
+                  </div>
+                  <div
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadge(item.status)}`}
+                  >
+                    <AiOutlineFileText className="mr-1" />
+                    {statusLabel(item.status)}
+                  </div>
+                </div>
+                <div className="text-sm text-gray-700 space-y-1 mb-3">
+                  <div className="flex gap-1">
+                    <span className="text-gray-400 text-xs w-20 shrink-0">
+                      Харилцагч
+                    </span>
+                    <span>{item.contact ?? "—"}</span>
+                  </div>
+                  <div className="flex gap-1">
+                    <span className="text-gray-400 text-xs w-20 shrink-0">
+                      Агуулах
+                    </span>
+                    <span>{item.warehouse ?? "—"}</span>
+                  </div>
+                  <div className="flex gap-1">
+                    <span className="text-gray-400 text-xs w-20 shrink-0">
+                      Хэрэглэгч
+                    </span>
+                    <span>{item.user ?? "—"}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 italic line-clamp-2">
+                  {item.details ?? "—"}
+                </p>
+              </div>
+            ))
+          )}
           <div className="flex items-center justify-between text-sm text-gray-600 pt-2">
             <span>
-              {totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}–
-              {Math.min(currentPage * itemsPerPage, totalItems)} / {totalItems}
+              {displayFrom}–{displayTo} / {total}
             </span>
             <div className="flex gap-1">
               <button

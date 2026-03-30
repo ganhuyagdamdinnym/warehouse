@@ -34,7 +34,7 @@ import TotalRecords from "./pages/records/records";
 import CheckinReport from "./pages/records/checkInReport";
 import { MobileSidebar } from "./components/mobileSidebar";
 import Profile from "./pages/settings/profile";
-import Activities from "./pages/settings/activity";
+import ItemsOnWarehouse from "./pages/warehouse/itemsOnWarehouse";
 import Login from "./pages/login/login";
 import CheckoutReport from "./pages/records/checkoutReport";
 import AdjustmentReport from "./pages/records/adjustmentReport";
@@ -142,6 +142,10 @@ function App() {
                         <Route path="units/create" element={<CreateUnit />} />
                         <Route path="/units/:id/edit" element={<EditUnit />} />
                         <Route path="/warehouses" element={<Warehouses />} />
+                        <Route
+                          path="/warehouses/:id/items"
+                          element={<ItemsOnWarehouse />}
+                        />
                         <Route
                           path="/warehouses/:id/edit"
                           element={<Warehouse />}
