@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+import ProtectedRoute from "./components/protectedRoute";
 import { useState } from "react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
@@ -58,143 +60,161 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<Forgot />} />
+        {/* <ProtectedRoute></ProtectedRoute> */}
         <Route
           path="/*"
           element={
-            <div className="bg-gray-100 min-h-screen print:bg-white">
-              <div className="md:flex md:flex-col">
-                <div className="md:h-screen md:flex md:flex-col">
-                  <Header
-                    isOpenSidebar={isOpenSidebar}
-                    setIsOpenSidebar={setIsOpenSideBar}
-                  />
-                  <div className="md:flex md:grow md:items-stretch overflow-hidden">
-                    <Sidebar />
-                    {isOpenSidebar && (
-                      <MobileSidebar
-                        setIsOpenSidebar={setIsOpenSideBar}
-                        isOpenSidebar={isOpenSidebar}
-                      />
-                    )}
+            <ProtectedRoute>
+              <div className="bg-gray-100 min-h-screen print:bg-white">
+                <div className="md:flex md:flex-col">
+                  <div className="md:h-screen md:flex md:flex-col">
+                    <Header
+                      isOpenSidebar={isOpenSidebar}
+                      setIsOpenSidebar={setIsOpenSideBar}
+                    />
+                    <div className="md:flex md:grow md:items-stretch overflow-hidden">
+                      <Sidebar />
+                      {isOpenSidebar && (
+                        <MobileSidebar
+                          setIsOpenSidebar={setIsOpenSideBar}
+                          isOpenSidebar={isOpenSidebar}
+                        />
+                      )}
 
-                    <main className="flex-1 overflow-y-auto">
-                      <Routes>
-                        <Route path="/" element={<Dashboard />} />
-                        <Route path="/checkin" element={<Checkins />} />
-                        <Route
-                          path="/checkin/create"
-                          element={<CreateCheckIn />}
-                        />
-                        <Route
-                          path="/checkin/:id/edit"
-                          element={<CheckinEdit />}
-                        />
-                        <Route path="/checkout" element={<Checkout />} />
-                        <Route
-                          path="/checkout/create"
-                          element={<CreateCheckOut />}
-                        />
-                        <Route
-                          path="/checkout/:id/edit"
-                          element={<CheckoutEdit />}
-                        />
-                        <Route path="/adjustment" element={<Adjustment />} />
-                        <Route
-                          path="/adjustment/create"
-                          element={<CreateAdjustment />}
-                        />
-                        <Route
-                          path="/adjustment/:id/edit"
-                          element={<AdjustmentEdit />}
-                        />
-                        <Route path="/transfer" element={<Transfer />} />
-                        <Route
-                          path="/transfer/create"
-                          element={<CreateTransfer />}
-                        />
-                        <Route
-                          path="/transfer/:id/edit"
-                          element={<TransferEdit />}
-                        />
-                        <Route path="/items" element={<Items />} />
-                        <Route path="/items/create" element={<CreateItem />} />
-                        <Route path="/item/:id/edit" element={<EditItem />} />
-                        <Route path="/item/:id/trail" element={<ItemTrail />} />
-                        <Route path="/contacts" element={<Contacts />} />
-                        <Route
-                          path="/contacts/:id/edit"
-                          element={<ContactPage />}
-                        />
-                        <Route
-                          path="/contacts/create"
-                          element={<CreateContact />}
-                        />
-                        <Route path="/categories" element={<Categories />} />
-                        <Route
-                          path="/categories/:id/edit"
-                          element={<Category />}
-                        />
-                        <Route
-                          path="/categories/create"
-                          element={<CreateCategorie />}
-                        />
-                        <Route path="/units" element={<Units />} />
-                        <Route path="units/create" element={<CreateUnit />} />
-                        <Route path="/units/:id/edit" element={<EditUnit />} />
-                        <Route path="/warehouses" element={<Warehouses />} />
-                        <Route
-                          path="/warehouses/:id/items"
-                          element={<ItemsOnWarehouse />}
-                        />
-                        <Route
-                          path="/warehouses/:id/edit"
-                          element={<Warehouse />}
-                        />
-                        <Route
-                          path="/warehouses/create"
-                          element={<CreateWarehouse />}
-                        />
-                        <Route path="/users" element={<Users />} />
-                        <Route path="/users/create" element={<CreateUser />} />
-                        <Route path="/users/:id/edit" element={<User />} />
-                        <Route path="/roles" element={<Roles />} />
-                        <Route path="/roles/create" element={<CreateRole />} />
-                        <Route path="/roles/:id/edit" element={<Role />} />
-                        <Route path="/reports" element={<TotalRecords />} />
-                        <Route
-                          path="/reports/checkin"
-                          element={<CheckinReport />}
-                        />
-                        <Route
-                          path="/reports/checkout"
-                          element={<CheckoutReport />}
-                        />
-                        <Route
-                          path="/reports/adjustment"
-                          element={<AdjustmentReport />}
-                        />
-                        <Route
-                          path="/reports/transfer"
-                          element={<TransferReport />}
-                        />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route
-                          path="/notifications"
-                          element={<Notifications />}
-                        />
-                        <Route path="/settings" element={<Settings />} />
+                      <main className="flex-1 overflow-y-auto">
+                        <Routes>
+                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/checkin" element={<Checkins />} />
+                          <Route
+                            path="/checkin/create"
+                            element={<CreateCheckIn />}
+                          />
+                          <Route
+                            path="/checkin/:id/edit"
+                            element={<CheckinEdit />}
+                          />
+                          <Route path="/checkout" element={<Checkout />} />
+                          <Route
+                            path="/checkout/create"
+                            element={<CreateCheckOut />}
+                          />
+                          <Route
+                            path="/checkout/:id/edit"
+                            element={<CheckoutEdit />}
+                          />
+                          <Route path="/adjustment" element={<Adjustment />} />
+                          <Route
+                            path="/adjustment/create"
+                            element={<CreateAdjustment />}
+                          />
+                          <Route
+                            path="/adjustment/:id/edit"
+                            element={<AdjustmentEdit />}
+                          />
+                          <Route path="/transfer" element={<Transfer />} />
+                          <Route
+                            path="/transfer/create"
+                            element={<CreateTransfer />}
+                          />
+                          <Route
+                            path="/transfer/:id/edit"
+                            element={<TransferEdit />}
+                          />
+                          <Route path="/items" element={<Items />} />
+                          <Route
+                            path="/items/create"
+                            element={<CreateItem />}
+                          />
+                          <Route path="/item/:id/edit" element={<EditItem />} />
+                          <Route
+                            path="/item/:id/trail"
+                            element={<ItemTrail />}
+                          />
+                          <Route path="/contacts" element={<Contacts />} />
+                          <Route
+                            path="/contacts/:id/edit"
+                            element={<ContactPage />}
+                          />
+                          <Route
+                            path="/contacts/create"
+                            element={<CreateContact />}
+                          />
+                          <Route path="/categories" element={<Categories />} />
+                          <Route
+                            path="/categories/:id/edit"
+                            element={<Category />}
+                          />
+                          <Route
+                            path="/categories/create"
+                            element={<CreateCategorie />}
+                          />
+                          <Route path="/units" element={<Units />} />
+                          <Route path="units/create" element={<CreateUnit />} />
+                          <Route
+                            path="/units/:id/edit"
+                            element={<EditUnit />}
+                          />
+                          <Route path="/warehouses" element={<Warehouses />} />
+                          <Route
+                            path="/warehouses/:id/items"
+                            element={<ItemsOnWarehouse />}
+                          />
+                          <Route
+                            path="/warehouses/:id/edit"
+                            element={<Warehouse />}
+                          />
+                          <Route
+                            path="/warehouses/create"
+                            element={<CreateWarehouse />}
+                          />
+                          <Route path="/users" element={<Users />} />
+                          <Route
+                            path="/users/create"
+                            element={<CreateUser />}
+                          />
+                          <Route path="/users/:id/edit" element={<User />} />
+                          <Route path="/roles" element={<Roles />} />
+                          <Route
+                            path="/roles/create"
+                            element={<CreateRole />}
+                          />
+                          <Route path="/roles/:id/edit" element={<Role />} />
+                          <Route path="/reports" element={<TotalRecords />} />
+                          <Route
+                            path="/reports/checkin"
+                            element={<CheckinReport />}
+                          />
+                          <Route
+                            path="/reports/checkout"
+                            element={<CheckoutReport />}
+                          />
+                          <Route
+                            path="/reports/adjustment"
+                            element={<AdjustmentReport />}
+                          />
+                          <Route
+                            path="/reports/transfer"
+                            element={<TransferReport />}
+                          />
+                          <Route path="/profile" element={<Profile />} />
+                          <Route
+                            path="/notifications"
+                            element={<Notifications />}
+                          />
+                          <Route path="/settings" element={<Settings />} />
 
-                        {/* 404 Catch-all (Optional) */}
-                        <Route
-                          path="*"
-                          element={<div className="p-8">Page Not Found</div>}
-                        />
-                      </Routes>
-                    </main>
+                          {/* 404 Catch-all (Optional) */}
+                          <Route
+                            path="*"
+                            element={<div className="p-8">Page Not Found</div>}
+                          />
+                        </Routes>
+                      </main>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </ProtectedRoute>
           }
         />
       </Routes>

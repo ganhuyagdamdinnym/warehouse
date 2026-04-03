@@ -1,5 +1,6 @@
 import { HiMenuAlt3, HiOutlineBell, HiOutlineCog } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
+import { useAuth } from "../hooks/auth";
 import {
   useState,
   useEffect,
@@ -15,6 +16,7 @@ type Props = {
 };
 export const Header = (props: Props) => {
   const navigate = useNavigate();
+  const { user, isSuperAdmin, warehouse, logout } = useAuth();
   const { setIsOpenSidebar, isOpenSidebar } = props;
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null); // Create a reference for the dropdown
@@ -107,7 +109,7 @@ export const Header = (props: Props) => {
               >
                 <div className="h-8 w-8 rounded-full object-cover sm:mr-2 bg-black"></div>
                 <span className="hidden sm:inline-flex items-center mr-2">
-                  Ganaa Daimaa
+                  {user?.name}
                 </span>
                 <IoIosArrowDown className={`h-3 w-3 hidden sm:inline-flex`} />
               </button>

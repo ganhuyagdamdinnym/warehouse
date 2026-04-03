@@ -156,6 +156,7 @@ const CreateCheckIn = () => {
     }
 
     const itemsForApi = selectedItemsList.map((row) => ({
+      itemId: row.productId,
       productId: row.productId, // ← backend-д явуулах
       name: row.name,
       code: row.code,

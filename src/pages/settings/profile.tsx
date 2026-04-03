@@ -1,9 +1,4 @@
-import React, {
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   HiOutlineUserCircle,
   HiOutlineMail,
@@ -13,9 +8,11 @@ import {
   HiOutlineTrash,
   HiOutlineKey,
 } from "react-icons/hi";
+import { useAuth } from "../../hooks/auth";
 
 const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { user } = useAuth();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -129,7 +126,7 @@ const Profile = () => {
                       <HiOutlineUserCircle className="w-4 h-4" />
                     </div>
                     <input
-                      defaultValue="Sanchir Ganbold"
+                      defaultValue={user?.name}
                       type="text"
                       className={`${baseInputClass} pl-10`}
                     />
@@ -143,7 +140,7 @@ const Profile = () => {
                       <HiOutlineMail className="w-4 h-4" />
                     </div>
                     <input
-                      defaultValue="sanchir@infitech.mn"
+                      defaultValue={user?.email}
                       type="email"
                       className={`${baseInputClass} pl-10`}
                     />

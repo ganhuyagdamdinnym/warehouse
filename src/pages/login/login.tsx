@@ -3,10 +3,12 @@ import { LuWarehouse } from "react-icons/lu";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
     remember: false,
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -16,41 +18,83 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Login Attempt:", formData);
-    // Энд баталгаажуулах логикоо нэмнэ үү
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("http://localhost:3000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Нэвтрэх үед алдаа гарлаа");
+        return;
+      }
+
+      if (formData.remember) {
+        console.log("data", data);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      } else {
+        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      window.location.href = "/";
+    } catch {
+      setError("Сервертэй холбогдож чадсангүй");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-center text-gray-800 items-center py-8 bg-gray-100 px-4">
-      {/* Logo Section */}
+      {/* Logo */}
       <div className="flex items-center mb-6">
         <LuWarehouse className="h-10 w-10 mr-3 text-indigo-600" />
         <h2 className="text-3xl font-bold tracking-tight">Агуулах</h2>
       </div>
 
-      {/* Card Section */}
+      {/* Card */}
       <form
         onSubmit={handleSubmit}
         className="w-full sm:max-w-md px-6 py-8 bg-white shadow-md border border-gray-200 rounded-xl"
       >
+        {/* Алдаа */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-600">
+            {error}
+          </div>
+        )}
+
+        {/* Email */}
         <div>
           <label className="block text-sm font-semibold text-gray-700">
-            Нэвтрэх нэр
+            И-мэйл
           </label>
           <input
-            type="text"
-            name="username"
+            type="email"
+            name="email"
             required
-            value={formData.username}
+            value={formData.email}
             onChange={handleChange}
-            placeholder="Нэвтрэх нэрээ оруулна уу"
+            placeholder="example@email.com"
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
-                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
           />
         </div>
 
+        {/* Нууц үг */}
         <div className="mt-4">
           <label className="block text-sm font-semibold text-gray-700">
             Нууц үг
@@ -63,10 +107,11 @@ const Login = () => {
             onChange={handleChange}
             placeholder="••••••••"
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
-                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
           />
         </div>
 
+        {/* Remember + Forgot */}
         <div className="flex items-center justify-between mt-6">
           <label className="flex items-center cursor-pointer">
             <input
@@ -87,12 +132,14 @@ const Login = () => {
           </a>
         </div>
 
+        {/* Button */}
         <div className="mt-6">
           <button
             type="submit"
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors uppercase tracking-widest"
+            disabled={loading}
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors uppercase tracking-widest"
           >
-            Нэвтрэх
+            {loading ? "Түр хүлээнэ үү..." : "Нэвтрэх"}
           </button>
         </div>
       </form>

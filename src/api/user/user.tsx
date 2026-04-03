@@ -38,3 +38,7 @@ export async function updateUser(
 export async function deleteUser(id: string): Promise<{ message: string }> {
   return request(`/users/${id}`, { method: "DELETE" });
 }
+
+export async function getUserInfo(): Promise<{ message: string }> {
+  return request(`/userInfo`, { method: "GET" });
+}

@@ -16,10 +16,10 @@ import { getCheckin, updateCheckin, deleteCheckin } from "../../api";
 import { getContacts } from "../../api/contact/contact";
 import { getWarehouses } from "../../api/warehouse/warehouse_api";
 import { getItems } from "../../api/item/item";
-import type { CheckinItem } from "../../models/types/checkin";
 
 interface LineRow {
   id: number;
+  itemId: number; // ← undefined байхгүй
   name: string;
   code: string;
   weight: string;
@@ -45,7 +45,6 @@ const CheckinEdit = () => {
   const [isDraft, setIsDraft] = useState(true);
   const [lineItems, setLineItems] = useState<LineRow[]>([]);
 
-  // Real data from API
   const [contactList, setContactList] = useState<
     { id: string; name: string }[]
   >([]);
@@ -66,7 +65,7 @@ const CheckinEdit = () => {
         .includes(searchTerm.toLowerCase()),
   );
 
-  // Fetch checkin data
+  // Checkin өгөгдөл татах
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
@@ -82,12 +81,13 @@ const CheckinEdit = () => {
         setDetails(data.details || "");
         setIsDraft(data.status === "Draft");
         setLineItems(
-          (data.items || []).map((it, i) => ({
-            id: i + 1,
-            name: it.name,
-            code: it.code,
-            weight: it.weight,
-            quantity: it.quantity,
+          (data.items || []).map((it: any, i: number) => ({
+            id: it.id ?? i + 1,
+            itemId: Number(it.itemId) || 0, // ← undefined боломжгүй
+            name: it.name ?? "",
+            code: it.code ?? "",
+            weight: it.weight ?? "1",
+            quantity: it.quantity ?? "1",
           })),
         );
       } catch (e) {
@@ -102,7 +102,7 @@ const CheckinEdit = () => {
     };
   }, [id]);
 
-  // Fetch contacts, warehouses, items
+  // Contacts, warehouses, items татах
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -123,7 +123,7 @@ const CheckinEdit = () => {
     fetchData();
   }, []);
 
-  // Click outside close
+  // Click outside хаах
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -144,6 +144,7 @@ const CheckinEdit = () => {
   }) => {
     const newRow: LineRow = {
       id: Date.now(),
+      itemId: Number(item.id), // ← заавал Number
       name: item.name,
       code: item.internalCode || item.name.slice(0, 20) || "ITEM",
       weight: "1",
@@ -176,12 +177,15 @@ const CheckinEdit = () => {
       setError("Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө.");
       return;
     }
-    const itemsForApi: CheckinItem[] = lineItems.map((row) => ({
+
+    const itemsForApi = lineItems.map((row) => ({
+      itemId: row.itemId, // ← нэмэгдсэн
       name: row.name,
       code: row.code,
       weight: row.weight,
       quantity: row.quantity,
     }));
+
     try {
       setSaving(true);
       await updateCheckin(id, {
@@ -344,7 +348,7 @@ const CheckinEdit = () => {
                 </div>
               </div>
 
-              {/* Items Section */}
+              {/* Items */}
               <div className="pt-6 border-t border-gray-100">
                 <label className={labelClass}>Бараа материалын жагсаалт</label>
                 <div className="mt-3 bg-gray-50/50 p-4 rounded-xl border border-gray-200/60">
@@ -459,7 +463,6 @@ const CheckinEdit = () => {
                                   type="button"
                                   onClick={() => removeLineItem(row.id)}
                                   className="text-red-500 hover:text-red-700 p-1"
-                                  title="Устгах"
                                 >
                                   <HiOutlineTrash className="w-4 h-4" />
                                 </button>
@@ -487,7 +490,6 @@ const CheckinEdit = () => {
                     </p>
                   </div>
                 </div>
-
                 <div className="relative group flex flex-col">
                   <label className={labelClass}>Дэлгэрэнгүй тайлбар</label>
                   <div className="relative mt-1 flex-grow">
@@ -523,7 +525,7 @@ const CheckinEdit = () => {
               </div>
             </div>
 
-            {/* Footer Actions */}
+            {/* Footer */}
             <div className="flex items-center justify-between px-4 py-5 bg-gray-50 border-x border-b border-gray-200 md:px-8 md:rounded-b-md">
               <button
                 type="button"
@@ -533,7 +535,6 @@ const CheckinEdit = () => {
                 <HiOutlineTrash className="w-4 h-4" />
                 Бүртгэлийг устгах
               </button>
-
               <div className="flex items-center gap-4">
                 <button
                   type="button"

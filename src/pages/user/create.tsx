@@ -14,18 +14,16 @@ import {
 } from "react-icons/hi";
 import { createUser } from "../../api/user/user_api";
 import { getWarehouses } from "../../api/warehouse/warehouse_api";
-import type { UserPermission } from "../../models/types/user";
 
 const CreateUser = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [warehouseList, setWarehouseList] = useState<
     { id: string; name: string }[]
   >([]);
-  // Form state
+
   const [name, setName] = useState("");
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
@@ -34,8 +32,6 @@ const CreateUser = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [warehouse, setWarehouse] = useState("");
   const [superAdmin, setSuperAdmin] = useState(false);
-  const [canView, setCanView] = useState(false);
-  const [canEdit, setCanEdit] = useState(false);
 
   const handleClear = () => {
     setName("");
@@ -46,15 +42,7 @@ const CreateUser = () => {
     setConfirmPassword("");
     setWarehouse("");
     setSuperAdmin(false);
-    setCanView(false);
-    setCanEdit(false);
     setError(null);
-  };
-
-  const getPermission = (): UserPermission => {
-    if (canEdit) return "canEdit";
-    if (canView) return "canView";
-    return "nothing";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,7 +50,6 @@ const CreateUser = () => {
     setError(null);
 
     if (!name.trim() || !userName.trim() || !password || !warehouse) {
-      // console.log("test", name, userName, password, warehouse);
       setError("Нэр, хэрэглэгчийн нэр, нууц үг, агуулах заавал бөглөнө.");
       return;
     }
@@ -85,7 +72,7 @@ const CreateUser = () => {
         phone: phone.trim() || undefined,
         warehouse,
         superAdmin,
-        permission: getPermission(),
+        permission: superAdmin ? "canEdit" : "canView",
       });
       navigate("/users", { replace: true });
     } catch (err: unknown) {
@@ -110,13 +97,11 @@ const CreateUser = () => {
   const baseInputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
   const labelClass = "text-sm font-semibold text-gray-700 ml-0.5";
-  const checkboxLabelClass =
-    "ml-2 text-sm text-gray-600 font-medium cursor-pointer select-none";
 
   return (
     <div className="md:flex-1 md:px-6 py-8 md:p-10 bg-gray-50 min-h-screen">
       <div className="max-w-5xl mx-auto">
-        {/* Header Section */}
+        {/* Header */}
         <div className="px-4 md:px-0 mb-8">
           <div className="flex items-center gap-2 mb-1">
             <HiOutlineUserAdd className="w-6 h-6 text-blue-600" />
@@ -138,7 +123,6 @@ const CreateUser = () => {
                 </p>
               )}
 
-              {/* Personal & Account Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 {/* Left Column */}
                 <div className="space-y-6">
@@ -285,61 +269,70 @@ const CreateUser = () => {
                 </div>
               </div>
 
-              {/* Roles & Permissions */}
-              <div className="pt-8 border-t border-gray-100 space-y-6">
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <HiOutlineShieldCheck className="w-5 h-5 text-blue-600" />
-                    Эрх болон Зөвшөөрөл
-                  </h4>
+              {/* ── Эрх тохируулах ── */}
+              <div className="pt-8 border-t border-gray-100">
+                <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <HiOutlineShieldCheck className="w-5 h-5 text-blue-600" />
+                  Эрх болон Зөвшөөрөл
+                </h4>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="super-admin"
-                        checked={superAdmin}
-                        onChange={(e) => setSuperAdmin(e.target.checked)}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                      />
-                      <label
-                        htmlFor="super-admin"
-                        className={checkboxLabelClass}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* SuperAdmin card */}
+                  <div
+                    onClick={() => setSuperAdmin(true)}
+                    className={`cursor-pointer p-4 rounded-lg border-2 transition-all ${
+                      superAdmin
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          superAdmin ? "border-blue-500" : "border-gray-300"
+                        }`}
                       >
-                        Super Admin
-                      </label>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id="view-all"
-                          checked={canView}
-                          onChange={(e) => setCanView(e.target.checked)}
-                          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                        />
-                        <label
-                          htmlFor="view-all"
-                          className={checkboxLabelClass}
-                        >
-                          Бүх бичлэгийг харах (Can view all record)
-                        </label>
+                        {superAdmin && (
+                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        )}
                       </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id="edit-all"
-                          checked={canEdit}
-                          onChange={(e) => setCanEdit(e.target.checked)}
-                          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                        />
-                        <label
-                          htmlFor="edit-all"
-                          className={checkboxLabelClass}
-                        >
-                          Бүх бичлэгийг засах (Can edit all record)
-                        </label>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">
+                          Super Admin
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Бүх агуулахын бүх өгөгдлийг удирдах эрхтэй
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Энгийн хэрэглэгч card */}
+                  <div
+                    onClick={() => setSuperAdmin(false)}
+                    className={`cursor-pointer p-4 rounded-lg border-2 transition-all ${
+                      !superAdmin
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          !superAdmin ? "border-blue-500" : "border-gray-300"
+                        }`}
+                      >
+                        {!superAdmin && (
+                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">
+                          Энгийн хэрэглэгч
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Зөвхөн өөрийн агуулахын өгөгдлийг харах, засах эрхтэй
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -347,7 +340,7 @@ const CreateUser = () => {
               </div>
             </div>
 
-            {/* Footer Actions */}
+            {/* Footer */}
             <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-4">
               <button
                 type="button"

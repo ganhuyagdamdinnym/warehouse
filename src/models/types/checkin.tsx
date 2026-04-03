@@ -90,6 +90,7 @@ export interface CreateCheckinPayload {
   details?: string;
   items: {
     productId?: number; // Нэмэгдсэн
+    // itemId?: number;
     name?: string;
     code?: string;
     weight?: string;

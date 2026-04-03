@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/auth";
 import {
   LayoutDashboard,
   ArrowDownToLine,
@@ -13,7 +14,6 @@ import {
   Warehouse,
   UserCog,
   BarChart3,
-  Activity,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -28,6 +28,7 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ElementType;
+  adminOnly?: boolean; // ← нэмэх
   children?: SubMenuItem[];
 }
 
@@ -87,44 +88,6 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    name: "Ангилал",
-    href: "/categories",
-    icon: Tag,
-    children: [
-      { name: "Бүх ангилал", href: "/categories" },
-      { name: "Шинэ ангилал үүсгэх", href: "/categories/create" },
-    ],
-  },
-  {
-    name: "Нэгж",
-    href: "/units",
-    icon: Ruler,
-    children: [
-      { name: "Бүх нэгж", href: "/units" },
-      { name: "Шинэ нэгж үүсгэх", href: "/units/create" },
-    ],
-  },
-  {
-    name: "Агуулах",
-    href: "/warehouses",
-    icon: Warehouse,
-    children: [
-      { name: "Бүх агуулах", href: "/warehouses" },
-      { name: "Шинэ агуулах нэмэх", href: "/warehouses/create" },
-    ],
-  },
-  {
-    name: "Хэрэглэгч",
-    href: "/users",
-    icon: UserCog,
-    children: [
-      { name: "Бүх хэрэглэгч", href: "/users" },
-      { name: "Хэрэглэгчийн эрхүүд", href: "/roles" },
-      { name: "Шинэ хэрэглэгч нэмэх", href: "/users/create" },
-      { name: "Шинэ хэрэглэгчийн эрх үүсгэх", href: "/roles/create" },
-    ],
-  },
-  {
     name: "Тайлан",
     href: "/reports",
     icon: BarChart3,
@@ -136,11 +99,54 @@ const navigation: NavItem[] = [
       { name: "Өөрчлөлтийн тайлан", href: "/reports/adjustment" },
     ],
   },
+  // ── SuperAdmin цэсүүд ──────────────────────────────
+  {
+    name: "Ангилал",
+    href: "/categories",
+    icon: Tag,
+    adminOnly: true,
+    children: [
+      { name: "Бүх ангилал", href: "/categories" },
+      { name: "Шинэ ангилал үүсгэх", href: "/categories/create" },
+    ],
+  },
+  {
+    name: "Нэгж",
+    href: "/units",
+    icon: Ruler,
+    adminOnly: true,
+    children: [
+      { name: "Бүх нэгж", href: "/units" },
+      { name: "Шинэ нэгж үүсгэх", href: "/units/create" },
+    ],
+  },
+  {
+    name: "Агуулах",
+    href: "/warehouses",
+    icon: Warehouse,
+    adminOnly: true,
+    children: [
+      { name: "Бүх агуулах", href: "/warehouses" },
+      { name: "Шинэ агуулах нэмэх", href: "/warehouses/create" },
+    ],
+  },
+  {
+    name: "Хэрэглэгч",
+    href: "/users",
+    icon: UserCog,
+    adminOnly: true,
+    children: [
+      { name: "Бүх хэрэглэгч", href: "/users" },
+      { name: "Хэрэглэгчийн эрхүүд", href: "/roles" },
+      { name: "Шинэ хэрэглэгч нэмэх", href: "/users/create" },
+      { name: "Шинэ хэрэглэгчийн эрх үүсгэх", href: "/roles/create" },
+    ],
+  },
 ];
 
 export const Sidebar: React.FC = () => {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
-  const [isActivity, setIsActivity] = useState<string>("");
+  const { isSuperAdmin } = useAuth(); // ← () нэмэх
   const location = useLocation();
 
   const toggleMenu = (name: string) => {
@@ -149,6 +155,11 @@ export const Sidebar: React.FC = () => {
       [name]: !prev[name],
     }));
   };
+
+  // SuperAdmin биш бол adminOnly цэсүүдийг шүүх
+  const visibleNavigation = navigation.filter(
+    (item) => !item.adminOnly || isSuperAdmin,
+  );
 
   return (
     <div
@@ -173,7 +184,7 @@ export const Sidebar: React.FC = () => {
           <span className="grow font-medium">Хянах самбар</span>
         </Link>
 
-        {navigation.map((item) => {
+        {visibleNavigation.map((item) => {
           const isMenuOpen = !!openMenus[item.name];
           const isActive = location.pathname.startsWith(item.href);
 
@@ -224,6 +235,13 @@ export const Sidebar: React.FC = () => {
             </div>
           );
         })}
+
+        {/* SuperAdmin шошго */}
+        {isSuperAdmin && (
+          <div className="mt-2 font-bold text-xs text-gray-600 px-4 py-2 uppercase tracking-wider">
+            Удирдлага
+          </div>
+        )}
       </div>
     </div>
   );
