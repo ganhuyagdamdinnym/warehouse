@@ -9,6 +9,7 @@ import {
   HiOutlineCloudUpload,
   HiOutlineDocumentText,
   HiOutlineTrash,
+  HiOutlineCheckCircle,
 } from "react-icons/hi";
 import { HiOutlineHomeModern } from "react-icons/hi2";
 import { Confirmation } from "../../components/confirmation";
@@ -19,12 +20,14 @@ import { getItems } from "../../api/item/item";
 
 interface LineRow {
   id: number;
-  itemId: number; // ← undefined байхгүй
+  itemId: number;
   name: string;
   code: string;
   weight: string;
   quantity: string;
 }
+
+type CheckinStatus = "Draft" | "Completed";
 
 const CheckinEdit = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,8 +44,9 @@ const CheckinEdit = () => {
   const [code, setCode] = useState("");
   const [contact, setContact] = useState("");
   const [warehouse, setWarehouse] = useState("");
+  const [warehouseId, setWarehouseId] = useState<number | undefined>(undefined);
   const [details, setDetails] = useState("");
-  const [isDraft, setIsDraft] = useState(true);
+  const [status, setStatus] = useState<CheckinStatus>("Draft");
   const [lineItems, setLineItems] = useState<LineRow[]>([]);
 
   const [contactList, setContactList] = useState<
@@ -65,25 +69,43 @@ const CheckinEdit = () => {
         .includes(searchTerm.toLowerCase()),
   );
 
-  // Checkin өгөгдөл татах
+  // Checkin өгөгдөл + warehouse/contact/items нэгэн зэрэг татах
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
     (async () => {
       try {
         setLoading(true);
-        const data = await getCheckin(id);
+        const [data, contactRes, warehouseRes, itemRes] = await Promise.all([
+          getCheckin(id),
+          getContacts({ limit: 100 }),
+          getWarehouses({ limit: 100 }),
+          getItems({ limit: 100 }),
+        ]);
         if (cancelled) return;
+
+        const warehouses = warehouseRes.data as { id: string; name: string }[];
+        setContactList(contactRes.data as { id: string; name: string }[]);
+        setWarehouseList(warehouses);
+        setItemOptions(
+          itemRes.data as { id: string; name: string; internalCode?: string }[],
+        );
+
         setDate(data.date ? data.date.split("T")[0] : "");
         setCode(data.code || "");
         setContact(data.contact || "");
         setWarehouse(data.warehouse || "");
         setDetails(data.details || "");
-        setIsDraft(data.status === "Draft");
+        setStatus((data.status as CheckinStatus) || "Draft");
+
+        // warehouseList бэлэн болсон тул warehouseId-г шууд тохируулна
+        const foundWh = warehouses.find((wh) => wh.name === data.warehouse);
+        setWarehouseId(foundWh ? Number(foundWh.id) : undefined);
+
         setLineItems(
           (data.items || []).map((it: any, i: number) => ({
             id: it.id ?? i + 1,
-            itemId: Number(it.itemId) || 0, // ← undefined боломжгүй
+            itemId: Number(it.itemId) || 0,
             name: it.name ?? "",
             code: it.code ?? "",
             weight: it.weight ?? "1",
@@ -102,26 +124,13 @@ const CheckinEdit = () => {
     };
   }, [id]);
 
-  // Contacts, warehouses, items татах
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [contactRes, warehouseRes, itemRes] = await Promise.all([
-          getContacts({ limit: 100 }),
-          getWarehouses({ limit: 100 }),
-          getItems({ limit: 100 }),
-        ]);
-        setContactList(contactRes.data as { id: string; name: string }[]);
-        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
-        setItemOptions(
-          itemRes.data as { id: string; name: string; internalCode?: string }[],
-        );
-      } catch (err) {
-        console.error("Өгөгдөл татахад алдаа:", err);
-      }
-    };
-    fetchData();
-  }, []);
+  // Агуулах сонгоход ID-г хадгалах
+  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedName = e.target.value;
+    setWarehouse(selectedName);
+    const found = warehouseList.find((wh) => wh.name === selectedName);
+    setWarehouseId(found ? Number(found.id) : undefined);
+  };
 
   // Click outside хаах
   useEffect(() => {
@@ -144,7 +153,7 @@ const CheckinEdit = () => {
   }) => {
     const newRow: LineRow = {
       id: Date.now(),
-      itemId: Number(item.id), // ← заавал Number
+      itemId: Number(item.id),
       name: item.name,
       code: item.internalCode || item.name.slice(0, 20) || "ITEM",
       weight: "1",
@@ -179,7 +188,7 @@ const CheckinEdit = () => {
     }
 
     const itemsForApi = lineItems.map((row) => ({
-      itemId: row.itemId, // ← нэмэгдсэн
+      itemId: row.itemId,
       name: row.name,
       code: row.code,
       weight: row.weight,
@@ -191,9 +200,10 @@ const CheckinEdit = () => {
       await updateCheckin(id, {
         code: code.trim(),
         date,
-        status: isDraft ? "Draft" : "Pending",
+        status,
         contact,
         warehouse,
+        warehouseId,
         user: contact,
         details: details.trim(),
         items: itemsForApi,
@@ -242,22 +252,42 @@ const CheckinEdit = () => {
 
       <div>
         <div className="px-4 md:px-0 border-b border-gray-100 pb-6">
-          <h3 className="text-lg font-bold text-gray-900">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => navigate("/checkin")}
-                className="text-blue-600 hover:underline"
-              >
-                Орлого
-              </button>
-              <span className="text-gray-400 font-light">/</span>
-              <span className="text-gray-500">Засах</span>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/checkin")}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Орлого
+                  </button>
+                  <span className="text-gray-400 font-light">/</span>
+                  <span className="text-gray-500">Засах</span>
+                </div>
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Доорх формын дагуу мэдээллийг өөрчлөн бүртгэлийг шинэчилнэ үү
+              </p>
             </div>
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Доорх формын дагуу мэдээллийг өөрчлөн бүртгэлийг шинэчилнэ үү
-          </p>
+
+            {/* Status badge */}
+            <div
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                status === "Draft"
+                  ? "bg-gray-100 text-gray-600 border-gray-200"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  status === "Draft" ? "bg-gray-400" : "bg-emerald-400"
+                }`}
+              />
+              {status === "Draft" ? "Ноорог" : "Дууссан"}
+            </div>
+          </div>
         </div>
 
         <div className="mt-6">
@@ -333,7 +363,7 @@ const CheckinEdit = () => {
                       <select
                         className={`${baseInputClass} pl-10 appearance-none bg-white cursor-pointer`}
                         value={warehouse}
-                        onChange={(e) => setWarehouse(e.target.value)}
+                        onChange={handleWarehouseChange}
                       >
                         <option value="">Агуулах сонгох</option>
                         {warehouseList.map((wh) => (
@@ -407,7 +437,7 @@ const CheckinEdit = () => {
                           <th className="px-6 py-4 w-10 text-center">#</th>
                           <th className="px-6 py-4">Барааны мэдээлэл</th>
                           <th className="px-6 py-4 text-center">Тоо ширхэг</th>
-                          <th className="px-6 py-4 text-center w-24"></th>
+                          <th className="px-6 py-4 w-24"></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -507,22 +537,46 @@ const CheckinEdit = () => {
                 </div>
               </div>
 
-              {/* Status */}
-              <div className="flex items-center gap-3 p-3 bg-yellow-50/50 rounded-lg w-fit pr-6 border border-yellow-100">
-                <input
-                  type="checkbox"
-                  id="draft"
-                  checked={isDraft}
-                  onChange={(e) => setIsDraft(e.target.checked)}
-                  className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded cursor-pointer"
-                />
-                <label
-                  htmlFor="draft"
-                  className="text-sm text-yellow-800 font-bold cursor-pointer"
-                >
-                  Энэ бичилт ноорог төлөвтэй байна
-                </label>
-              </div>
+              {/* ── Status Action ── */}
+              {status === "Draft" && (
+                <div className="flex items-center gap-3 p-4 rounded-xl w-fit pr-8 border bg-emerald-50/50 border-emerald-100/50">
+                  <input
+                    type="checkbox"
+                    id="statusAction"
+                    checked={false}
+                    onChange={(e) => {
+                      if (e.target.checked) setStatus("Completed");
+                    }}
+                    className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded cursor-pointer transition-all"
+                  />
+                  <div>
+                    <label
+                      htmlFor="statusAction"
+                      className="text-sm font-semibold cursor-pointer select-none text-emerald-900"
+                    >
+                      Орлогыг баталгаажуулах
+                    </label>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Орлогыг дууссан гэж тэмдэглэж сток нэмэгдэнэ
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Completed notice */}
+              {status === "Completed" && (
+                <div className="flex items-center gap-3 p-4 rounded-xl w-fit pr-8 border bg-emerald-50 border-emerald-200">
+                  <HiOutlineCheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-800">
+                      Орлого баталгаажсан
+                    </p>
+                    <p className="text-xs text-emerald-600 mt-0.5">
+                      Сток нэмэгдсэн, засах боломжгүй
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer */}

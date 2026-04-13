@@ -44,6 +44,7 @@ export const useAuth = () => {
 
   return {
     user,
+    setUser, // ← нэмэгдсэн
     loading,
     token: getToken(),
     isLoggedIn: !!getToken(),

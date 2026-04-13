@@ -40,7 +40,7 @@ const CreateTransfer = () => {
   const [fromWarehouseId, setFromWarehouseId] = useState<number | "">("");
   const [toWarehouseId, setToWarehouseId] = useState<number | "">("");
   const [details, setDetails] = useState("");
-  const [isDraft, setIsDraft] = useState(false);
+  const [isDraft, setIsDraft] = useState(true);
 
   // API Data
   const [warehouseList, setWarehouseList] = useState<
@@ -149,7 +149,7 @@ const CreateTransfer = () => {
       await createTransfer({
         code: code.trim() || `TRF${Date.now()}`,
         date,
-        status: isDraft ? "Draft" : "Completed", // Backend "Completed" үед үлдэгдэл хасдаг
+        status: isDraft ? "Draft" : "Pending", // Backend "Completed" үед үлдэгдэл хасдаг
         fromWarehouseId: Number(fromWarehouseId),
         toWarehouseId: Number(toWarehouseId),
         user: "Admin",
@@ -456,7 +456,7 @@ const CreateTransfer = () => {
                     className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                   <span className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors font-medium">
-                    Энэ бичилтийг ноорог төлөвт хадгалах
+                    Энэ бичилтийг ноорог(Draft) төлөвт хадгалах
                   </span>
                 </label>
               </div>

@@ -1,41 +1,125 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useRef,
+  useState,
+  useEffect,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
+import { updatePassword, updateProfile } from "../../api/user/user";
+import { getToken } from "../../utils/auth";
+import { toast } from "react-hot-toast";
 import {
   HiOutlineUserCircle,
   HiOutlineMail,
   HiOutlineLockClosed,
   HiOutlineCamera,
   HiOutlineSave,
-  HiOutlineTrash,
   HiOutlineKey,
 } from "react-icons/hi";
 import { useAuth } from "../../hooks/auth";
 
 const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const token = getToken();
+  if (!token) return null;
+
+  // Profile form state
+  const [profileData, setProfileData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+  });
+
+  // user ачаалагдсаны дараа form-г дүүргэнэ
+  useEffect(() => {
+    if (user) {
+      setProfileData({ name: user.name || "", email: user.email || "" });
+    }
+  }, [user]);
+
+  // Нууц үгийн state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setPhotoPreview(e.target?.result as string);
-      };
+      reader.onload = (e) => setPhotoPreview(e.target?.result as string);
       reader.readAsDataURL(file);
     }
   };
 
   const handleSelectPhoto = (): void => fileInputRef.current?.click();
-
   const handleRemovePhoto = (): void => {
     setPhotoPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSubmit = (e: FormEvent): void => e.preventDefault();
+  // ── Profile хадгалах ────────────────────────────────────────────────────
+  const handleUpdateProfile = async (e: FormEvent) => {
+    e.preventDefault();
 
-  // Consistent Styles
+    if (!profileData.name.trim() && !profileData.email.trim()) {
+      return toast.error("Нэр эсвэл имэйл оруулна уу");
+    }
+    // alert("hi");
+    try {
+      setProfileLoading(true);
+      const res = await updateProfile({
+        name: profileData.name.trim() || undefined,
+        email: profileData.email.trim() || undefined,
+      });
+      toast.success(res.message);
+      // Auth state шинэчлэх (хэрэв setUser байвал)
+      if (setUser) setUser(res.user as any);
+    } catch (error: any) {
+      toast.error(error?.message || "Алдаа гарлаа");
+      // alert("hiiiiii");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // ── Нууц үг шинэчлэх ───────────────────────────────────────────────────
+  const handleUpdatePassword = async (e: FormEvent) => {
+    e.preventDefault();
+
+    if (!passwordData.currentPassword || !passwordData.newPassword) {
+      return toast.error("Мэдээллээ бүрэн бөглөнө үү");
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return toast.error("Шинэ нууц үгүүд зөрж байна");
+    }
+    if (passwordData.newPassword.length < 6) {
+      return toast.error("Шинэ нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой");
+    }
+
+    try {
+      setPasswordLoading(true);
+      const res = await updatePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      toast.success(res.message);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error: any) {
+      toast.error(error?.message || "Алдаа гарлаа");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   const baseInputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none placeholder:text-gray-400";
   const labelClass = "text-sm font-semibold text-gray-700 ml-0.5";
@@ -52,17 +136,14 @@ const Profile = () => {
               <HiOutlineUserCircle className="w-6 h-6 text-blue-600" />
               Хэрэглэгчийн мэдээлэл
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Та өөрийн бүртгэлийн мэдээлэл болон профайл зургаа шинэчилнэ үү.
-            </p>
           </div>
 
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleUpdateProfile}
             className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
           >
             <div className="p-6 md:p-8 space-y-8">
-              {/* Avatar Upload */}
+              {/* Avatar */}
               <div className="flex flex-col md:flex-row items-center gap-8">
                 <div className="relative group">
                   <div className="w-32 h-32 rounded-full border-4 border-gray-50 shadow-inner bg-gray-100 overflow-hidden flex items-center justify-center transition-all group-hover:border-blue-100">
@@ -79,12 +160,11 @@ const Profile = () => {
                   <button
                     type="button"
                     onClick={handleSelectPhoto}
-                    className="absolute bottom-0 right-0 p-2 bg-white border border-gray-200 rounded-full shadow-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                    className="absolute bottom-0 right-0 p-2 bg-white border border-gray-200 rounded-full shadow-lg text-blue-600 hover:bg-blue-50"
                   >
                     <HiOutlineCamera className="w-5 h-5" />
                   </button>
                 </div>
-
                 <div className="flex flex-col gap-3">
                   <input
                     type="file"
@@ -97,7 +177,7 @@ const Profile = () => {
                     <button
                       type="button"
                       onClick={handleSelectPhoto}
-                      className="px-4 py-2 bg-white border border-gray-300 rounded text-xs font-bold uppercase tracking-wider text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+                      className="px-4 py-2 bg-white border border-gray-300 rounded text-xs font-bold uppercase text-gray-700 hover:bg-gray-50 shadow-sm"
                     >
                       Зураг солих
                     </button>
@@ -105,43 +185,62 @@ const Profile = () => {
                       <button
                         type="button"
                         onClick={handleRemovePhoto}
-                        className="px-4 py-2 bg-red-50 text-red-600 rounded text-xs font-bold uppercase tracking-wider hover:bg-red-100 transition-all"
+                        className="px-4 py-2 bg-red-50 text-red-600 rounded text-xs font-bold uppercase hover:bg-red-100"
                       >
-                        <HiOutlineTrash className="w-4 h-4" />
+                        Устгах
                       </button>
                     )}
                   </div>
-                  <p className="text-[11px] text-gray-400">
-                    Зөвшөөрөгдөх формат: JPG, PNG. Дээд хэмжээ: 5MB
-                  </p>
+                  {/* Агуулах харуулах */}
+                  {user?.warehouse && (
+                    <p className="text-xs text-gray-400">
+                      Агуулах:{" "}
+                      <span className="font-semibold text-gray-600">
+                        {user.warehouse}
+                      </span>
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Info Grid */}
+              {/* Name & Email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
                 <div>
                   <label className={labelClass}>Таны нэр</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                       <HiOutlineUserCircle className="w-4 h-4" />
                     </div>
                     <input
-                      defaultValue={user?.name}
                       type="text"
+                      value={profileData.name}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                      placeholder="Нэрээ оруулна уу"
                       className={`${baseInputClass} pl-10`}
                     />
                   </div>
                 </div>
-
                 <div>
                   <label className={labelClass}>Имэйл хаяг</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                       <HiOutlineMail className="w-4 h-4" />
                     </div>
                     <input
-                      defaultValue={user?.email}
                       type="email"
+                      value={profileData.email}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
+                      placeholder="И-мэйл хаяг"
                       className={`${baseInputClass} pl-10`}
                     />
                   </div>
@@ -152,10 +251,11 @@ const Profile = () => {
             <div className="px-8 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
               <button
                 type="submit"
-                className="flex items-center gap-2 px-8 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95 uppercase tracking-widest"
+                disabled={profileLoading}
+                className="flex items-center gap-2 px-8 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white rounded-md font-bold text-sm shadow-sm uppercase tracking-widest transition-all active:scale-95"
               >
                 <HiOutlineSave className="w-4 h-4" />
-                Мэдээлэл хадгалах
+                {profileLoading ? "Хадгалж байна..." : "Мэдээлэл хадгалах"}
               </button>
             </div>
           </form>
@@ -168,21 +268,28 @@ const Profile = () => {
               <HiOutlineLockClosed className="w-6 h-6 text-blue-600" />
               Нууц үг шинэчлэх
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Аюулгүй байдлаа хангахын тулд тогтмол нууц үгээ сольж байхыг
-              зөвлөж байна.
-            </p>
           </div>
 
-          <form className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <form
+            onSubmit={handleUpdatePassword}
+            className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+          >
             <div className="p-6 md:p-8 space-y-6 max-w-2xl">
               <div>
                 <label className={labelClass}>Одоогийн нууц үг</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                     <HiOutlineKey className="w-4 h-4" />
                   </div>
                   <input
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        currentPassword: e.target.value,
+                      }))
+                    }
                     type="password"
                     placeholder="••••••••"
                     className={`${baseInputClass} pl-10`}
@@ -193,11 +300,19 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className={labelClass}>Шинэ нууц үг</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                       <HiOutlineLockClosed className="w-4 h-4" />
                     </div>
                     <input
+                      name="newPassword"
+                      value={passwordData.newPassword}
+                      onChange={(e) =>
+                        setPasswordData((prev) => ({
+                          ...prev,
+                          newPassword: e.target.value,
+                        }))
+                      }
                       type="password"
                       placeholder="••••••••"
                       className={`${baseInputClass} pl-10`}
@@ -206,11 +321,19 @@ const Profile = () => {
                 </div>
                 <div>
                   <label className={labelClass}>Баталгаажуулах</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                       <HiOutlineLockClosed className="w-4 h-4" />
                     </div>
                     <input
+                      name="confirmPassword"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordData((prev) => ({
+                          ...prev,
+                          confirmPassword: e.target.value,
+                        }))
+                      }
                       type="password"
                       placeholder="••••••••"
                       className={`${baseInputClass} pl-10`}
@@ -222,10 +345,11 @@ const Profile = () => {
 
             <div className="px-8 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
               <button
+                disabled={passwordLoading}
                 type="submit"
-                className="flex items-center gap-2 px-8 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95 uppercase tracking-widest"
+                className="flex items-center gap-2 px-8 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-bold text-sm shadow-sm transition-all active:scale-95 uppercase tracking-widest disabled:opacity-50"
               >
-                Нууц үг шинэчлэх
+                {passwordLoading ? "Түр хүлээнэ үү..." : "Нууц үг шинэчлэх"}
               </button>
             </div>
           </form>

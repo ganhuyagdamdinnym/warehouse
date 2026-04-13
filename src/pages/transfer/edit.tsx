@@ -21,12 +21,15 @@ import { getItems } from "../../api/item/item";
 
 interface LineRow {
   id: number;
+  itemId: number;
   name: string;
   code: string;
   weight: string;
   quantity: string;
   unit: string;
 }
+
+type TransferStatus = "Draft" | "Pending" | "Completed";
 
 const TransferEdit = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,15 +45,15 @@ const TransferEdit = () => {
   // Form state
   const [date, setDate] = useState("");
   const [code, setCode] = useState("");
-  const [fromWarehouse, setFromWarehouse] = useState("");
-  const [toWarehouse, setToWarehouse] = useState("");
+  const [fromWarehouseId, setFromWarehouseId] = useState<number | "">("");
+  const [toWarehouseId, setToWarehouseId] = useState<number | "">("");
   const [details, setDetails] = useState("");
-  const [isDraft, setIsDraft] = useState(false);
+  const [status, setStatus] = useState<TransferStatus>("Draft");
   const [lineItems, setLineItems] = useState<LineRow[]>([]);
 
   // Real data
   const [warehouseList, setWarehouseList] = useState<
-    { id: string; name: string }[]
+    { id: number; name: string }[]
   >([]);
   const [itemOptions, setItemOptions] = useState<
     { id: string; name: string; internalCode?: string }[]
@@ -77,14 +80,17 @@ const TransferEdit = () => {
         if (cancelled) return;
         setDate(data.date ? data.date.split("T")[0] : "");
         setCode(data.code || "");
-        setFromWarehouse(data.fromWarehouse || "");
-        setToWarehouse(data.toWarehouse || "");
+        setFromWarehouseId(
+          data.fromWarehouseId ? Number(data.fromWarehouseId) : "",
+        );
+        setToWarehouseId(data.toWarehouseId ? Number(data.toWarehouseId) : "");
         setDetails(data.details || "");
-        setIsDraft(data.status === "Draft");
+        setStatus((data.status as TransferStatus) || "Draft");
         setLineItems(
           (data.items || []).map((it: any, i: number) => ({
             id: i + 1,
             name: it.name || "",
+            itemId: Number(it.itemId),
             code: it.code || "",
             weight: it.weight || "1",
             quantity: it.quantity || "1",
@@ -111,7 +117,9 @@ const TransferEdit = () => {
           getWarehouses({ limit: 100 }),
           getItems({ limit: 100 }),
         ]);
-        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        setWarehouseList(
+          warehouseRes.data.map((w: any) => ({ ...w, id: Number(w.id) })),
+        );
         setItemOptions(
           itemRes.data as { id: string; name: string; internalCode?: string }[],
         );
@@ -144,6 +152,7 @@ const TransferEdit = () => {
     const newRow: LineRow = {
       id: Date.now(),
       name: item.name,
+      itemId: Number(item.id),
       code: item.internalCode || item.name.slice(0, 20) || "ITEM",
       weight: "1",
       quantity: "1",
@@ -173,7 +182,7 @@ const TransferEdit = () => {
     e.preventDefault();
     if (!id) return;
     setError(null);
-    if (!date || !fromWarehouse || !toWarehouse) {
+    if (!date || !fromWarehouseId || !toWarehouseId) {
       setError("Огноо, гарах болон орох агуулах заавал бөглөнө.");
       return;
     }
@@ -182,12 +191,13 @@ const TransferEdit = () => {
       await updateTransfer(id, {
         code: code.trim() || `TRF${Date.now()}`,
         date,
-        status: isDraft ? "Draft" : "Pending",
-        fromWarehouse,
-        toWarehouse,
+        status,
+        fromWarehouseId: Number(fromWarehouseId),
+        toWarehouseId: Number(toWarehouseId),
         details: details.trim() || undefined,
         items: lineItems.map((row) => ({
           name: row.name,
+          itemId: row.itemId,
           code: row.code,
           weight: row.weight,
           quantity: row.quantity,
@@ -213,6 +223,39 @@ const TransferEdit = () => {
     }
   };
 
+  // ── Status checkbox config ──────────────────────────────────────────
+  const statusAction: Record<
+    "Draft" | "Pending",
+    {
+      label: string;
+      description: string;
+      nextStatus: TransferStatus;
+      checked: boolean;
+      colorClass: string;
+      bgClass: string;
+      borderClass: string;
+    }
+  > = {
+    Draft: {
+      label: "Баталгаажуулах",
+      description: "Шилжүүлгийг баталгаажуулж Pending болгоно",
+      nextStatus: "Pending",
+      checked: false,
+      colorClass: "text-indigo-900",
+      bgClass: "bg-indigo-50/50",
+      borderClass: "border-indigo-100/50",
+    },
+    Pending: {
+      label: "Шилжүүлгийг дуусгах",
+      description: "Шилжүүлгийг гүйцэтгэсэн гэж тэмдэглэнэ",
+      nextStatus: "Completed",
+      checked: false,
+      colorClass: "text-emerald-900",
+      bgClass: "bg-emerald-50/50",
+      borderClass: "border-emerald-100/50",
+    },
+  };
+
   const baseInputClass =
     "mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md text-sm transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none";
   const labelClass = "text-sm font-semibold text-gray-700";
@@ -224,6 +267,8 @@ const TransferEdit = () => {
       </div>
     );
   }
+
+  const action = status !== "Completed" ? statusAction[status] : null;
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto bg-gray-50/30">
@@ -257,6 +302,20 @@ const TransferEdit = () => {
               <p className="mt-1 text-sm text-gray-500">
                 Агуулах хоорондын шилжүүлгийн мэдээллийг шинэчилнэ үү
               </p>
+            </div>
+
+            {/* Current status badge */}
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+              status === "Draft"
+                ? "bg-gray-100 text-gray-600 border-gray-200"
+                : status === "Pending"
+                ? "bg-amber-50 text-amber-700 border-amber-200"
+                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                status === "Draft" ? "bg-gray-400" : status === "Pending" ? "bg-amber-400" : "bg-emerald-400"
+              }`} />
+              {status === "Draft" ? "Ноорог" : status === "Pending" ? "Хүлээгдэж байна" : "Дууссан"}
             </div>
           </div>
         </div>
@@ -315,8 +374,10 @@ const TransferEdit = () => {
                     </div>
                     <select
                       className={`${baseInputClass} pl-10 border-blue-200 bg-white appearance-none cursor-pointer`}
-                      value={fromWarehouse}
-                      onChange={(e) => setFromWarehouse(e.target.value)}
+                      value={fromWarehouseId}
+                      onChange={(e) =>
+                        setFromWarehouseId(Number(e.target.value))
+                      }
                     >
                       <option value="">Сонгох...</option>
                       {warehouseList.map((wh) => (
@@ -343,8 +404,8 @@ const TransferEdit = () => {
                     </div>
                     <select
                       className={`${baseInputClass} pl-10 border-blue-200 bg-white appearance-none cursor-pointer`}
-                      value={toWarehouse}
-                      onChange={(e) => setToWarehouse(e.target.value)}
+                      value={toWarehouseId}
+                      onChange={(e) => setToWarehouseId(Number(e.target.value))}
                     >
                       <option value="">Сонгох...</option>
                       {warehouseList.map((wh) => (
@@ -555,22 +616,50 @@ const TransferEdit = () => {
                 </div>
               </div>
 
-              {/* Status */}
-              <div className="flex items-center gap-3 p-4 bg-indigo-50/50 rounded-xl w-fit pr-8 border border-indigo-100/50">
-                <input
-                  type="checkbox"
-                  id="draft"
-                  checked={isDraft}
-                  onChange={(e) => setIsDraft(e.target.checked)}
-                  className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer transition-all"
-                />
-                <label
-                  htmlFor="draft"
-                  className="text-sm text-indigo-900 font-semibold cursor-pointer select-none"
+              {/* ── Status Action Checkbox ── */}
+              {action && (
+                <div
+                  className={`flex items-center gap-3 p-4 rounded-xl w-fit pr-8 border ${action.bgClass} ${action.borderClass}`}
                 >
-                  Энэ бичилт ноорог төлөвтэй байна
-                </label>
-              </div>
+                  <input
+                    type="checkbox"
+                    id="statusAction"
+                    checked={false}
+                    onChange={(e) => {
+                      if (e.target.checked) setStatus(action.nextStatus);
+                    }}
+                    className={`h-5 w-5 focus:ring-2 border-gray-300 rounded cursor-pointer transition-all ${
+                      status === "Draft"
+                        ? "text-indigo-600 focus:ring-indigo-500"
+                        : "text-emerald-600 focus:ring-emerald-500"
+                    }`}
+                  />
+                  <div>
+                    <label
+                      htmlFor="statusAction"
+                      className={`text-sm font-semibold cursor-pointer select-none ${action.colorClass}`}
+                    >
+                      {action.label}
+                    </label>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {action.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Completed state — read only notice */}
+              {status === "Completed" && (
+                <div className="flex items-center gap-3 p-4 rounded-xl w-fit pr-8 border bg-emerald-50 border-emerald-200">
+                  <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-800">Шилжүүлэг дууссан</p>
+                    <p className="text-xs text-emerald-600 mt-0.5">Энэ шилжүүлэг гүйцэтгэгдсэн тэмдэглэгдсэн байна</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sticky Footer Action */}

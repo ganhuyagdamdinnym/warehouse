@@ -16,7 +16,7 @@ type Props = {
 };
 export const Header = (props: Props) => {
   const navigate = useNavigate();
-  const { user, isSuperAdmin, warehouse, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { setIsOpenSidebar, isOpenSidebar } = props;
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null); // Create a reference for the dropdown
@@ -124,7 +124,10 @@ export const Header = (props: Props) => {
                     Пропайл
                   </a>
                   <div className="border-t border-gray-100"></div>
-                  <button className="block w-full px-4 py-2 leading-5 text-gray-700 text-left hover:bg-gray-100 focus:outline-hidden transition duration-150 ease-in-out">
+                  <button
+                    onClick={() => logout()}
+                    className="block w-full px-4 py-2 leading-5 text-gray-700 text-left hover:bg-gray-100 focus:outline-hidden transition duration-150 ease-in-out"
+                  >
                     Гарах
                   </button>
                 </div>

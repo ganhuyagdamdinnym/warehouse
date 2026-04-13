@@ -6,25 +6,24 @@ import {
   HiOutlinePaperClip,
   HiX,
   HiOutlineSearch,
-  HiOutlineCalendar,
 } from "react-icons/hi";
-import { createCheckout } from "../../api/checkout/checkout_api";
-import { getContacts } from "../../api/contact/contact_api";
+import { createCheckin } from "../../api";
+import { getContacts } from "../../api/contact/contact";
 import { getWarehouses } from "../../api/warehouse/warehouse_api";
 import { getItems } from "../../api/item/item";
 
 interface SelectedItem {
-  id: number; // Render key (Date.now())
-  productId: number; // Database Item ID
+  id: number;
+  productId: number;
   name: string;
+  code: string;
   weight: string;
   quantity: string;
   unit: string;
 }
 
-const CreateCheckOut = () => {
+const CreateCheckIn = () => {
   const navigate = useNavigate();
-
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItemsList, setSelectedItemsList] = useState<SelectedItem[]>(
@@ -34,18 +33,25 @@ const CreateCheckOut = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [reference, setReference] = useState("");
+  const [date, setDate] = useState("");
+  const [code, setCode] = useState("");
   const [contact, setContact] = useState("");
   const [warehouseId, setWarehouseId] = useState<number | null>(null);
   const [warehouseName, setWarehouseName] = useState("");
   const [warehouseSelectValue, setWarehouseSelectValue] = useState("");
   const [details, setDetails] = useState("");
-  const [isDraft, setIsDraft] = useState(false);
+  // true = Draft, false = Completed
+  const [isDraft, setIsDraft] = useState(true);
 
-  const [contactList, setContactList] = useState<any[]>([]);
-  const [warehouseList, setWarehouseList] = useState<any[]>([]);
-  const [itemOptions, setItemOptions] = useState<any[]>([]);
+  const [contactList, setContactList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [itemOptions, setItemOptions] = useState<
+    { id: string; name: string; internalCode?: string }[]
+  >([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,9 +64,11 @@ const CreateCheckOut = () => {
           getWarehouses({ limit: 100 }),
           getItems({ limit: 100 }),
         ]);
-        setContactList(contactRes.data);
-        setWarehouseList(warehouseRes.data);
-        setItemOptions(itemRes.data);
+        setContactList(contactRes.data as { id: string; name: string }[]);
+        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        setItemOptions(
+          itemRes.data as { id: string; name: string; internalCode?: string }[],
+        );
       } catch (err) {
         console.error("Өгөгдөл татахад алдаа:", err);
       }
@@ -81,24 +89,37 @@ const CreateCheckOut = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectItem = (item: any) => {
-    // Хэрэв бараа аль хэдийн жагсаалтад байвал нэмэхгүй
-    if (selectedItemsList.some((i) => i.productId === Number(item.id))) {
-      setIsOpen(false);
-      setSearchTerm("");
-      return;
-    }
-    setSelectedItemsList((prev) => [
-      ...prev,
-      {
-        id: Date.now(), // Unique key for render
-        productId: Number(item.id), // Real Database ID
-        name: item.name,
-        weight: "1",
-        quantity: "1",
-        unit: "Хйрцаг",
-      },
-    ]);
+  const filteredItems = itemOptions.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.internalCode ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
+  );
+
+  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    setWarehouseSelectValue(selectedId);
+    const found = warehouseList.find((wh) => String(wh.id) === selectedId);
+    setWarehouseId(found ? Number(found.id) : null);
+    setWarehouseName(found ? found.name : "");
+  };
+
+  const handleSelectItem = (item: {
+    id: string;
+    name: string;
+    internalCode?: string;
+  }) => {
+    const newItem: SelectedItem = {
+      id: Date.now(),
+      productId: Number(item.id),
+      name: item.name,
+      code: item.internalCode || item.name.slice(0, 20) || "ITEM",
+      weight: "1",
+      quantity: "1",
+      unit: "Хайрцаг",
+    };
+    setSelectedItemsList((prev) => [...prev, newItem]);
     setSearchTerm("");
     setIsOpen(false);
   };
@@ -109,11 +130,11 @@ const CreateCheckOut = () => {
 
   const updateItem = (
     id: number,
-    field: keyof Omit<SelectedItem, "id" | "name">,
+    field: "weight" | "quantity",
     value: string,
   ) => {
     setSelectedItemsList((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
     );
   };
 
@@ -123,25 +144,10 @@ const CreateCheckOut = () => {
     }
   };
 
-  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    setWarehouseSelectValue(selectedId);
-    const found = warehouseList.find((wh) => String(wh.id) === selectedId);
-    if (found) {
-      setWarehouseId(Number(found.id));
-      setWarehouseName(found.name);
-    } else {
-      setWarehouseId(null);
-      setWarehouseName("");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError(null);
-
-    if (!date || !contact || !warehouseId) {
-      setError("Огноо, харилцагч, агуулахыг заавал бөглөнө үү.");
+    if (!date || !code.trim() || !contact || !warehouseId) {
+      setError("Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө.");
       return;
     }
     if (selectedItemsList.length === 0) {
@@ -149,27 +155,29 @@ const CreateCheckOut = () => {
       return;
     }
 
+    const itemsForApi = selectedItemsList.map((row) => ({
+      itemId: row.productId,
+      productId: row.productId,
+      name: row.name,
+      code: row.code,
+      weight: row.weight,
+      quantity: row.quantity,
+    }));
+
     try {
       setSaving(true);
-      await createCheckout({
-        code: reference.trim() || `TCO${Date.now()}`,
+      await createCheckin({
+        code: code.trim(),
         date,
         status: isDraft ? "Draft" : "Completed",
         contact,
         warehouse: warehouseName,
-        warehouseId: warehouseId,
-        user: "Admin",
+        warehouseId,
+        user: contact,
         details: details.trim(),
-        items: selectedItemsList.map((item) => ({
-          itemId: item.productId, // Энэ ID-аар сток хасна
-          name: item.name,
-          productId: 1, // Зүгээр л текст талбар болгон ашиглаж байна
-          code: item.name.slice(0, 5).toUpperCase(),
-          weight: item.weight,
-          quantity: item.quantity,
-        })),
+        items: itemsForApi,
       });
-      navigate("/checkout", { replace: true });
+      navigate("/checkin", { replace: true });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа.");
     } finally {
@@ -177,32 +185,28 @@ const CreateCheckOut = () => {
     }
   };
 
-  const baseInputClass =
+  const inputClass =
     "mt-1.5 block w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm transition-all focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 outline-none hover:border-gray-300 placeholder:text-gray-400";
-  const tableInputClass =
-    "w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none";
 
   return (
     <div className="md:flex-1 md:px-4 py-8 md:p-8 overflow-x-hidden md:overflow-y-auto print:m-0 print:p-0 print:overflow-visible bg-gray-50/50">
       <div className="w-full">
-        {/* Header */}
         <div className="px-4 md:px-0 mb-8 flex items-start gap-4">
           <div className="w-1 h-12 rounded-full bg-gray-900 flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
-              Шинэ зарлага үүсгэх
+              Шинэ орлого үүсгэх
             </h3>
             <p className="mt-1 text-sm text-gray-400">
-              Бараа материалын зарлагын баримт шинээр үүсгэх.
+              Бараа материалын орлогын баримт шинээр үүсгэх.
             </p>
           </div>
         </div>
 
         <div className="mt-4">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => e.preventDefault()}>
             <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
               <div className="p-6 md:p-8 space-y-8">
-                {/* Error Banner */}
                 {error && (
                   <div className="flex items-start gap-3 text-sm text-red-700 bg-red-50 border border-red-100 px-4 py-3 rounded-lg">
                     <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-red-200 text-red-700 flex items-center justify-center text-[10px] font-bold">
@@ -212,24 +216,18 @@ const CreateCheckOut = () => {
                   </div>
                 )}
 
-                {/* Main Fields */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
                   <div className="space-y-5">
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Огноо
                       </label>
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors mt-1.5">
-                          <HiOutlineCalendar className="w-4 h-4" />
-                        </div>
-                        <input
-                          type="date"
-                          value={date}
-                          onChange={(e) => setDate(e.target.value)}
-                          className={`${baseInputClass} pl-10 accent-blue-600 cursor-pointer`}
-                        />
-                      </div>
+                      <input
+                        type="date"
+                        className={inputClass}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -238,22 +236,21 @@ const CreateCheckOut = () => {
                       <input
                         placeholder="Дугаар оруулна уу"
                         type="text"
-                        value={reference}
-                        onChange={(e) => setReference(e.target.value)}
-                        className={baseInputClass}
+                        className={inputClass}
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
                       />
                     </div>
                   </div>
-
                   <div className="space-y-5">
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Харилцагч
                       </label>
                       <select
+                        className={inputClass}
                         value={contact}
                         onChange={(e) => setContact(e.target.value)}
-                        className={baseInputClass}
                       >
                         <option value="">Харилцагч сонгох</option>
                         {contactList.map((c) => (
@@ -268,9 +265,9 @@ const CreateCheckOut = () => {
                         Агуулах
                       </label>
                       <select
+                        className={inputClass}
                         value={warehouseSelectValue}
                         onChange={handleWarehouseChange}
-                        className={baseInputClass}
                       >
                         <option value="">Агуулах сонгох</option>
                         {warehouseList.map((wh) => (
@@ -283,10 +280,8 @@ const CreateCheckOut = () => {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t border-dashed border-gray-100" />
 
-                {/* Item Search */}
                 <div>
                   <div className="relative mb-4" ref={containerRef}>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
@@ -303,7 +298,7 @@ const CreateCheckOut = () => {
                         }}
                         onFocus={() => setIsOpen(true)}
                         placeholder="Бараа хайх болон сонгох..."
-                        className={`${baseInputClass} pl-9 py-2.5`}
+                        className={`${inputClass} pl-9 py-2.5`}
                       />
                       <HiChevronDown
                         className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
@@ -312,31 +307,21 @@ const CreateCheckOut = () => {
 
                     {isOpen && (
                       <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl shadow-gray-100/80 max-h-60 overflow-y-auto">
-                        {itemOptions.filter((i) =>
-                          i.name
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase()),
-                        ).length > 0 ? (
-                          itemOptions
-                            .filter((i) =>
-                              i.name
-                                .toLowerCase()
-                                .includes(searchTerm.toLowerCase()),
-                            )
-                            .map((item) => (
-                              <div
-                                key={item.id}
-                                className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors"
-                                onClick={() => handleSelectItem(item)}
-                              >
-                                <span className="font-medium">{item.name}</span>
-                                {item.internalCode && (
-                                  <span className="ml-2 text-xs text-gray-400 font-mono">
-                                    {item.internalCode}
-                                  </span>
-                                )}
-                              </div>
-                            ))
+                        {filteredItems.length > 0 ? (
+                          filteredItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none transition-colors"
+                              onClick={() => handleSelectItem(item)}
+                            >
+                              <span className="font-medium">{item.name}</span>
+                              {item.internalCode && (
+                                <span className="ml-2 text-xs text-gray-400 font-mono">
+                                  {item.internalCode}
+                                </span>
+                              )}
+                            </div>
+                          ))
                         ) : (
                           <div className="px-4 py-4 text-gray-400 text-xs text-center">
                             Илэрц олдсонгүй
@@ -346,7 +331,6 @@ const CreateCheckOut = () => {
                     )}
                   </div>
 
-                  {/* Table */}
                   <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50/80 border-b border-gray-200">
@@ -355,16 +339,18 @@ const CreateCheckOut = () => {
                           <th className="px-4 py-3 uppercase tracking-widest text-[10px]">
                             Бараа
                           </th>
-                          <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32"></th>
                           <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32">
-                            Тоо хэмжээ
+                            Жин
+                          </th>
+                          <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32">
+                            Тоо
                           </th>
                           <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-44">
                             Хэмжих нэгж
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100 bg-white">
+                      <tbody className="divide-y divide-gray-100">
                         {selectedItemsList.length > 0 ? (
                           selectedItemsList.map((row) => (
                             <tr
@@ -383,7 +369,17 @@ const CreateCheckOut = () => {
                               <td className="px-4 py-3 font-medium text-gray-800">
                                 {row.name}
                               </td>
-                              <td className="px-4 py-3"></td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="text"
+                                  value={row.weight}
+                                  onChange={(e) =>
+                                    updateItem(row.id, "weight", e.target.value)
+                                  }
+                                  placeholder="0.00"
+                                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+                                />
+                              </td>
                               <td className="px-4 py-3">
                                 <input
                                   type="text"
@@ -396,23 +392,19 @@ const CreateCheckOut = () => {
                                     )
                                   }
                                   placeholder="0"
-                                  className={tableInputClass}
+                                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
                                 />
                               </td>
                               <td className="px-4 py-3">
                                 <div className="relative">
-                                  <select
-                                    value={row.unit}
-                                    onChange={(e) =>
-                                      updateItem(row.id, "unit", e.target.value)
-                                    }
-                                    className={`${tableInputClass} appearance-none pr-8 cursor-pointer`}
-                                  >
-                                    <option>Хайрцаг</option>
-                                    <option>Ширхэг</option>
-                                    <option>Боодол</option>
+                                  <select className="w-full pl-3 pr-8 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm appearance-none cursor-pointer transition-all focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none">
+                                    <option>Хайрцаг (Box)</option>
+                                    <option>Ширхэг (Piece)</option>
+                                    <option>Багц (Dozen)</option>
                                   </select>
-                                  <HiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none w-3.5 h-3.5" />
+                                  <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-400">
+                                    <HiChevronDown className="w-3.5 h-3.5" />
+                                  </div>
                                 </div>
                               </td>
                             </tr>
@@ -432,10 +424,8 @@ const CreateCheckOut = () => {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t border-dashed border-gray-100" />
 
-                {/* File + Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
@@ -465,7 +455,7 @@ const CreateCheckOut = () => {
                           key={idx}
                           className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-2.5 py-1.5 rounded-lg border border-blue-100 text-xs font-medium"
                         >
-                          <span className="truncate max-w-[140px]">
+                          <span className="truncate max-w-[120px]">
                             {file.name}
                           </span>
                           <button
@@ -489,50 +479,83 @@ const CreateCheckOut = () => {
                       Дэлгэрэнгүй тайлбар
                     </label>
                     <textarea
+                      className={`${inputClass} resize-none`}
+                      rows={4}
+                      placeholder="Энд дэлгэрэнгүй мэдээлэл оруулна уу..."
                       value={details}
                       onChange={(e) => setDetails(e.target.value)}
-                      className={`${baseInputClass} resize-none`}
-                      rows={5}
-                      placeholder="Нэмэлт тэмдэглэл..."
                     />
                   </div>
                 </div>
 
-                {/* Draft Checkbox */}
-                <div>
-                  <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
-                    <input
-                      type="checkbox"
-                      checked={isDraft}
-                      onChange={(e) => setIsDraft(e.target.checked)}
-                      className="peer w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                    />
-                    <span className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
-                      Энэ бүртгэлийг ноорог (draft) хэлбэрээр хадгалах
-                    </span>
-                  </label>
+                {/* ── Status checkbox ── */}
+                <div className="flex items-center gap-3 p-4 rounded-xl w-fit pr-8 border bg-emerald-50/50 border-emerald-100/50">
+                  <input
+                    type="checkbox"
+                    id="completeNow"
+                    checked={!isDraft}
+                    onChange={(e) => setIsDraft(!e.target.checked)}
+                    className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded cursor-pointer"
+                  />
+                  <div>
+                    <label
+                      htmlFor="completeNow"
+                      className="text-sm font-semibold cursor-pointer select-none text-emerald-900"
+                    >
+                      Орлогыг баталгаажуулах
+                    </label>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Чеклэвэл Completed болж сток нэмэгдэнэ. Чеклэхгүй бол
+                      Draft хэлбэрээр хадгалагдана.
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Footer */}
               <div className="px-8 py-5 bg-gray-50/70 border-t border-gray-200 flex items-center justify-between">
                 <p className="text-xs text-gray-400">
-                  * Огноо, харилцагч, агуулах заавал бөглөнө
+                  * Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө
                 </p>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => navigate("/checkout")}
+                    onClick={() => navigate("/checkin")}
                     className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
                   >
                     Цуцлах
                   </button>
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleSubmit}
                     disabled={saving}
                     className="px-7 py-2 bg-gray-900 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-sm transition-all active:scale-[0.98]"
                   >
-                    {saving ? "Хадгалж байна..." : "Хадгалах"}
+                    {saving ? (
+                      <span className="flex items-center gap-2">
+                        <svg
+                          className="animate-spin w-3.5 h-3.5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Хадгалагдаж байна...
+                      </span>
+                    ) : (
+                      "Хадгалах"
+                    )}
                   </button>
                 </div>
               </div>
@@ -544,4 +567,4 @@ const CreateCheckOut = () => {
   );
 };
 
-export default CreateCheckOut;
+export default CreateCheckIn;

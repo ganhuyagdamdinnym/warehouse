@@ -8,13 +8,14 @@ export interface CheckoutItem {
 }
 
 export interface Checkout {
+  // [x: string]: Checkout;
   id: string;
   code: string;
   date: string;
   status: "Draft" | "Completed" | "Pending";
   contact: string;
   warehouse: string;
-  warehouseId: number;
+  warehouseId: number | null;
   user: string;
   details: string;
   items: CheckoutItem[];

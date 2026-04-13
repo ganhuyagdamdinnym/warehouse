@@ -4,7 +4,11 @@ import type {
   UserListResponse,
   User,
   CreateUserBody,
+  UpdatePasswordBody,
+  UpdateProfilePayload,
+  UpdateProfileResponse,
 } from "../../models/types/user";
+import { getToken } from "../../utils/auth";
 
 export async function getUsers(
   params: GetUsersParams = {},
@@ -41,4 +45,30 @@ export async function deleteUser(id: string): Promise<{ message: string }> {
 
 export async function getUserInfo(): Promise<{ message: string }> {
   return request(`/userInfo`, { method: "GET" });
+}
+
+//update infos
+
+export async function updateProfile(
+  data: UpdateProfilePayload,
+): Promise<UpdateProfileResponse> {
+  return request("/users/updateProfile", {
+    method: "PUT",
+    body: data,
+  });
+}
+export async function updatePassword(
+  data: UpdatePasswordBody,
+): Promise<{ message: string }> {
+  const token = getToken(); // Энд шууд токеноо авч байна
+
+  // Хэрэв Backend 5000 порт дээр бол:
+  return request(`http://localhost:3000/api/users/updatePassword`, {
+    method: "POST",
+    body: data,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
 }

@@ -22,6 +22,24 @@ export interface CreateUserBody {
   permission?: UserPermission;
   superAdmin?: boolean;
 }
+export interface UpdatePasswordBody {
+  currentPassword: string;
+  newPassword: string;
+}export interface UpdateProfilePayload {
+  name?: string;
+  email?: string;
+}
+ 
+export interface UpdateProfileResponse {
+  message: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    superAdmin: boolean;
+    warehouse: string;
+  };
+}
 
 export interface UserListResponse {
   total: number;

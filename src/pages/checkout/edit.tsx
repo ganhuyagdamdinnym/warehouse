@@ -17,25 +17,18 @@ import {
   updateCheckout,
   deleteCheckout,
 } from "../../api/checkout/checkout_api";
-import type { CheckoutItem } from "../../models/types/checkout";
+import { getContacts } from "../../api/contact/contact";
+import { getWarehouses } from "../../api/warehouse/warehouse_api";
+import { getItems } from "../../api/item/item";
 
 interface LineRow {
   id: number;
+  itemId: number;
   name: string;
   code: string;
   weight: string;
   quantity: string;
 }
-
-const contacts = ["Marianna Upton", "John Doe", "Alice Smith", "Bob Brown"];
-const warehouses = ["Агуулах 1", "Агуулах 2", "Агуулах 3", "Үндсэн агуулах"];
-const itemOptions = [
-  "Бүтээгдэхүүн 1 - Агуулах А",
-  "Бүтээгдэхүүн 2 - Агуулах Б",
-  "Бараа 3 - Хадгалах C",
-  "Сэлбэг хэрэгсэл 4",
-  "Цахим төхөөрөмж 5",
-];
 
 const CheckoutEdit = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,37 +45,57 @@ const CheckoutEdit = () => {
   const [code, setCode] = useState("");
   const [contact, setContact] = useState("");
   const [warehouse, setWarehouse] = useState("");
+  const [warehouseId, setWarehouseId] = useState<number | null>(null);
   const [details, setDetails] = useState("");
   const [isDraft, setIsDraft] = useState(true);
   const [lineItems, setLineItems] = useState<LineRow[]>([]);
 
+  const [contactList, setContactList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [warehouseList, setWarehouseList] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [itemOptions, setItemOptions] = useState<
+    { id: string; name: string; internalCode?: string }[]
+  >([]);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const filteredItems = itemOptions.filter((item) =>
-    item.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredItems = itemOptions.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.internalCode ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
   );
 
+  // Checkout өгөгдөл татах
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
     (async () => {
       try {
         setLoading(true);
-        const data = await getCheckout(id);
+        const res = await getCheckout(id);
+        const data = res;
         if (cancelled) return;
-        setDate(data.date || "");
+        // alert("hi");
+        setDate(data.date ? data.date.split("T")[0] : "");
         setCode(data.code || "");
         setContact(data.contact || "");
         setWarehouse(data.warehouse || "");
+        setWarehouseId(data.warehouseId || null);
         setDetails(data.details || "");
         setIsDraft(data.status === "Draft");
         setLineItems(
-          (data.items || []).map((it: CheckoutItem, i: number) => ({
-            id: i + 1,
-            name: it.name,
-            code: it.code,
-            weight: it.weight,
-            quantity: it.quantity,
+          (data.items || []).map((it: any, i: number) => ({
+            id: it.id ?? i + 1,
+            itemId: Number(it.itemId) || 0,
+            name: it.name ?? "",
+            code: it.code ?? "",
+            weight: it.weight ?? "1",
+            quantity: it.quantity ?? "1",
           })),
         );
       } catch (e) {
@@ -97,6 +110,28 @@ const CheckoutEdit = () => {
     };
   }, [id]);
 
+  // Contacts, warehouses, items татах
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [contactRes, warehouseRes, itemRes] = await Promise.all([
+          getContacts({ limit: 100 }),
+          getWarehouses({ limit: 100 }),
+          getItems({ limit: 100 }),
+        ]);
+        setContactList(contactRes.data as { id: string; name: string }[]);
+        setWarehouseList(warehouseRes.data as { id: string; name: string }[]);
+        setItemOptions(
+          itemRes.data as { id: string; name: string; internalCode?: string }[],
+        );
+      } catch (err) {
+        console.error("Өгөгдөл татахад алдаа:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Click outside хаах
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -110,11 +145,23 @@ const CheckoutEdit = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const addItem = (itemName: string) => {
+  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedName = e.target.value;
+    setWarehouse(selectedName);
+    const found = warehouseList.find((wh) => wh.name === selectedName);
+    setWarehouseId(found ? Number(found.id) : null);
+  };
+
+  const addItem = (item: {
+    id: string;
+    name: string;
+    internalCode?: string;
+  }) => {
     const newRow: LineRow = {
       id: Date.now(),
-      name: itemName,
-      code: itemName.slice(0, 20) || "ITEM",
+      itemId: Number(item.id),
+      name: item.name,
+      code: item.internalCode || item.name.slice(0, 20) || "ITEM",
       weight: "1",
       quantity: "1",
     };
@@ -145,12 +192,15 @@ const CheckoutEdit = () => {
       setError("Огноо, лавлах дугаар, харилцагч, агуулах заавал бөглөнө.");
       return;
     }
-    const itemsForApi: CheckoutItem[] = lineItems.map((row) => ({
+
+    const itemsForApi = lineItems.map((row) => ({
+      itemId: row.itemId,
       name: row.name,
       code: row.code,
       weight: row.weight,
       quantity: row.quantity,
     }));
+
     try {
       setSaving(true);
       await updateCheckout(id, {
@@ -159,6 +209,7 @@ const CheckoutEdit = () => {
         status: isDraft ? "Draft" : "Pending",
         contact,
         warehouse,
+        warehouseId,
         user: contact,
         details: details.trim(),
         items: itemsForApi,
@@ -235,7 +286,6 @@ const CheckoutEdit = () => {
                 </p>
               )}
 
-              {/* Primary Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div className="relative group">
@@ -285,9 +335,9 @@ const CheckoutEdit = () => {
                         onChange={(e) => setContact(e.target.value)}
                       >
                         <option value="">Харилцагч сонгох</option>
-                        {contacts.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
+                        {contactList.map((c) => (
+                          <option key={c.id} value={c.name}>
+                            {c.name}
                           </option>
                         ))}
                       </select>
@@ -304,12 +354,12 @@ const CheckoutEdit = () => {
                       <select
                         className={`${baseInputClass} pl-10 appearance-none bg-white cursor-pointer`}
                         value={warehouse}
-                        onChange={(e) => setWarehouse(e.target.value)}
+                        onChange={handleWarehouseChange}
                       >
                         <option value="">Агуулах сонгох</option>
-                        {warehouses.map((wh) => (
-                          <option key={wh} value={wh}>
-                            {wh}
+                        {warehouseList.map((wh) => (
+                          <option key={wh.id} value={wh.name}>
+                            {wh.name}
                           </option>
                         ))}
                       </select>
@@ -319,7 +369,7 @@ const CheckoutEdit = () => {
                 </div>
               </div>
 
-              {/* Items Section */}
+              {/* Items */}
               <div className="pt-6 border-t border-gray-100">
                 <label className={labelClass}>Бараа материалын жагсаалт</label>
                 <div className="mt-3 bg-gray-50/80 p-5 rounded-xl border border-gray-200/60 shadow-inner">
@@ -349,16 +399,18 @@ const CheckoutEdit = () => {
                     {isOpen && (
                       <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
                         {filteredItems.length > 0 ? (
-                          filteredItems.map((item, index) => (
+                          filteredItems.map((item) => (
                             <div
-                              key={index}
+                              key={item.id}
                               className="px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 flex items-center justify-between border-b border-gray-50 last:border-none transition-colors"
                               onClick={() => addItem(item)}
                             >
-                              <span>{item}</span>
-                              <span className="text-[10px] bg-blue-100 px-2 py-1 rounded text-blue-600 font-bold uppercase">
-                                Нэмэх
-                              </span>
+                              <span>{item.name}</span>
+                              {item.internalCode && (
+                                <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded uppercase font-bold text-gray-400">
+                                  {item.internalCode}
+                                </span>
+                              )}
                             </div>
                           ))
                         ) : (
@@ -378,7 +430,7 @@ const CheckoutEdit = () => {
                           <th className="px-6 py-4">Бараа</th>
                           <th className="px-6 py-4 text-center">Жин</th>
                           <th className="px-6 py-4 text-center">Тоо ширхэг</th>
-                          <th className="px-6 py-4 text-center">Нэгж</th>
+                          <th className="px-6 py-4 text-center w-16"></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -450,7 +502,6 @@ const CheckoutEdit = () => {
                                   type="button"
                                   onClick={() => removeLineItem(row.id)}
                                   className="text-red-500 hover:text-red-700 p-1"
-                                  title="Устгах"
                                 >
                                   <HiOutlineTrash className="w-4 h-4" />
                                 </button>
@@ -503,7 +554,7 @@ const CheckoutEdit = () => {
                   id="draft"
                   checked={isDraft}
                   onChange={(e) => setIsDraft(e.target.checked)}
-                  className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer transition-all"
+                  className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
                 />
                 <label
                   htmlFor="draft"
@@ -514,7 +565,7 @@ const CheckoutEdit = () => {
               </div>
             </div>
 
-            {/* Sticky Footer Action */}
+            {/* Footer */}
             <div className="flex items-center justify-between px-4 py-5 bg-gray-50 border-x border-b border-gray-200 md:px-8 md:rounded-b-xl shadow-inner">
               <button
                 type="button"

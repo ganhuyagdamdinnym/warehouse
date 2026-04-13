@@ -5,17 +5,32 @@ import type {
   CheckoutListResponse,
 } from "../../models/types/checkout";
 
-function normalizeCheckout(raw: Record<string, unknown>): Checkout {
-  const c = raw as unknown as Checkout & { id?: number };
+function normalizeCheckout(raw: any): Checkout {
+  // Хэрэв raw дотор checkout гэсэн түлхүүр байвал түүнийг нь ашиглана
+  const data = raw?.checkout ? raw.checkout : raw;
+
   return {
-    ...c,
-    id: String(c.id ?? c),
-    items: (c.items || []).map((i: CheckoutItem & { id?: number }) => ({
+    ...data,
+    id: String(data.id ?? ""),
+    items: (data.items || []).map((i: any) => ({
       ...i,
       id: i.id,
+      productId: i.productId,
     })),
   };
 }
+// function normalizeCheckout(raw: Record<string, unknown>): Checkout {
+//   const c = raw as any;
+//   return {
+//     ...c,
+//     id: String(c.id ?? ""),
+//     items: (c.items || []).map((i: any) => ({
+//       ...i,
+//       id: i.id,
+//       productId: i.productId,
+//     })),
+//   };
+// }
 
 function normalizeList(res: {
   total: number;
@@ -60,9 +75,18 @@ export async function getCheckouts(
   return normalizeList(res);
 }
 
+// export async function getCheckout(id: string): Promise<Checkout> {
+//   const res = await request<Record<string, unknown>>(`/checkouts/${id}`);
+//   return normalizeCheckout(res);
+// }
 export async function getCheckout(id: string): Promise<Checkout> {
-  const res = await request<Record<string, unknown>>(`/checkouts/${id}`);
-  return normalizeCheckout(res);
+  // Backend-ээс ирэх хэлбэр нь { checkout: Record<string, unknown> } байна
+  const res = await request<{ checkout: Record<string, unknown> }>(
+    `/checkouts/${id}`,
+  );
+
+  // res биш res.checkout-ийг normalize хийнэ
+  return normalizeCheckout(res.checkout);
 }
 
 export async function createCheckout(
