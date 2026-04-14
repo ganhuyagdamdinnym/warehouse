@@ -25,11 +25,14 @@ export interface CreateUserBody {
 export interface UpdatePasswordBody {
   currentPassword: string;
   newPassword: string;
-}export interface UpdateProfilePayload {
+}
+
+export interface UpdateProfilePayload {
   name?: string;
   email?: string;
+  image?: string | null;
 }
- 
+
 export interface UpdateProfileResponse {
   message: string;
   user: {

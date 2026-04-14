@@ -18,47 +18,86 @@ import {
 } from "react-icons/hi";
 import { useAuth } from "../../hooks/auth";
 
+// ── Зургийг resize хийж base64 болгох ──────────────────────────────────
+const resizeImage = (file: File, maxSize = 200): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ratio = Math.min(maxSize / img.width, maxSize / img.height);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { user, setUser } = useAuth();
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>("");
+  const [photoBase64, setPhotoBase64] = useState<string>("");
   const [profileLoading, setProfileLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const token = getToken();
   if (!token) return null;
 
-  // Profile form state
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
   });
 
-  // user ачаалагдсаны дараа form-г дүүргэнэ
   useEffect(() => {
     if (user) {
       setProfileData({ name: user.name || "", email: user.email || "" });
+      if (user.image) {
+        setPhotoPreview(user.image);
+        setPhotoBase64(user.image);
+      }
     }
   }, [user]);
 
-  // Нууц үгийн state
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  // ── Зураг сонгоход resize хийнэ ────────────────────────────────────────
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setPhotoPreview(e.target?.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      return toast.error("Зөвхөн зураг файл сонгоно уу");
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error("Зургийн хэмжээ 5MB-аас хэтрэхгүй байх ёстой");
+    }
+
+    try {
+      const resized = await resizeImage(file, 200);
+      setPhotoPreview(resized);
+      setPhotoBase64(resized);
+    } catch {
+      toast.error("Зураг боловсруулахад алдаа гарлаа");
     }
   };
 
   const handleSelectPhoto = (): void => fileInputRef.current?.click();
+
   const handleRemovePhoto = (): void => {
-    setPhotoPreview(null);
+    setPhotoPreview("");
+    setPhotoBase64("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -66,22 +105,25 @@ const Profile = () => {
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!profileData.name.trim() && !profileData.email.trim()) {
-      return toast.error("Нэр эсвэл имэйл оруулна уу");
+    if (
+      !profileData.name.trim() &&
+      !profileData.email.trim() &&
+      photoBase64 === (user?.image || "")
+    ) {
+      return toast.error("Өөрчлөх мэдээлэл байхгүй байна");
     }
-    // alert("hi");
+
     try {
       setProfileLoading(true);
       const res = await updateProfile({
         name: profileData.name.trim() || undefined,
         email: profileData.email.trim() || undefined,
+        image: photoBase64 || null,
       });
       toast.success(res.message);
-      // Auth state шинэчлэх (хэрэв setUser байвал)
       if (setUser) setUser(res.user as any);
     } catch (error: any) {
       toast.error(error?.message || "Алдаа гарлаа");
-      // alert("hiiiiii");
     } finally {
       setProfileLoading(false);
     }
@@ -157,14 +199,16 @@ const Profile = () => {
                       <HiOutlineUserCircle className="w-20 h-20 text-gray-300" />
                     )}
                   </div>
+                  {/* Camera товч */}
                   <button
                     type="button"
                     onClick={handleSelectPhoto}
-                    className="absolute bottom-0 right-0 p-2 bg-white border border-gray-200 rounded-full shadow-lg text-blue-600 hover:bg-blue-50"
+                    className="absolute bottom-0 right-0 p-2 bg-white border border-gray-200 rounded-full shadow-lg text-blue-600 hover:bg-blue-50 transition-colors"
                   >
                     <HiOutlineCamera className="w-5 h-5" />
                   </button>
                 </div>
+
                 <div className="flex flex-col gap-3">
                   <input
                     type="file"
@@ -177,7 +221,7 @@ const Profile = () => {
                     <button
                       type="button"
                       onClick={handleSelectPhoto}
-                      className="px-4 py-2 bg-white border border-gray-300 rounded text-xs font-bold uppercase text-gray-700 hover:bg-gray-50 shadow-sm"
+                      className="px-4 py-2 bg-white border border-gray-300 rounded text-xs font-bold uppercase text-gray-700 hover:bg-gray-50 shadow-sm transition-colors"
                     >
                       Зураг солих
                     </button>
@@ -185,13 +229,15 @@ const Profile = () => {
                       <button
                         type="button"
                         onClick={handleRemovePhoto}
-                        className="px-4 py-2 bg-red-50 text-red-600 rounded text-xs font-bold uppercase hover:bg-red-100"
+                        className="px-4 py-2 bg-red-50 text-red-600 rounded text-xs font-bold uppercase hover:bg-red-100 transition-colors"
                       >
                         Устгах
                       </button>
                     )}
                   </div>
-                  {/* Агуулах харуулах */}
+                  <p className="text-xs text-gray-400">
+                    JPG, PNG — дээд тал нь 5MB. Автоматаар 200×200px болгоно.
+                  </p>
                   {user?.warehouse && (
                     <p className="text-xs text-gray-400">
                       Агуулах:{" "}

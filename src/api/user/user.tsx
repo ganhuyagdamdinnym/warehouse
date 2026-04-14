@@ -53,7 +53,7 @@ export async function updateProfile(
   data: UpdateProfilePayload,
 ): Promise<UpdateProfileResponse> {
   return request("/users/updateProfile", {
-    method: "PUT",
+    method: "POST",
     body: data,
   });
 }
