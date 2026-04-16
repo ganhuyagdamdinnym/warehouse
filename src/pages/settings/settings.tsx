@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { changeLogo } from "../../api/user/user";
 import {
   HiOutlineCog,
   HiOutlinePhotograph,
@@ -29,7 +30,12 @@ const Settings = () => {
     }
   };
 
-  const handleLogoSave = () => {
+  const handleLogoSave = async () => {
+    if (logoPreview) {
+      const res = await changeLogo({ logoImage: logoPreview });
+      console.log("response", res);
+    }
+
     setSavedLogo(logoPreview);
     setLogoSaved(true);
     setTimeout(() => setLogoSaved(false), 2500);

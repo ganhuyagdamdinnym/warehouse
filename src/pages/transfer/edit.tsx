@@ -24,7 +24,6 @@ interface LineRow {
   itemId: number;
   name: string;
   code: string;
-  weight: string;
   quantity: string;
   unit: string;
 }
@@ -154,7 +153,6 @@ const TransferEdit = () => {
       name: item.name,
       itemId: Number(item.id),
       code: item.internalCode || item.name.slice(0, 20) || "ITEM",
-      weight: "1",
       quantity: "1",
       unit: "Ширхэг",
     };
@@ -199,7 +197,6 @@ const TransferEdit = () => {
           name: row.name,
           itemId: row.itemId,
           code: row.code,
-          weight: row.weight,
           quantity: row.quantity,
           unit: row.unit,
         })),
@@ -305,17 +302,29 @@ const TransferEdit = () => {
             </div>
 
             {/* Current status badge */}
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
-              status === "Draft"
-                ? "bg-gray-100 text-gray-600 border-gray-200"
+            <div
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                status === "Draft"
+                  ? "bg-gray-100 text-gray-600 border-gray-200"
+                  : status === "Pending"
+                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                    : "bg-emerald-50 text-emerald-700 border-emerald-200"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  status === "Draft"
+                    ? "bg-gray-400"
+                    : status === "Pending"
+                      ? "bg-amber-400"
+                      : "bg-emerald-400"
+                }`}
+              />
+              {status === "Draft"
+                ? "Ноорог"
                 : status === "Pending"
-                ? "bg-amber-50 text-amber-700 border-amber-200"
-                : "bg-emerald-50 text-emerald-700 border-emerald-200"
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                status === "Draft" ? "bg-gray-400" : status === "Pending" ? "bg-amber-400" : "bg-emerald-400"
-              }`} />
-              {status === "Draft" ? "Ноорог" : status === "Pending" ? "Хүлээгдэж байна" : "Дууссан"}
+                  ? "Хүлээгдэж байна"
+                  : "Дууссан"}
             </div>
           </div>
         </div>
@@ -480,7 +489,6 @@ const TransferEdit = () => {
                         <tr className="text-left text-gray-500 font-bold text-[11px] uppercase tracking-widest">
                           <th className="px-6 py-4 w-12 text-center">#</th>
                           <th className="px-6 py-4">Бараа</th>
-                          <th className="px-6 py-4 text-center">Жин</th>
                           <th className="px-6 py-4 text-center w-40">
                             Тоо ширхэг
                           </th>
@@ -521,20 +529,7 @@ const TransferEdit = () => {
                                   className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm"
                                 />
                               </td>
-                              <td className="px-6 py-3 text-center">
-                                <input
-                                  type="text"
-                                  value={row.weight}
-                                  onChange={(e) =>
-                                    updateLineItem(
-                                      row.id,
-                                      "weight",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm text-center"
-                                />
-                              </td>
+
                               <td className="px-6 py-3 text-center">
                                 <input
                                   type="text"
@@ -651,12 +646,24 @@ const TransferEdit = () => {
               {/* Completed state — read only notice */}
               {status === "Completed" && (
                 <div className="flex items-center gap-3 p-4 rounded-xl w-fit pr-8 border bg-emerald-50 border-emerald-200">
-                  <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  <svg
+                    className="w-5 h-5 text-emerald-500 shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   <div>
-                    <p className="text-sm font-semibold text-emerald-800">Шилжүүлэг дууссан</p>
-                    <p className="text-xs text-emerald-600 mt-0.5">Энэ шилжүүлэг гүйцэтгэгдсэн тэмдэглэгдсэн байна</p>
+                    <p className="text-sm font-semibold text-emerald-800">
+                      Шилжүүлэг дууссан
+                    </p>
+                    <p className="text-xs text-emerald-600 mt-0.5">
+                      Энэ шилжүүлэг гүйцэтгэгдсэн тэмдэглэгдсэн байна
+                    </p>
                   </div>
                 </div>
               )}

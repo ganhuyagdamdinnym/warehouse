@@ -166,6 +166,7 @@ const Warehouses: React.FC = () => {
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="text-left border-b border-gray-200/60">
+                <th className="px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider w-12"></th>
                 <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Нэр / Код
                 </th>
@@ -209,6 +210,21 @@ const Warehouses: React.FC = () => {
                     className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
                     onClick={() => navigate(`/warehouses/${item.id}/edit`)}
                   >
+                    <td className="px-4 py-3">
+                      <div className="w-10 h-10 rounded-lg border border-gray-100 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
+                        {item.logoImage ? (
+                          <img
+                            src={item.logoImage}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-gray-300 text-xs font-bold">
+                            {item.name?.[0]?.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="font-semibold text-gray-900 text-sm">
                         {item.name}

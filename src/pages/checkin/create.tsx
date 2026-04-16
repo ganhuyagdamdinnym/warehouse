@@ -160,7 +160,6 @@ const CreateCheckIn = () => {
       productId: row.productId, // ← backend-д явуулах
       name: row.name,
       code: row.code,
-      weight: row.weight,
       quantity: row.quantity,
     }));
 
@@ -340,9 +339,7 @@ const CreateCheckIn = () => {
                           <th className="px-4 py-3 uppercase tracking-widest text-[10px]">
                             Бараа
                           </th>
-                          <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32">
-                            Жин
-                          </th>
+
                           <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32">
                             Тоо
                           </th>
@@ -370,17 +367,7 @@ const CreateCheckIn = () => {
                               <td className="px-4 py-3 font-medium text-gray-800">
                                 {row.name}
                               </td>
-                              <td className="px-4 py-3">
-                                <input
-                                  type="text"
-                                  value={row.weight}
-                                  onChange={(e) =>
-                                    updateItem(row.id, "weight", e.target.value)
-                                  }
-                                  placeholder="0.00"
-                                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm transition-all focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                                />
-                              </td>
+
                               <td className="px-4 py-3">
                                 <input
                                   type="text"

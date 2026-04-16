@@ -1,4 +1,4 @@
-import type { ItemDetailData } from "../../pages/items/items";
+// import type { ItemDetailData } from "../../pages/items/items";
 type Item = {
   id: string | number;
   name: string;
@@ -72,7 +72,7 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
 
             <div className="py-2 text-center">
               <h1 className="text-lg font-bold uppercase tracking-wide">
-                Орлого авах
+                Орлого
               </h1>
             </div>
 
@@ -111,9 +111,7 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
                     <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">
                       Бараа
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-bold uppercase text-gray-500 w-32">
-                      Жин
-                    </th>
+
                     <th className="px-6 py-3 text-right text-xs font-bold uppercase text-gray-500 w-32">
                       Тоо хэмжээ
                     </th>
@@ -132,9 +130,6 @@ export const CheckInDetails = ({ onClose, items }: Props) => {
                         <span className="ml-2 text-gray-400">
                           ({item.code})
                         </span>
-                      </td>
-                      <td className="px-6 py-3 text-right text-sm text-gray-600">
-                        {item.weight}
                       </td>
                       <td className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
                         {item.quantity}

@@ -10,9 +10,31 @@ import {
 import { HiOutlineHomeModern, HiOutlineMapPin } from "react-icons/hi2";
 import { createWarehouse } from "../../api/warehouse/warehouse";
 
+const resizeImage = (file: File, maxSize = 400): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ratio = Math.min(maxSize / img.width, maxSize / img.height, 1);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 const CreateWarehouse = () => {
   const navigate = useNavigate();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,16 +42,25 @@ const CreateWarehouse = () => {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  // const [logoImage, setLogoImage] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [isActive, setIsActive] = useState(true);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setLogoPreview(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+    if (!file.type.startsWith("image/"))
+      return setError("Зөвхөн зураг файл сонгоно уу");
+    if (file.size > 5 * 1024 * 1024)
+      return setError("Зургийн хэмжээ 5MB-аас хэтрэхгүй байх ёстой");
+    try {
+      const resized = await resizeImage(file, 400);
+      setLogoPreview(resized);
+      setImageBase64(resized);
+      setError(null);
+    } catch {
+      setError("Зураг боловсруулахад алдаа гарлаа");
     }
   };
 
@@ -46,6 +77,7 @@ const CreateWarehouse = () => {
         code: code.trim(),
         name: name.trim(),
         phone: phone.trim() || undefined,
+        logoImage: imageBase64,
         email: email.trim() || undefined,
         address: address.trim() || undefined,
         is_active: isActive ? true : false,

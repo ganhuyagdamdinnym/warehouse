@@ -52,7 +52,6 @@ export interface CheckinItem {
   checkin_id?: number;
   name?: string;
   code?: string;
-  weight?: string;
   quantity?: string;
   productId?: number; // Нэмэгдсэн
 }
@@ -93,7 +92,6 @@ export interface CreateCheckinPayload {
     // itemId?: number;
     name?: string;
     code?: string;
-    weight?: string;
     quantity?: string;
   }[];
 }

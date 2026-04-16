@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ChangeEvent } from "react";
-import { LuWarehouse } from "react-icons/lu";
+import { LuWarehouse, LuEye, LuEyeOff } from "react-icons/lu";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -8,6 +8,7 @@ const Login = () => {
     remember: false,
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +96,7 @@ const Login = () => {
         </div>
 
         {/* Нууц үг */}
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <label className="block text-sm font-semibold text-gray-700">
             Нууц үг
           </label>
@@ -109,6 +110,35 @@ const Login = () => {
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
           />
+        </div> */}
+        <div className="mt-4">
+          <label className="block text-sm font-semibold text-gray-700">
+            Нууц үг
+          </label>
+          <div className="mt-1 relative">
+            <input
+              type={showPassword ? "text" : "password"} // Dynamic type
+              name="password"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
+                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all pr-10"
+            />
+            {/* Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition-colors"
+            >
+              {showPassword ? (
+                <LuEyeOff className="h-5 w-5" />
+              ) : (
+                <LuEye className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Remember + Forgot */}

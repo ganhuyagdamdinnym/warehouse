@@ -1,4 +1,9 @@
-import { HiMenuAlt3, HiOutlineBell, HiOutlineCog } from "react-icons/hi";
+import {
+  HiMenuAlt3,
+  HiOutlineBell,
+  HiOutlineCog,
+  HiOutlineUserCircle,
+} from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
 import { useAuth } from "../hooks/auth";
 import {
@@ -20,10 +25,12 @@ export const Header = (props: Props) => {
   const { setIsOpenSidebar, isOpenSidebar } = props;
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null); // Create a reference for the dropdown
-
+  const profileImage = user?.image;
   const handleOpen = () => {
     setIsOpen(!isOpen); // Simplified toggle logic
   };
+
+  // console.log("sad gadaa", profileImage);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -105,13 +112,31 @@ export const Header = (props: Props) => {
             <div>
               <button
                 onClick={handleOpen}
-                className="flex items-center p-1 rounded-full focus:outline-hidden focus:ring-2 focus:ring-gray-300 transition duration-150 ease-in-out"
+                className="flex items-center p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
               >
-                <div className="h-8 w-8 rounded-full object-cover sm:mr-2 bg-black"></div>
-                <span className="hidden sm:inline-flex items-center mr-2">
-                  {user?.name}
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center border border-gray-300">
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt={user?.name || "User"}
+                      className="w-full h-full object-cover"
+                      // Зураг ачаалахад алдаа гарвал Default icon гаргах fallback
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "";
+                        // Энд fallback логик нэмж болно
+                      }}
+                    />
+                  ) : (
+                    <HiOutlineUserCircle className="w-full h-full text-gray-400" />
+                  )}
+                </div>
+
+                <span className="hidden sm:inline-flex items-center mx-2 font-medium text-gray-700">
+                  {user?.name || "Хэрэглэгч"}
                 </span>
-                <IoIosArrowDown className={`h-3 w-3 hidden sm:inline-flex`} />
+                <IoIosArrowDown
+                  className={`h-3 w-3 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                />
               </button>
             </div>
             {isOpen && (

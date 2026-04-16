@@ -82,23 +82,13 @@ const navigation: NavItem[] = [
     name: "Харилцагч",
     href: "/contacts",
     icon: Users,
+    adminOnly: true,
     children: [
       { name: "Бүх харилцагч", href: "/contacts" },
       { name: "Шинэ харилцагч нэмэх", href: "/contacts/create" },
     ],
   },
-  {
-    name: "Тайлан",
-    href: "/reports",
-    icon: BarChart3,
-    children: [
-      { name: "Нийт бүртгэл", href: "/reports" },
-      { name: "Орлогын тайлан", href: "/reports/checkin" },
-      { name: "Зарлагын тайлан", href: "/reports/checkout" },
-      { name: "Шилжүүлгийн тайлан", href: "/reports/transfer" },
-      { name: "Өөрчлөлтийн тайлан", href: "/reports/adjustment" },
-    ],
-  },
+
   // ── SuperAdmin цэсүүд ──────────────────────────────
   {
     name: "Ангилал",
@@ -140,6 +130,19 @@ const navigation: NavItem[] = [
       { name: "Хэрэглэгчийн эрхүүд", href: "/roles" },
       { name: "Шинэ хэрэглэгч нэмэх", href: "/users/create" },
       { name: "Шинэ хэрэглэгчийн эрх үүсгэх", href: "/roles/create" },
+    ],
+  },
+  {
+    name: "Тайлан",
+    href: "/reports",
+    icon: BarChart3,
+    adminOnly: true,
+    children: [
+      { name: "Нийт бүртгэл", href: "/reports" },
+      { name: "Орлогын тайлан", href: "/reports/checkin" },
+      { name: "Зарлагын тайлан", href: "/reports/checkout" },
+      { name: "Шилжүүлгийн тайлан", href: "/reports/transfer" },
+      { name: "Өөрчлөлтийн тайлан", href: "/reports/adjustment" },
     ],
   },
 ];

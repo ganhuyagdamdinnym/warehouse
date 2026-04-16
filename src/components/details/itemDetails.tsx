@@ -1,16 +1,7 @@
 import JsBarcode from "jsbarcode";
 import { useEffect, useRef } from "react";
 
-type Variant = {
-  label: string;
-  values: string;
-};
-
-type WarehouseVariantStock = {
-  label: string;
-  quantity: string;
-};
-
+type WarehouseVariantStock = { label: string; quantity: string };
 type WarehouseStock = {
   id: string;
   name: string;
@@ -29,21 +20,19 @@ type ItemDetailData = {
   category: string;
   unit: string;
   stock?: number | string;
+  image?: string;
   trackSerials: boolean;
   trackWeight: boolean;
   trackQuantity: boolean;
   trackStock?: boolean;
   stockAlert?: number;
-  variants?: Variant[];
+  variants?: { label: string; values: string }[];
   details?: string;
   description?: string;
   warehouseStocks?: WarehouseStock[];
 };
 
-type Props = {
-  onClose: () => void;
-  item: ItemDetailData;
-};
+type Props = { onClose: () => void; item: ItemDetailData };
 
 const BarcodeDisplay = ({ code }: { code: string }) => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -60,7 +49,7 @@ const BarcodeDisplay = ({ code }: { code: string }) => {
           margin: 10,
         });
       } catch {
-        // Invalid barcode value — silently skip
+        /* invalid barcode */
       }
     }
   }, [code]);
@@ -78,7 +67,6 @@ const CheckIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
   </svg>
 );
-
 const CrossIcon = () => (
   <svg
     className="w-5 h-5 text-red-500"
@@ -149,15 +137,30 @@ export const ItemDetails = ({ onClose, item }: Props) => {
           </button>
         </div>
 
-        {/* Scrollable Body */}
+        {/* Body */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100 space-y-4">
-          {/* Section 1: Barcode + Info */}
+          {/* Section 1: Зураг + Barcode + Info */}
           <div className="rounded-lg bg-white p-6 shadow-sm">
+            {/* Барааны зураг */}
+            {item.image && (
+              <div className="flex justify-center mb-6">
+                <div className="w-48 h-48 rounded-xl border border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center shadow-sm">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-contain p-2"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Barcode */}
             {barcodeValue && (
               <div className="flex justify-center mb-6">
                 <BarcodeDisplay code={barcodeValue} />
               </div>
             )}
+
             <div>
               <DetailRow label="Нэр">
                 <span className="font-semibold">{item.name}</span>
@@ -220,7 +223,7 @@ export const ItemDetails = ({ onClose, item }: Props) => {
             </div>
           </div>
 
-          {/* Section 2: Per-Warehouse Stock */}
+          {/* Section 2: Агуулахын үлдэгдэл */}
           {hasWarehouseStocks ? (
             <div>
               <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 px-1">
@@ -236,7 +239,6 @@ export const ItemDetails = ({ onClose, item }: Props) => {
                       key={wh.id}
                       className="rounded-lg bg-white p-4 shadow-sm border border-gray-100"
                     >
-                      {/* Warehouse header */}
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <div className="font-bold text-gray-900 text-sm">
@@ -252,24 +254,14 @@ export const ItemDetails = ({ onClose, item }: Props) => {
                           {qty}
                         </div>
                       </div>
-
-                      {/* Quantity bar */}
                       <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
                         <div
-                          className={`h-1.5 rounded-full transition-all ${
-                            qty <= 0
-                              ? "bg-red-400"
-                              : isLow
-                                ? "bg-amber-400"
-                                : "bg-emerald-400"
-                          }`}
+                          className={`h-1.5 rounded-full transition-all ${qty <= 0 ? "bg-red-400" : isLow ? "bg-amber-400" : "bg-emerald-400"}`}
                           style={{
                             width: `${Math.min(100, Math.max(0, (qty / Math.max(totalStock, 1)) * 100))}%`,
                           }}
                         />
                       </div>
-
-                      {/* Status badge */}
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-400">
                           Нийт {totalStock}-аас {qty} ш

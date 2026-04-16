@@ -72,3 +72,16 @@ export async function updatePassword(
     },
   });
 }
+export async function changeLogo(data: {
+  logoImage: string;
+}): Promise<{ message: string }> {
+  const token = getToken();
+  return request(`/users/changeLogo`, {
+    method: "POST",
+    body: data,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}

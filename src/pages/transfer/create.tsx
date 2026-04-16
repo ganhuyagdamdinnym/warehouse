@@ -18,7 +18,6 @@ interface SelectedItem {
   itemId: number; // Real database Item ID
   name: string;
   code: string;
-  weight: string;
   quantity: string;
   unit: string;
 }
@@ -104,7 +103,6 @@ const CreateTransfer = () => {
       itemId: item.id, // Database ID
       name: item.name,
       code: item.internalCode || "ITEM",
-      weight: "1",
       quantity: "1",
       unit: "Ширхэг",
     };
@@ -158,7 +156,6 @@ const CreateTransfer = () => {
           itemId: item.itemId, // Backend-ийн хүлээж авах гол талбар
           name: item.name,
           code: item.code,
-          weight: item.weight,
           quantity: item.quantity,
           unit: item.unit,
         })),
@@ -334,9 +331,7 @@ const CreateTransfer = () => {
                         <th className="px-4 py-3 uppercase tracking-widest text-[10px]">
                           Бараа материалын нэр
                         </th>
-                        <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32 text-center">
-                          Жин
-                        </th>
+
                         <th className="px-4 py-3 uppercase tracking-widest text-[10px] w-32 text-center">
                           Тоо хэмжээ
                         </th>
@@ -364,16 +359,7 @@ const CreateTransfer = () => {
                             <td className="px-4 py-3 font-medium text-gray-800">
                               {row.name}
                             </td>
-                            <td className="px-4 py-3 text-center">
-                              <input
-                                type="number"
-                                value={row.weight}
-                                onChange={(e) =>
-                                  updateItem(row.id, "weight", e.target.value)
-                                }
-                                className={tableInputClass}
-                              />
-                            </td>
+
                             <td className="px-4 py-3 text-center">
                               <input
                                 type="number"
