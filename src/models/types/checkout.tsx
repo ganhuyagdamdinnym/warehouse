@@ -3,7 +3,6 @@ export interface CheckoutItem {
   name: string;
   code: string;
   productId?: number;
-  weight: string;
   quantity: string;
 }
 

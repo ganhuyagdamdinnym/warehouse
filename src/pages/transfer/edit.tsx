@@ -197,6 +197,7 @@ const TransferEdit = () => {
           name: row.name,
           itemId: row.itemId,
           code: row.code,
+          
           quantity: row.quantity,
           unit: row.unit,
         })),

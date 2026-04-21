@@ -2,7 +2,7 @@ export interface Warehouse {
   id: string;
   code: string;
   name: string;
-  logoImage: string | null;
+  logo: string | null;
   phone?: string;
   email?: string;
   address?: string;

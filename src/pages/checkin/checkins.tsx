@@ -37,7 +37,7 @@ const Checkins: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isOpenDetails, setIsOpenDetails] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // API state
   const [checkinsList, setCheckinsList] = useState<Checkin[]>([]);
@@ -107,9 +107,10 @@ const Checkins: React.FC = () => {
     }
   };
 
-  const handleSelectItem = (item: Checkin) => {
-    setSelectedItem(item);
+  const handleSelectItem = (id: string) => {
+    setSelectedId(id);
     setIsOpenDetails(true);
+    console.log("test", id);
   };
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -129,10 +130,10 @@ const Checkins: React.FC = () => {
           </p>
         </div>
 
-        {isOpenDetails && selectedItem && (
+        {isOpenDetails && selectedId && (
           <CheckInDetails
             onClose={() => setIsOpenDetails(false)}
-            items={selectedItem.items}
+            id={selectedId}
           />
         )}
 
@@ -258,7 +259,7 @@ const Checkins: React.FC = () => {
                   <tr
                     key={item.id}
                     className="hover:bg-gray-50/70 transition-colors cursor-pointer group"
-                    onClick={() => handleSelectItem(item)}
+                    onClick={() => handleSelectItem(item.id)}
                   >
                     <td className="px-6 py-4">
                       <div className="font-bold text-indigo-600 text-sm">

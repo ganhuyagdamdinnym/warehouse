@@ -7,7 +7,7 @@ import {
   HiX,
   HiOutlineSearch,
 } from "react-icons/hi";
-import { createCheckin } from "../../api";
+import { createCheckout } from "../../api/checkout/checkouts";
 import { getContacts } from "../../api/contact/contact";
 import { getWarehouses } from "../../api/warehouse/warehouse_api";
 import { getItems } from "../../api/item/item";
@@ -21,7 +21,7 @@ interface SelectedItem {
   unit: string;
 }
 
-const CreateCheckIn = () => {
+const CreateCheckOut = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +39,6 @@ const CreateCheckIn = () => {
   const [warehouseName, setWarehouseName] = useState("");
   const [warehouseSelectValue, setWarehouseSelectValue] = useState("");
   const [details, setDetails] = useState("");
-  // true = Draft, false = Completed
   const [isDraft, setIsDraft] = useState(true);
 
   const [contactList, setContactList] = useState<
@@ -126,11 +125,7 @@ const CreateCheckIn = () => {
     setSelectedItemsList((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const updateItem = (
-    id: number,
-    field: "weight" | "quantity",
-    value: string,
-  ) => {
+  const updateItem = (id: number, field: "quantity", value: string) => {
     setSelectedItemsList((prev) =>
       prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
     );
@@ -163,7 +158,8 @@ const CreateCheckIn = () => {
 
     try {
       setSaving(true);
-      await createCheckin({
+      // alert("hi");
+      await createCheckout({
         code: code.trim(),
         date,
         status: isDraft ? "Draft" : "Completed",
@@ -174,7 +170,7 @@ const CreateCheckIn = () => {
         details: details.trim(),
         items: itemsForApi,
       });
-      navigate("/checkin", { replace: true });
+      navigate("/checkout", { replace: true });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа.");
     } finally {
@@ -192,10 +188,10 @@ const CreateCheckIn = () => {
           <div className="w-1 h-12 rounded-full bg-gray-900 flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
-              Шинэ орлого үүсгэх
+              Шинэ зарлага үүсгэх
             </h3>
             <p className="mt-1 text-sm text-gray-400">
-              Бараа материалын орлогын баримт шинээр үүсгэх.
+              Бараа материалын зарлагын баримт шинээр үүсгэх.
             </p>
           </div>
         </div>
@@ -279,6 +275,7 @@ const CreateCheckIn = () => {
 
                 <div className="border-t border-dashed border-gray-100" />
 
+                {/* Бараа нэмэх */}
                 <div>
                   <div className="relative mb-4" ref={containerRef}>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
@@ -363,7 +360,6 @@ const CreateCheckIn = () => {
                               <td className="px-4 py-3 font-medium text-gray-800">
                                 {row.name}
                               </td>
-
                               <td className="px-4 py-3">
                                 <input
                                   type="text"
@@ -396,7 +392,7 @@ const CreateCheckIn = () => {
                         ) : (
                           <tr>
                             <td
-                              colSpan={5}
+                              colSpan={4}
                               className="py-14 text-center text-gray-300 text-sm bg-gray-50/20"
                             >
                               Хайлт хийх эсвэл баркод уншуулж бараа нэмнэ үү
@@ -473,23 +469,23 @@ const CreateCheckIn = () => {
                 </div>
 
                 {/* ── Status checkbox ── */}
-                <div className="flex items-center gap-3 p-4 rounded-xl w-fit pr-8 border bg-emerald-50/50 border-emerald-100/50">
+                <div className="flex items-center gap-3 p-4 rounded-xl w-fit pr-8 border bg-rose-50/50 border-rose-100/50">
                   <input
                     type="checkbox"
                     id="completeNow"
                     checked={!isDraft}
                     onChange={(e) => setIsDraft(!e.target.checked)}
-                    className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded cursor-pointer"
+                    className="h-5 w-5 text-rose-600 focus:ring-rose-500 border-gray-300 rounded cursor-pointer"
                   />
                   <div>
                     <label
                       htmlFor="completeNow"
-                      className="text-sm font-semibold cursor-pointer select-none text-emerald-900"
+                      className="text-sm font-semibold cursor-pointer select-none text-rose-900"
                     >
-                      Орлогыг баталгаажуулах
+                      Зарлагыг баталгаажуулах
                     </label>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      Чеклэвэл Completed болж сток нэмэгдэнэ. Чеклэхгүй бол
+                      Чеклэвэл Completed болж сток хасагдана. Чеклэхгүй бол
                       Draft хэлбэрээр хадгалагдана.
                     </p>
                   </div>
@@ -503,7 +499,7 @@ const CreateCheckIn = () => {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => navigate("/checkin")}
+                    onClick={() => navigate("/checkout")}
                     className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
                   >
                     Цуцлах
@@ -551,4 +547,4 @@ const CreateCheckIn = () => {
   );
 };
 
-export default CreateCheckIn;
+export default CreateCheckOut;

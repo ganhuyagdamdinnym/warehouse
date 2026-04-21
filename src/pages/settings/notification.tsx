@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   HiOutlineBell,
   HiOutlineCheckCircle,
@@ -7,64 +7,106 @@ import {
   HiOutlineTrash,
   HiOutlineClock,
 } from "react-icons/hi";
+import { request } from "../../api/client";
 
 interface Notification {
-  id: string;
+  id: number;
   title: string;
   message: string;
-  time: string;
+  createdAt: string;
   type: "success" | "warning" | "info";
   isRead: boolean;
 }
 
-const initialNotifications: Notification[] = [
-  {
-    id: "1",
-    title: "Бараа дууссан",
-    message: "Агуулах А-д 'Test Item 01' барааны үлдэгдэл 5-аас доош орлоо.",
-    time: "2 минутын өмнө",
-    type: "warning",
-    isRead: false,
-  },
-  {
-    id: "2",
-    title: "Амжилттай хадгалагдлаа",
-    message: "Шинэ хэрэглэгч 'Ibrahim Waters' системд амжилттай бүртгэгдлээ.",
-    time: "1 цагийн өмнө",
-    type: "success",
-    isRead: false,
-  },
-  {
-    id: "3",
-    title: "Системийн шинэчлэл",
-    message: "Өнөөдөр 22:00 цагт системийн төлөвлөгөөт засвар хийгдэнэ.",
-    time: "3 цагийн өмнө",
-    type: "info",
-    isRead: true,
-  },
-];
-
 const Notifications = () => {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await request<any>("/notifications?limit=50");
+      setNotifications(res.data || []);
+      setTotal(res.total || 0);
+      setUnreadCount(res.unreadCount || 0);
+    } catch (err) {
+      console.error("Notification татахад алдаа:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const markAllAsRead = async () => {
+    try {
+      await request("/notifications/read-all", { method: "PUT" });
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
+  const markAsRead = async (id: number) => {
+    try {
+      await request(`/notifications/${id}/read`, { method: "PUT" });
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
+      );
+      setUnreadCount((c) => Math.max(0, c - 1));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteNotification = async (id: number) => {
+    try {
+      await request(`/notifications/${id}`, { method: "DELETE" });
+      const wasUnread = notifications.find((n) => n.id === id && !n.isRead);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      if (wasUnread) setUnreadCount((c) => Math.max(0, c - 1));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteAll = async () => {
+    if (!confirm("Бүх мэдэгдлийг устгах уу?")) return;
+    try {
+      await request("/notifications", { method: "DELETE" });
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const formatTime = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 1) return "Дөнгөж сая";
+    if (mins < 60) return `${mins} минутын өмнө`;
+    if (hours < 24) return `${hours} цагийн өмнө`;
+    return `${days} өдрийн өмнө`;
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "success":
-        return <HiOutlineCheckCircle className="w-6 h-6 text-green-500" />;
+        return <HiOutlineCheckCircle className="w-5 h-5 text-emerald-500" />;
       case "warning":
         return (
-          <HiOutlineExclamationCircle className="w-6 h-6 text-amber-500" />
+          <HiOutlineExclamationCircle className="w-5 h-5 text-amber-500" />
         );
       default:
-        return <HiOutlineInformationCircle className="w-6 h-6 text-blue-500" />;
+        return <HiOutlineInformationCircle className="w-5 h-5 text-blue-500" />;
     }
   };
 
@@ -77,50 +119,79 @@ const Notifications = () => {
             <div className="flex items-center gap-2 mb-1">
               <HiOutlineBell className="w-6 h-6 text-blue-600" />
               <h3 className="text-2xl font-bold text-gray-900">Мэдэгдэл</h3>
+              {unreadCount > 0 && (
+                <span className="flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-500">
-              Таны бүртгэлтэй холбоотой сүүлийн үеийн мэдэгдлүүд.
+              {total > 0 ? `Нийт ${total} мэдэгдэл` : "Мэдэгдэл байхгүй"}
+              {unreadCount > 0 && ` · ${unreadCount} уншаагүй`}
             </p>
           </div>
 
-          <button
-            onClick={markAllAsRead}
-            className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-          >
-            Бүгдийг уншсанаар тэмдэглэх
-          </button>
+          <div className="flex items-center gap-3">
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Бүгдийг уншсан гэж тэмдэглэх
+              </button>
+            )}
+            {notifications.length > 0 && (
+              <button
+                onClick={deleteAll}
+                className="text-sm font-semibold text-red-400 hover:text-red-600 transition-colors flex items-center gap-1"
+              >
+                <HiOutlineTrash className="w-4 h-4" />
+                Бүгдийг устгах
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Notifications List */}
+        {/* List */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          {notifications.length > 0 ? (
+          {loading ? (
+            <div className="p-16 text-center">
+              <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-gray-400">Уншиж байна...</p>
+            </div>
+          ) : notifications.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {notifications.map((notif) => (
                 <div
                   key={notif.id}
                   className={`p-5 flex gap-4 transition-colors hover:bg-gray-50 ${!notif.isRead ? "bg-blue-50/30" : ""}`}
                 >
-                  <div className="mt-1">{getTypeIcon(notif.type)}</div>
+                  <div className="mt-0.5 shrink-0">
+                    {getTypeIcon(notif.type)}
+                  </div>
 
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
                       <h4
                         className={`text-sm ${!notif.isRead ? "font-bold" : "font-semibold"} text-gray-900`}
                       >
                         {notif.title}
                       </h4>
-                      <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                      <div className="flex items-center gap-1 text-[11px] text-gray-400 shrink-0">
                         <HiOutlineClock className="w-3 h-3" />
-                        {notif.time}
+                        {formatTime(notif.createdAt)}
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">
                       {notif.message}
                     </p>
 
-                    <div className="mt-3 flex gap-4">
+                    <div className="mt-2.5 flex gap-4">
                       {!notif.isRead && (
-                        <button className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+                        <button
+                          onClick={() => markAsRead(notif.id)}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wider transition-colors"
+                        >
                           Унших
                         </button>
                       )}
@@ -134,7 +205,7 @@ const Notifications = () => {
                   </div>
 
                   {!notif.isRead && (
-                    <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 shrink-0" />
                   )}
                 </div>
               ))}
@@ -142,12 +213,13 @@ const Notifications = () => {
           ) : (
             <div className="p-20 text-center">
               <HiOutlineBell className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-              <p className="text-gray-500">Одоогоор мэдэгдэл байхгүй байна.</p>
+              <p className="text-gray-500 font-medium">
+                Одоогоор мэдэгдэл байхгүй байна.
+              </p>
             </div>
           )}
         </div>
 
-        {/* Footer Info */}
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-400 italic">
             Мэдэгдлүүд 30 хоногийн дараа автоматаар устгагдана.

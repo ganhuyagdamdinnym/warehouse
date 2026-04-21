@@ -212,9 +212,9 @@ const Warehouses: React.FC = () => {
                   >
                     <td className="px-4 py-3">
                       <div className="w-10 h-10 rounded-lg border border-gray-100 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
-                        {item.logoImage ? (
+                        {item.logo ? (
                           <img
-                            src={item.logoImage}
+                            src={item.logo}
                             alt={item.name}
                             className="w-full h-full object-cover"
                           />

@@ -15,13 +15,14 @@ import {
 } from "react"; // Added useEffect and useRef
 import { LuWarehouse } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
+import { request } from "../api/client";
 type Props = {
   setIsOpenSidebar: Dispatch<SetStateAction<boolean>>;
   isOpenSidebar: boolean;
 };
 export const Header = (props: Props) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isSuperAdmin } = useAuth();
   const { setIsOpenSidebar, isOpenSidebar } = props;
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null); // Create a reference for the dropdown
@@ -30,9 +31,26 @@ export const Header = (props: Props) => {
     setIsOpen(!isOpen); // Simplified toggle logic
   };
 
-  // console.log("sad gadaa", profileImage);
+  // Энгийн хэрэглэгч — өөрийн агуулах
+  const [warehouseName, setWarehouseName] = useState("");
+  const [warehouseLogoPreview, setWarehouseLogoPreview] = useState("");
+  const [warehouseLogoBase64, setWarehouseLogoBase64] = useState("");
 
-  // Close dropdown when clicking outside
+  // Энгийн хэрэглэгчийн агуулах мэдээлэл ачаалах
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      request<any>("/warehouses/my")
+        .then((data) => {
+          setWarehouseName(data.name || "");
+          if (data.logo) {
+            setWarehouseLogoPreview(data.logo);
+            setWarehouseLogoBase64(data.logo);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isSuperAdmin]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // If the dropdown is open and the click is NOT inside the dropdown container
@@ -55,9 +73,32 @@ export const Header = (props: Props) => {
       <div className="bg-gray-900 md:shrink-0 md:w-64 px-6 py-3 flex items-center justify-between md:justify-center">
         <h1 className="text-gray-900">
           <div className="flex items-start max-h-8 overflow-hidden w-56">
-            <div className="flex items-center">
-              <LuWarehouse className="h-10 w-10 mr-3 text-indigo-600" />
-              <h1 className="text-2xl font-bold text-white">Warehouse</h1>
+            <div className="flex items-center max-h-10 overflow-hidden w-56">
+              {isSuperAdmin ? (
+                // Super Admin бол өмнөх хэвээрээ
+                <div className="flex items-center">
+                  <LuWarehouse className="h-8 w-8 mr-3 text-indigo-500" />
+                  <h1 className="text-xl font-bold text-white tracking-tight">
+                    Warehouse
+                  </h1>
+                </div>
+              ) : (
+                // Энгийн хэрэглэгч бол Агуулахын лого болон нэр
+                <div className="flex items-center gap-3">
+                  {warehouseLogoPreview ? (
+                    <img
+                      src={warehouseLogoPreview}
+                      alt="Logo"
+                      className="h-12 w-12 object-contain rounded-sm"
+                    />
+                  ) : (
+                    <LuWarehouse className="h-8 w-8 text-indigo-500" />
+                  )}
+                  <h1 className="text-lg font-semibold text-white truncate">
+                    {warehouseName || "Агуулах"}
+                  </h1>
+                </div>
+              )}
             </div>
           </div>
         </h1>
